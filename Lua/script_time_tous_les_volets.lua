@@ -29,7 +29,7 @@ local timeridx = nil -- idx du timer douche '2'
 ---------------------------------------------------------------------------
 local les_volets = {};
 -- 1ere volet : nom du device volet 1
-les_volets[1] = {volet="Salon sur Rue", idx=361, Type="somfy"} -- Possibilité d'ajouter des équipements en relation, comme température piece, etat ouverture fenetre, etc (séparé par une  virgule)
+les_volets[1] = {volet="Salon sur Rue", idx=361, Type="somfy"} -- Possibilité d'ajouter des équipements en relation, comme température pièce, état ouverture fenêtre, etc (séparé par une  virgule)
 -- 2eme volet : nom du device volet 2 
 les_volets[2] = {volet="Salon sur Jardin", idx=362, Type="somfy"} -- exemple {volet="Salon sur Jardin", temperature="Temperature Salon", fenetre="Fenetre Salon sur Jardin"}
 -- 3eme volet : nom du device volet 3
@@ -37,9 +37,9 @@ les_volets[3] = {volet="Cuisine", idx=363, Type="somfy"} -- La déclaration de l
 -- 4eme volet : nom du device volet 4 
 les_volets[4] = {volet="Chambre Parents", idx=364, Type="somfy"}
 -- 5eme volet : nom du device volet 5 
-les_volets[5] = {volet="Chambre Maud", idx=365, Type="somfy"}
+les_volets[5] = {volet="Chambre 1", idx=365, Type="somfy"}
 -- 6eme volet : nom du device volet 6 
-les_volets[6] = {volet="Chambre Audrey", idx=473, Type="velux"}
+les_volets[6] = {volet="Chambre 2", idx=473, Type="velux"}
 -- 7eme volet : nom du device volet 7 
 -- les_volets[7] = {volet="Volet Douche", idx=628, Type="velux"}
 
