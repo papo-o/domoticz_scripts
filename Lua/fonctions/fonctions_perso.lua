@@ -235,25 +235,7 @@ end
 	   	return str
 	end
 --============================================================================================== 
-  function Pushbullet(pb_title,pb_body)  -- séparer titre et message par un ;
-    local pb_token = 'your_pushbullet_token'
-    --local pb_total = Message
-    --local val=string.find(pb_total,";")
-    --local pb_title = string.sub(pb_total,1,val-1)
-    --local pb_body = string.sub(pb_total,val+1)
-	--Pour Windows
-    --local pb_command = 'c:\\Programs\\Curl\\curl -u ' .. pb_token .. ': "https://api.pushbullet.com/v2/pushes" -d type=note -d title="' .. pb_title .. '" -d body="' .. pb_body ..'"'
-    --pour Linux
-   local pb_command = '/usr/bin/curl -m 15 -u ' .. pb_token .. ': "https://api.pushbullet.com/v2/pushes" -d type=note -d title="' .. pb_title .. '" -d body="' .. pb_body ..'"'
-    -- Run curl command
-    exec_success = os.execute(pb_command)
-	-- usage : Pushbullet('message')
-  end
-  
-  
 --notification pushbullet
---usage:
---pushbullet('test','ceci est un message test')
 function pushbullet(title,body)
 --	local settings = assert(io.popen(curl..'-u '..domoticzUSER..':'..domoticzPSWD..' "'..domoticzURL..'/json.htm?type=settings"'))
 	local settings = assert(io.popen(curl..'-u "'..domoticzURL..'/json.htm?type=settings"'))    
@@ -261,7 +243,7 @@ function pushbullet(title,body)
 	settings:close()
 	local pushbullet_key = json:decode(list).PushbulletAPI
 	os.execute(curl..'-H \'Access-Token:'..pushbullet_key..'\' -H \'Content-Type:application/json\' --data-binary \'{"title":"'..title..'","body":"'..body..'","type":"note"}\' -X POST "https://api.pushbullet.com/v2/pushes"')
-end
+end--usage: pushbullet('test','ceci est un message test')
 --============================================================================================== 
 function split(inputstr, sep)
         if sep == nil then
@@ -274,135 +256,6 @@ function split(inputstr, sep)
         end
         return t
 end -- usage : valeurs = split(variable,";")
---============================================================================================== 
-pushbullet = { -- ne fonctionne pas manque la fonction net
- 
-	token = "o.vzvYdwX71Jazyy1QcyIV9Vgj24RnTObR",
-	titreDesMessages = "Domoticz",
-	debug = false,
- 
-	-- ==============================================
-	-- Affichage dans la console
-	-- Paramètres :
-	-- 		message		: le message a afficher
-	--		force			: affiche le message même si debug est à false
-	-- ==============================================
-	log = function(self, message, force)
-		force = force or false
-		if (self.debug or force) then
-			print(__convertToString(message))
-		end
-	end,
- 
-	-- ==============================================
-	-- Affichage les devices reconnus et actifs
-	-- Paramètres :
-	-- 		data 		: tableau des devices
-	-- ==============================================
-	displayDevices = function(self, data)
-		self:log("----------==========     D  e  v  i  c  e  s    =========----------", true)
-		for k,v in ipairs(data.devices) do
-			if (v.model) then
-				self:log(v.model .. " --- " .. v.iden, true)
-			end
-		end
-	end,
- 
-	-- ==============================================
-	-- Interrogation des devices
-	-- Paramètres :
-	-- func : une fonction a rappeler après traitement ou nil
-	-- ==============================================
-	getDevices = function(self, func)
-		local http = net.HTTPClient()
-		http:request("https://api.pushbullet.com/v2/devices", { 
-			options = { 
-				method = 'GET', 
-				headers = {
-					["Access-Token"] = self.token,
-					["Content-Type"] = "application/json"
-				},
-				data = ""
-			},
-			success = function(response) 
-				if (func) then
-					func(json.decode(response.data))
-				else
-					self:displayDevices(json.decode(response.data))
-				end
-			end,
-			error = function(response) self:log(" ERROR !!! " .. url, true) end,
-		})   
-	end,
- 
-	-- ==============================================
-	-- Envoi un message 
-	-- Paramètres :
-	-- 		message : le message à envoyer
-	--		id : l'identifiant du device OU nil
-	-- ==============================================
-	sendPush = function(self, message, id)
-		local http = net.HTTPClient()
-		http:request("https://api.pushbullet.com/v2/pushes", { 
-			options = { 
-				method = 'POST', 
-				headers = {
-					["Access-Token"] = self.token,
-					["Content-Type"] = "application/json"
-				},
-				data = json.encode({
-					["body"]=message, 
-					["title"]= self.titreDesMessages, 
-					["type"]="note"
-				}),
-				device_iden = id,
-			},
-			success = function(response) 
-				local data = json.decode(response.data)
-				self:log("----------==========     P u s h e s    =========----------")
-				self:log("Identifiant du message : " .. data.iden)
-			end,
-			error = function(response) self:log(" ERROR !!! " .. url, true) end,
-		})   
-	end,
- 
-	-- ==============================================
-	-- Envoi d'un message push
-	-- Paramètres :
-	-- 		message : le message à envoyer
-	--		device	: le nom du device concerné ou nil
-	-- ==============================================
-	send = function(self, message, device)
-		if (id) then
-			self.getDevices(function()
-				local found
-				for k,v in ipairs(data.devices) do
-					if (v.model == device or v.iden == name) then
-						found = true
-						self:sendPush(message, v.iden)
-					end
-				end
-				if (not found) then
-					self:log(device .. " non trouvé", true)
-				end
-			end)
-		else
-			self:sendPush(message, nil)
-		end
-
---[[USAGE : 
--- Afficher la liste des appareils
-pushbullet:getDevices()
- 
--- Envoyer un message sur tout les appareils
-pushbullet:send("<message>")
--- Ex. pushbullet:send("Message pour tous les appareils")
- 
--- Envoyer un message sur un appareil précis
-pushbullet:send("<message>", "<nom de l'appareil>")
--- Ex. pushbullet:send("Message pour mon HTC", "HTC One_M8 dual sim")]]--
-	end
-}
 --============================================================================================== 
 function calc_wind_chill(temperature, wind_speed)-- Calculate wind chill.
 -- If temperature is low but it's windy, the temperature
@@ -545,7 +398,7 @@ function typeof(var) -- retourne le type de la variable 'string' ou 'number'
     end
 end
 --============================================================================================== 
-function speak(TTSDeviceName,txt) -- envoie dans un capteur text une chaîne de caractères qui sera intercepté et lu par la custom page grâce à sa fonction MQTT
+function speak(TTSDeviceName,txt) -- envoie dans un capteur text une chaîne de caractères qui sera interceptée et lue par la custom page grâce à sa fonction MQTT
 	commandArray['OpenURL'] = domoticzIP..":"..domoticzPORT..'/json.htm?type=command&param=udevice&idx='..otherdevices_idx[TTSDeviceName]..'&nvalue=0&svalue='..url_encode(txt)
 end -- usage: speak('tts','bonjour nous sommes dimanche')
 --============================================================================================== 
@@ -565,8 +418,28 @@ elseif BinaryFormat == "dylib" then
     end
 end
 BinaryFormat = nil
---==============================================================================================
 
+--==============================================================================================
+-- Obtenir le nom d'un device via son idx
+function GetDeviceNameByIDX(deviceIDX) -- source https://www.domoticz.com/forum/viewtopic.php?t=18736#p144720
+    deviceIDX = tonumber(deviceIDX)
+   for i, v in pairs(otherdevices_idx) do
+      if v == deviceIDX then
+         return i
+      end
+   end
+   return 0
+end -- exemple usage = commandArray[GetDeviceNameByIDX(383)] = 'On'
+--==============================================================================================
+-- Obtenir l'idx d'un device via son nom
+function GetDeviceIdxByName(deviceName) 
+   for i, v in pairs(otherdevices_idx) do
+      if i == deviceName then
+         return v
+      end
+   end
+   return 0
+end -- exemple usage = commandArray['UpdateDevice'] = GetDeviceIdxByName('Compteur Gaz') .. '|0|' .. variable
 --==============================================================================================
 -------------------------------------------
 -------------Fin Fonctions-----------------
