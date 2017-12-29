@@ -1,7 +1,7 @@
 --[[
 name : script_time_rafraichissement_nocturne.lua
 auteur : papoo
-MAJ : 20/07/2017
+MAJ : 29/12/2017
 création : 24/06/2017
 
 http://pon.fr/rafraichissement-nocturne/
@@ -18,22 +18,22 @@ tableau des températures intérieures avec définition du nombre de pièces au 
 ------------ Variables à éditer ------------
 -------------------------------------------- 
 local nom_script = 'Rafraîchissement nocturne'
-local version = '1.06'
+local version = '1.2'
 local debugging = false   	                                    -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local url = '127.0.0.1:8080'                                    -- adresse ip domoticz
 local seuil_notification = 25 	        	                    -- seuil température intérieure au delà duquel les notifications d'alarme seront envoyées
 local deltaT = 2                                                -- Delta T entre T° interieure et T° extérieure avant alarme 
 local temp_ext = 'Temperature exterieure' 	                    -- nom de la sonde extérieure
-local les_temperatures = {"Temperature 1", "Temperature 1", "Temperature Entree", "Temperature Salon","Couloir 1er étage", "Temperature Parents", "Temperature Bureau", "Temperature Cuisine", "Temperature Douche"}; -- Liste de vos sondes intérieures séparées par une virgule
+local les_temperatures = {"Temperature ch1", "Temperature ch2", "Temperature Entree", "Temperature Salon", "Temperature Parents", "Temperature Bureau", "Temperature Cuisine", "Temperature Douche"}; -- Liste de vos sondes intérieures séparées par une virgule
 local notif_mail = true                                         -- true si l'on  souhaite être notifié  par mail, sinon false.
-local notif_pushbullet = false                                  -- true si l'on  souhaite être notifié  via pushbullet, sinon false.
+local subsystem = nil                                           -- les différentes valeurs de subsystem acceptées sont : gcm;http;kodi;lms;nma;prowl;pushalot;pushbullet;pushover;pushsafer
+                                                                -- pour plusieurs modes de notification séparez chaque mode par un point virgule. si subsystem = nil toutes les notifications seront activées.
 local notif_all = true                                          -- true si l'on  souhaite être notifié  via le système de notification domoticz, sinon false.
-local EmailTo = ''                            -- adresse mail, séparées par ; si plusieurs (pour la notification par mail)
+local EmailTo = 'votre@mail.com'                            -- adresse mail, séparées par ; si plusieurs (pour la notification par mail)
 local var_notif = 'Notification_ouverture_fenetres'             -- nom de la variable de limite de notification
 local Nb_pieces = 4                                             -- Définissez le nombre de pièces minimum dont la T° est supérieure à la température extérieure avant l'envoi des notifications
 local ResetHeure = 14                                           -- Heure à laquelle vous souhaitez réinitialiser les notifications
 local ResetMinute = 25                                          -- Minute à laquelle vous souhaitez réinitialiser les notifications
-local Pushbullet_token = ''   -- Token de votre Pushbullet (pour la notification via Pushbullet)
 local OS = "linux"                                              -- Définissez l'os sous lequel fonctionne ce script. "linux" ou "windows"
 local sms_free_user = nil                                       -- nom d'utilisateur freemobile popur l'envoi d'alerte par SMS, sinon nil 
 local sms_free_pass = nil                                       -- mot de passe freemobile popur l'envoi d'alerte par SMS, sinon nil
@@ -72,16 +72,8 @@ function url_encode(str) -- encode la chaine str pour la passer dans une url
    end
    return str
 end 
---==============================================================================================
-function Pushbullet(pb_title,pb_body)  -- séparer titre et message par un ;
-    if OS == "windows" then -- pour windows
-        local pb_command = 'c:\\Programs\\Curl\\curl -u ' .. Pushbullet_token .. ': "https://api.pushbullet.com/v2/pushes" -d type=note -d title="' .. pb_title .. '" -d body="' .. pb_body ..'"'
-    else --pour Linux
-        local pb_command = '/usr/bin/curl -m 5 -u ' .. Pushbullet_token .. ': "https://api.pushbullet.com/v2/pushes" -d type=note -d title="' .. pb_title .. '" -d body="' .. pb_body ..'"'
-    end
-    exec_success = os.execute(pb_command)
-end
--------------------------------------
+
+--------------------------------------------
 -------------- Fin Fonctions ---------------
 --------------------------------------------
 time=os.date("*t")
@@ -151,24 +143,19 @@ if ((time.min-1) % 10) == 0 then -- Déclenchement du script toutes les 10 minut
             else
                 voir_les_logs("--- --- --- Notification par mail désactivée",debugging)  
             end -- if notif_mail
-            
-            if notif_pushbullet == true and Pushbullet_token ~= nil then
-                Pushbullet('Ouverture des fenetres recommandée','la température exterieure est inférieure à la temperature interieure')
-                voir_les_logs("--- --- --- Notification pushbullet",debugging)        
-            else
-                voir_les_logs("--- --- --- Notification pushbullet désactivée",debugging)   
-            end -- notif_pushbullet
-            
+               
             if sms_free_user ~= nil and sms_free_pass ~=nil then
                 voir_les_logs("--- --- --- Notification SMS free",debugging)            
                 commandArray['OpenURL']='https://smsapi.free-mobile.fr/sendmsg?user='.. sms_free_user ..'&pass='.. sms_free_pass ..'&msg=Ouverture des fenetres recommandée la temperature interieure est de '.. temperature_exterieure ..'°C'
-            end      
+            end 
             
-            if notif_all == true then
-                commandArray[#commandArray+1] = {['SendNotification'] = 'Ouverture des fenetres recommandée#la température exterieure est de '.. temperature_exterieure ..'°C'}
-                voir_les_logs("--- --- --- Notification domoticz",debugging) 
-            else
-                voir_les_logs("--- --- --- Notification domoticz désactivée",debugging)  
+            if subsystem ~= nil then
+                    commandArray['SendNotification'] = 'Ouverture des fenetres recommandée#la température exterieure est de '.. temperature_exterieure ..'°C#0###'.. subsystem ..''
+                elseif notif_all == true then
+                    commandArray[#commandArray+1] = {['SendNotification'] = 'Ouverture des fenetres recommandée#la température exterieure est de '.. temperature_exterieure ..'°C'}
+                    voir_les_logs("--- --- --- Notification domoticz",debugging) 
+                else
+                    voir_les_logs("--- --- --- Notification domoticz désactivée",debugging)  
             end --notif_all
                 commandArray['Variable:'.. var_notif] = tostring(1) -- mise à jour de la variable utilisateur
                 voir_les_logs("--- --- --- Mise à jour de la variable:".. var_notif .." à 1",debugging)
