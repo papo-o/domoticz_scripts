@@ -1,7 +1,7 @@
 --[[script_time_export_mysql.lua
 auteur : papoo
 
-maj : 23/11/2017
+maj : 31/12/2017
 date : 01/01/2017
 Principe : 
 exporter les données de compteurs, Températures, etc.. sur une base de données de type MySql
@@ -10,19 +10,20 @@ http://easydomoticz.com/forum/viewtopic.php?f=17&t=5368
 et
 http://easydomoticz.com/forum/viewtopic.php?f=17&t=5369
 http://pon.fr/exporter-des-donnees-vers-mysql/
+https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_export_mysql.lua
 ]]--
 
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
 local nom_script = "export mysql"
-local version = "0.10"
+local version = "0.11"
 local debugging = false  	-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local url = "http://192.168.1.25/mesgraphs/loggermulti.php"
 
 local les_devices = {}; 
--- si vous souhaitez remonter les valeurs d'un device qui en comporte plusieurs (ex: température et hygrometrie extérieure) 
--- renseigner le nom de la valeur à remonter (à partir de la deuxieme valeur) ainsi que le numero d'ordre dans canal (voir exemples ci dessous Puissance Lave Linge et Puissance Sèche Linge )
+-- si vous souhaitez remonter les valeurs d'un device qui en comporte plusieurs (ex: température et hygrométrie extérieure) 
+-- renseigner le nom de la valeur à remonter (à partir de la deuxième valeur) ainsi que le numéro d'ordre dans canal (voir exemples ci dessous Puissance Lave Linge et Puissance Sèche Linge )
 les_devices[#les_devices+1] = {device="Compteur Eau Chaude", nom="Cpt Eau Chaude", canal="1"}
 les_devices[#les_devices+1] = {device="Compteur Eau Froide", nom="Cpt Eau Froide", canal="1"}
 les_devices[#les_devices+1] = {device="Compteur Gaz", nom="Cpt Gaz", canal="1"}
@@ -43,7 +44,9 @@ les_devices[#les_devices+1] = {device="Temperature départ chauffage", nom="temp
 les_devices[#les_devices+1] = {device="Temperature Entree", nom="temp entree", canal="1"}
 les_devices[#les_devices+1] = {device="Temperature retour chauffage", nom="temp retour chauffage", canal="1"}
 les_devices[#les_devices+1] = {device="Temperature Salon", nom="temp salon", canal="1"}
-
+les_devices[#les_devices+1] = {device="DJU", nom="DJU Météo France", canal="1"}
+les_devices[#les_devices+1] = {device="DJU 2", nom="DJU Intégrales", canal="1"}
+les_devices[#les_devices+1] = {device="Energie consommée chauffage", nom="Energie", canal="1"}
 local feeds =""
 --------------------------------------------
 ----------- Fin variables à éditer ---------
