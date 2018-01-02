@@ -1,7 +1,7 @@
 --[[script_time_export_mysql.lua
 auteur : papoo
 
-maj : 31/12/2017
+maj : 02/01/2018
 date : 01/01/2017
 Principe : 
 exporter les données de compteurs, Températures, etc.. sur une base de données de type MySql
@@ -17,7 +17,7 @@ https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_export_my
 ------------ Variables à éditer ------------
 -------------------------------------------- 
 local nom_script = "export mysql"
-local version = "0.11"
+local version = "0.12"
 local debugging = false  	-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local url = "http://192.168.1.25/mesgraphs/loggermulti.php"
 
@@ -124,7 +124,7 @@ voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",de
         v=otherdevices[d.device]
 	c=tonumber(d.canal)
 			voir_les_logs("--- --- --- ".. sans_accent(d.device) .." = "..(v or "nil"),debugging)
-            print(sans_accent(d.device))
+            --print(sans_accent(d.device))
 			voir_les_logs("--- --- --- canal = "..(c or "nil"),debugging)
 			if v~= nil then v,nbCommas=string.gsub(v,";",";") end-- verification de la presence d'un ou plusieurs point virgule => valeurs multiples
 	   if nbCommas >= 1 and c ~= nil then
