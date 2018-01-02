@@ -35,11 +35,11 @@ les_volets[#les_volets+1] = {volet="Salon sur Jardin", idx=362, Type="somfy"} --
 -- 3eme volet : nom du device volet 3
 les_volets[#les_volets+1] = {volet="Cuisine", idx=363, Type="somfy"} -- La déclaration de l'idx {idx=xxx} ne sert qu'en cas d'utilisation de la commande via json, (ligne à décommenter)
 -- 4eme volet : nom du device volet 4 
-les_volets[#les_volets+1] = = {volet="Chambre Parents", idx=364, Type="somfy"}
+les_volets[#les_volets+1] = {volet="Chambre Parents", idx=364, Type="somfy"}
 -- 5eme volet : nom du device volet 5 
-les_volets[#les_volets+1] = = {volet="Chambre 1", idx=365, Type="somfy"}
+les_volets[#les_volets+1] = {volet="Chambre 1", idx=365, Type="somfy"}
 -- 6eme volet : nom du device volet 6 
-les_volets[#les_volets+1] = = {volet="Chambre 2", idx=473, Type="velux"}
+les_volets[#les_volets+1] = {volet="Chambre 2", idx=473, Type="velux"}
 -- 7eme volet : nom du device volet 7 
 -- les_volets[7] = {volet="Volet Douche", idx=628, Type="velux"}
 
