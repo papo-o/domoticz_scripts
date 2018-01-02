@@ -3,7 +3,7 @@ name : script_time_tous_les_volets.lua
 auteur : papoo
 version : 1.15
 date de création : 08/08/2016
-Date de mise à jour : 01/11/16
+Date de mise à jour : 02/01/2018
 Principe : permet d'automatiser la gestion des volets roulants 
 en fonction de l'heure de levé et couché du soleil et forte luminosité
 ]]--
@@ -27,19 +27,19 @@ local timeridx = nil -- idx du timer douche '2'
 ---------------------------------------------------------------------------
 -- Tableau des volets
 ---------------------------------------------------------------------------
-local les_volets = {};
+local les_volets = {}; -- les_volets[#les_volets+1] = {volet="", idx="", Type=""}
 -- 1ere volet : nom du device volet 1
-les_volets[1] = {volet="Salon sur Rue", idx=361, Type="somfy"} -- Possibilité d'ajouter des équipements en relation, comme température pièce, état ouverture fenêtre, etc (séparé par une  virgule)
+les_volets[#les_volets+1] = {volet="Salon sur Rue", idx=361, Type="somfy"} -- Possibilité d'ajouter des équipements en relation, comme température piece, etat ouverture fenetre, etc (séparé par une  virgule)
 -- 2eme volet : nom du device volet 2 
-les_volets[2] = {volet="Salon sur Jardin", idx=362, Type="somfy"} -- exemple {volet="Salon sur Jardin", temperature="Temperature Salon", fenetre="Fenetre Salon sur Jardin"}
+les_volets[#les_volets+1] = {volet="Salon sur Jardin", idx=362, Type="somfy"} -- exemple {volet="Salon sur Jardin", temperature="Temperature Salon", fenetre="Fenetre Salon sur Jardin"}
 -- 3eme volet : nom du device volet 3
-les_volets[3] = {volet="Cuisine", idx=363, Type="somfy"} -- La déclaration de l'idx {idx=xxx} ne sert qu'en cas d'utilisation de la commande via json, (ligne à décommenter)
+les_volets[#les_volets+1] = {volet="Cuisine", idx=363, Type="somfy"} -- La déclaration de l'idx {idx=xxx} ne sert qu'en cas d'utilisation de la commande via json, (ligne à décommenter)
 -- 4eme volet : nom du device volet 4 
-les_volets[4] = {volet="Chambre Parents", idx=364, Type="somfy"}
+les_volets[#les_volets+1] = = {volet="Chambre Parents", idx=364, Type="somfy"}
 -- 5eme volet : nom du device volet 5 
-les_volets[5] = {volet="Chambre 1", idx=365, Type="somfy"}
+les_volets[#les_volets+1] = = {volet="Chambre 1", idx=365, Type="somfy"}
 -- 6eme volet : nom du device volet 6 
-les_volets[6] = {volet="Chambre 2", idx=473, Type="velux"}
+les_volets[#les_volets+1] = = {volet="Chambre 2", idx=473, Type="velux"}
 -- 7eme volet : nom du device volet 7 
 -- les_volets[7] = {volet="Volet Douche", idx=628, Type="velux"}
 
