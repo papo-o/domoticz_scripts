@@ -65,10 +65,10 @@ voir_les_logs("--- --- --- Date de demain : ".. tomorrow,debugging)
 local annee_mariage = tostring(os.date("%Y")) - tostring(date_mariage)
 local annee_mariage = year_difference(date_mariage)
 local anniversaire = {}
---anniversaire["28:05"]="l\'Anniversaire&nbsp;de&nbsp;Pierre"
---anniversaire["29:05"]="l\'Anniversaire&nbsp;de&nbsp;Paul"
---anniversaire["30:05"]="l\'Anniversaire&nbsp;de&nbsp;Jacques"
-
+anniversaire["28:05"]="l\'Anniversaire&nbsp;de&nbsp;Pierre"
+anniversaire["29:05"]="l\'Anniversaire&nbsp;de&nbsp;Paul"
+anniversaire["30:05"]="l\'Anniversaire&nbsp;de&nbsp;Jacques"
+anniversaire["30:06"]="nos&nbsp;".. annee_mariage .."&nbsp;ans&nbsp;de&nbsp;mariage"
 local saint_jour = {}
 saint_jour["01:01"]="le&nbsp;jour&nbsp;de&nbsp;l\'An"
 saint_jour["02:01"]="les&nbsp;Basile"
