@@ -1,7 +1,7 @@
 --[[
 name : script_time_vacances_scolaires.lua
 auteur : papoo
-Mise à jour : 03/10/2017
+Mise à jour : 04/01/2018
 date : 05/08/2017
 Principe :
  Ce script a pour but de remonter les informations du site http://telechargement.index-education.com/vacances.xml
@@ -10,12 +10,13 @@ Principe :
 -- Variables à éditer
 -- ========================================================================
 local nom_script = "Vacances Scolaires"
-local version = "1.03"
+local version = "1.04"
 local zoneSelect = "A"  --Indiquer ici la zone 
-local dzVacancesScolaires = "Vacances Scolaires"  --Renseigner ici le nom du switch a mettre a jour dans domoticz 
+local dzVacancesScolaires = "Vacances Scolaires"  -- Renseigner ici le nom du switch à mettre a jour dans domoticz, nil si inutilisé 
+local Scene_Vacances_Scolaires = "Vacances" -- Renseigner ici le nom du scénario à mettre a jour dans domoticz, nil si inutilisé
 local checkHour = 1
 local checkMinute = 12
-local debugging = false  	-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = true  	-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 -- ========================================================================
 -- Fin Variables à éditer
 -- ========================================================================
@@ -203,9 +204,9 @@ end
 commandArray = {}
 time=os.date("*t")
 
---if time.min % 1 == 0 then -- éxécution du script toutes les X minute(s) 
+if time.min % 1 == 0 then -- éxécution du script toutes les X minute(s) 
 --if ((time.min-1) % 60) == 0 then -- éxécution du script toutes les heures à xx:01
-if time.hour == checkHour and time.min == checkMinute then
+--if time.hour == checkHour and time.min == checkMinute then
 		voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
 		voir_les_logs("=========== la date du jour : " .. DateDuJour .." ===========",debugging)
 
@@ -254,11 +255,23 @@ if time.hour == checkHour and time.min == checkMinute then
            end
        end
         if vacancesScolaires == true then
-            commandArray[dzVacancesScolaires] = 'On'
-            voir_les_logs("=========== La journée est pendant les vacances scolaires de la zone ".. zoneSelect ..", passage du switch à On ===========",debugging)
+            if dzVacancesScolaires ~= nil then
+                commandArray[dzVacancesScolaires] = 'On'
+                voir_les_logs("=========== La journée est pendant les vacances scolaires de la zone ".. zoneSelect ..", passage du switch à On ===========",debugging)
+            end
+            if Scene_Vacances_Scolaires ~= nil then
+                commandArray['Scene:'.. Scene_Vacances_Scolaires] = "On"
+                voir_les_logs("=========== La journée est pendant les vacances scolaires de la zone ".. zoneSelect ..", passage du scénario à On ===========",debugging)
+            end
         else
+            if dzVacancesScolaires ~= nil then        
             commandArray[dzVacancesScolaires] = 'Off'
             voir_les_logs("=========== La journée n\'est pas pendant les vacances scolaires de la zone ".. zoneSelect ..", passage du switch à Off ===========",debugging)
+            end
+            if Scene_Vacances_Scolaires ~= nil then
+                commandArray['Scene:'.. Scene_Vacances_Scolaires] = "Off"
+                voir_les_logs("=========== La journée n\'est pas pendant les vacances scolaires de la zone ".. zoneSelect ..", passage du scénario à Off ===========",debugging)
+            end            
         end
 
    end
