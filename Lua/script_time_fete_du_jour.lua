@@ -1,7 +1,7 @@
 --[[
 name : script_time_fete_du_jour.lua
 auteur : papoo
-MAJ : 08/10/2017
+MAJ : 04/01/2018
 date : 28/05/2016
 Principe : Ce script a pour but d'afficher dans un device texte l'évenement (anniversaire, jour férié ou fête) du jour et du lendemain
 http://pon.fr/fete-du-jour-et-du-lendemain-en-lua/
@@ -10,15 +10,18 @@ https://easydomoticz.com/forum/viewtopic.php?f=10&t=1878
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local version = "1.47"							-- version du script
-local debugging = false  						-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
-local fete_text_idx = nil --391   				-- idx du capteur texte saint du jour ou nil
-local fete_demain_text_idx = nil --703 			-- idx du capteur texte saint du lendemain ou nil
-local jour_ferie_switch = "Jour Ferie" 			-- nom du capteur switch jour ferié entre "" ou nil
-local variable_jour = "Saint_Jour"				-- nom de la variable jour ou nil
-local variable_lendemain = "Saint_Lendemain" 	-- nom de la variable lendemain ou nil
+local version = "1.48"							-- version du script
+local debugging = true  						-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local fete_text_idx = nil --391   				-- idx du capteur texte saint du jour, nil si inutilisé
+local fete_demain_text_idx = nil --703 			-- idx du capteur texte saint du lendemain, nil si inutilisé
+local jour_ferie_switch = "Jour Ferie" 			-- nom du capteur switch jour férié, nil si inutilisé
+local jour_ferie_scene = "Jour Férié" 			-- nom du scénario jour férié entre, nil si inutilisé
+local variable_jour = "Saint_Jour"				-- nom de la variable jour, nil si inutilisé
+local variable_lendemain = "Saint_Lendemain" 	-- nom de la variable lendemain, nil si inutilisé
 local variable_jour_ferie = "Jour_ferie"		-- nom de la variable
-local date_mariage = 1900	                    -- année de votre date de mariage
+local Scene_Semaine_Paire = "Semaine Paire"     -- nom du scénario semaine paire, nil si inutilisé
+local Scene_Semaine_Impaire = "Semaine Impaire" -- nom du scénario semaine impaire, nil si inutilisé
+local date_mariage = 1999	                    -- année de votre date de mariage
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
@@ -62,9 +65,9 @@ voir_les_logs("--- --- --- Date de demain : ".. tomorrow,debugging)
 local annee_mariage = tostring(os.date("%Y")) - tostring(date_mariage)
 local annee_mariage = year_difference(date_mariage)
 local anniversaire = {}
-anniversaire["28:05"]="l\'Anniversaire&nbsp;de&nbsp;Pierre"
-anniversaire["29:05"]="l\'Anniversaire&nbsp;de&nbsp;Paul"
-anniversaire["30:05"]="l\'Anniversaire&nbsp;de&nbsp;Jacques"
+--anniversaire["28:05"]="l\'Anniversaire&nbsp;de&nbsp;Pierre"
+--anniversaire["29:05"]="l\'Anniversaire&nbsp;de&nbsp;Paul"
+--anniversaire["30:05"]="l\'Anniversaire&nbsp;de&nbsp;Jacques"
 
 local saint_jour = {}
 saint_jour["01:01"]="le&nbsp;jour&nbsp;de&nbsp;l\'An"
@@ -587,8 +590,19 @@ end
 			commandArray[jour_ferie_switch] = 'Off'
 			voir_les_logs("--- --- --- Mise à jour device  "..jour_ferie_switch .. " => Off",debugging)
 		end
-	
 	end
+	if jour_ferie_scene ~= nil then 
+		if ferie == true then
+			commandArray['Scene:'..jour_ferie_scene] = 'On'
+			voir_les_logs("--- --- --- Mise à jour scénario  "..jour_ferie_scene .." => On",debugging)
+		else
+			commandArray['Scene:'..jour_ferie_scene] = 'Off'
+			voir_les_logs("--- --- --- Mise à jour scénario  "..jour_ferie_scene .. " => Off",debugging)
+		end
+	end    
+    
+    
+    
 	if variable_jour ~= nil then	
 	commandArray[#commandArray+1] = {['Variable:'.. variable_jour] = tostring('Aujourd&apos;hui&nbsp;nous&nbsp;fêtons&nbsp;' .. fete_jour)} -- écriture variable Saint du Jour
 	
@@ -613,8 +627,20 @@ end
 	end
     if os.date("%W")%2 == 0 then 	-- semaine paire et impaire
         voir_les_logs("--- --- --- semaine paire",debugging)
+        if Scene_Semaine_Paire ~= nil and Scene_Semaine_Impaire ~= nil then
+            commandArray['Scene:'..Scene_Semaine_Paire] = 'On'
+            commandArray['Scene:'..Scene_Semaine_Impaire] = 'Off'
+			voir_les_logs("--- --- --- Mise à jour scénario  "..Scene_Semaine_Paire .." => On",debugging)
+			voir_les_logs("--- --- --- Mise à jour scénario  "..Scene_Semaine_Impaire .." => Off",debugging)            
+        end
     else
         voir_les_logs("--- --- --- semaine impaire",debugging)
+        if Scene_Semaine_Paire ~= nil and Scene_Semaine_Impaire ~= nil then
+            commandArray['Scene:'..Scene_Semaine_Paire] = 'Off'
+            commandArray['Scene:'..Scene_Semaine_Impaire] = 'On'
+			voir_les_logs("--- --- --- Mise à jour scénario  "..Scene_Semaine_Paire .." => Off",debugging)
+			voir_les_logs("--- --- --- Mise à jour scénario  "..Scene_Semaine_Impaire .." => On",debugging)            
+        end        
     end
     
 voir_les_logs("========= Fin Fete du jour (v".. version ..") =========",debugging)
