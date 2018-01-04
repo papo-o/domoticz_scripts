@@ -10,7 +10,7 @@ https://easydomoticz.com/forum/viewtopic.php?f=10&t=1878
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local version = "1.48"							-- version du script
+local version = "1.49"							-- version du script
 local debugging = true  						-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local fete_text_idx = nil --391   				-- idx du capteur texte saint du jour, nil si inutilisé
 local fete_demain_text_idx = nil --703 			-- idx du capteur texte saint du lendemain, nil si inutilisé
@@ -21,6 +21,7 @@ local variable_lendemain = "Saint_Lendemain" 	-- nom de la variable lendemain, n
 local variable_jour_ferie = "Jour_ferie"		-- nom de la variable
 local Scene_Semaine_Paire = "Semaine Paire"     -- nom du scénario semaine paire, nil si inutilisé
 local Scene_Semaine_Impaire = "Semaine Impaire" -- nom du scénario semaine impaire, nil si inutilisé
+local Scene_Week_End = "Week-End"               -- nom du scénario Week-End, nil si inutilisé
 local date_mariage = 1999	                    -- année de votre date de mariage
 --------------------------------------------
 ----------- Fin variables à éditer ---------
@@ -28,7 +29,9 @@ local date_mariage = 1999	                    -- année de votre date de mariage
 local fete_jour = ''
 local fete_demain = ''
 local ferie =  ''
-	
+local anniversaire = {}	
+local saint_jour = {}
+local jour_ferie = {}
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
@@ -64,12 +67,26 @@ local tomorrow=tostring(os.date("%d:%m",os.time()+24*60*60))
 voir_les_logs("--- --- --- Date de demain : ".. tomorrow,debugging) 
 local annee_mariage = tostring(os.date("%Y")) - tostring(date_mariage)
 local annee_mariage = year_difference(date_mariage)
-local anniversaire = {}
+local jour = tonumber(os.date("%w"))
+if (jour == 0) or (jour == 6) then
+	voir_les_logs("--- --- --- jour ".. jour .." c\'est le week-end ",debugging)    
+        if Scene_Week_End ~= nil then
+            commandArray['Scene:'..Scene_Week_End] = 'On'
+			voir_les_logs("--- --- --- Mise à jour scénario  ".. Scene_Week_End .." => On",debugging)            
+        end   
+else
+    voir_les_logs("--- --- --- jour ".. jour .." c\'est la semaine",debugging)
+        if Scene_Week_End ~= nil then
+            commandArray['Scene:'..Scene_Week_End] = 'Off'        
+			voir_les_logs("--- --- --- Mise à jour scénario  ".. Scene_Week_End .." => Off",debugging)        
+        end
+end
 anniversaire["28:05"]="l\'Anniversaire&nbsp;de&nbsp;Pierre"
 anniversaire["29:05"]="l\'Anniversaire&nbsp;de&nbsp;Paul"
 anniversaire["30:05"]="l\'Anniversaire&nbsp;de&nbsp;Jacques"
 anniversaire["30:06"]="nos&nbsp;".. annee_mariage .."&nbsp;ans&nbsp;de&nbsp;mariage"
-local saint_jour = {}
+
+--==========================================================================================================
 saint_jour["01:01"]="le&nbsp;jour&nbsp;de&nbsp;l\'An"
 saint_jour["02:01"]="les&nbsp;Basile"
 saint_jour["03:01"]="les&nbsp;Genevieve"
@@ -437,7 +454,6 @@ saint_jour["29:12"]="les&nbsp;David"
 saint_jour["30:12"]="les&nbsp;Roger"
 saint_jour["31:12"]="les&nbsp;Sylvestre"
 --==========================================================================================================
-local jour_ferie = {}
 jour_ferie["01:01"] = "Le&nbsp;1er&nbsp;janvier"
 jour_ferie["01:05"] = "La&nbsp;Fête&nbsp;du&nbsp;travail"
 jour_ferie["08:05"] = "La&nbsp;Victoire&nbsp;des&nbsp;alliés"
