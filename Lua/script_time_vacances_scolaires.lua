@@ -204,9 +204,9 @@ end
 commandArray = {}
 time=os.date("*t")
 
-if time.min % 1 == 0 then -- éxécution du script toutes les X minute(s) 
+--if time.min % 1 == 0 then -- éxécution du script toutes les X minute(s) 
 --if ((time.min-1) % 60) == 0 then -- éxécution du script toutes les heures à xx:01
---if time.hour == checkHour and time.min == checkMinute then
+if time.hour == checkHour and time.min == checkMinute then
 		voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
 		voir_les_logs("=========== la date du jour : " .. DateDuJour .." ===========",debugging)
 
