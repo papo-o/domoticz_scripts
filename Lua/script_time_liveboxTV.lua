@@ -1,9 +1,14 @@
 --[[
-name : script_time_liveboxTV.lua.lua
+name : script_time_liveboxTV.lua
 auteur : papoo
 date de création : 21/01/2018
 Date de mise à jour : 21/01/2018
-Principe : Via l'api de la livebox TV, connaitre son état et afficher la chaine en cours d'affichage
+Principe : Via l'api de la livebox TV, connaitre son état et afficher la chaine en cours de diffusion
+Les device_chaine et livebox_tv, s'ils sont utilisés, ne sont mis à jour que si vous changez de chaîne (pour device_chaine), allumez/éteignez le player (pour livebox_tv) afin de ne pas remplir les log
+n'hésitez pas à proposer l'ajout de vos chaines préférés
+
+http://pon.fr/etat-livebox-tv-en-lua/
+https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_liveboxTV.lua
 ]]--
 --------------------------------------------
 ------------ Variables à éditer ------------
@@ -13,7 +18,8 @@ local debugging = true  			            -- true pour voir les logs dans la consol
 local script_actif = true                       -- active (true) ou désactive (false) ce script simplement
 local device_chaine = "Chaine Livebox"          -- nom du  dummy text affichant la chaine en cours de lecture
 local livebox_tv = "Livebox TV"                 -- nom du  dummy interrupteur pour connaitre l'état de la livebox TV, nil si inutilisé
-local liveboxtv_ip = "http://192.168.1.12:8080"  -- adresse ip de la livebox TV
+local liveboxtv_ip = "http://192.168.1.12:8080" -- adresse ip de la livebox TV
+local domoticzURL = "127.0.0.1:8080"
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
@@ -21,7 +27,7 @@ local liveboxtv_ip = "http://192.168.1.12:8080"  -- adresse ip de la livebox TV
 ------------- Autres Variables -------------
 --------------------------------------------
 local nom_script = 'Chaine liveboxTV'
-local version = '0.1'
+local version = '0.2'
 local les_chaines = {}
 les_chaines[#les_chaines+1] = {canal="1", nom="TF1", id="192"}
 les_chaines[#les_chaines+1] = {canal="10", nom="TMC", id="195"}
@@ -114,16 +120,7 @@ end
 	 curl = '/usr/bin/curl -m 5 -u domoticzUSER:domoticzPSWD '		 	-- ne pas oublier l'espace à la fin
 	 json = assert(loadfile(luaDir..'JSON.lua'))()						-- chargement du fichier JSON.lua
 --------------------------------------------
--- Obtenir l'idx d'un device via son nom
-function GetDeviceIdxByName(deviceName) 
-   for i, v in pairs(otherdevices_idx) do
-      if i == deviceName then
-         return v
-      end
-   end
-   return 0
-end -- exemple usage = commandArray['UpdateDevice'] = GetDeviceIdxByName('Compteur Gaz') .. '|0|' .. variable
---------------------------------------------
+
 --------------------------------------------
 -------------- Fin Fonctions ---------------
 --------------------------------------------
@@ -132,34 +129,49 @@ time=os.date("*t")
 if script_actif == true then
 voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
 
+                        commandArray[#commandArray + 1] = { ['UpdateDevice'] = otherdevices_idx[device_chaine]..'|0|coucou' }
 --=========== Lecture json livebox TV ===============--
-  local config = assert(io.popen('/usr/bin/curl "'.. liveboxtv_ip ..'/remoteControl/cmd?operation=10"'))           
+  local config = assert(io.popen(curl..' "'.. liveboxtv_ip ..'/remoteControl/cmd?operation=10"'))           
   local blocjson = config:read('*all')
   config:close()
   local jsonValeur = json:decode(blocjson)
 
   local etat = jsonValeur.result.data.activeStandbyState
   voir_les_logs('--- --- --- etat livebox tv '..etat,debugging)
-
  
 --=========== Vérification état Livebox TV ===============--
     if etat == '1'then 
     --commandArray[#commandArray+1]={['UpdateDevice'] = idx..'|0|'..'Arret' }
     voir_les_logs('--- --- --- Livebox tv à l\'arret',debugging)
+        if  otherdevices[livebox_tv] ~= nil  then    
+            if ( otherdevices[livebox_tv] == 'On') then
+                commandArray[livebox_tv]='Off'
+                voir_les_logs('--- --- --- Mise à l\'arrêt Livebox tv',debugging)
+            end    
+        end
     end
-  
+  --
     if etat == '0' then
-    chaine = jsonValeur.result.data.playedMediaId
+        voir_les_logs('--- --- --- Livebox tv en marche',debugging)    
+        if  otherdevices[livebox_tv] ~= nil  then 
+            if ( otherdevices[livebox_tv] == 'Off') then
+                commandArray[livebox_tv]='On'
+                voir_les_logs('--- --- --- Mise en marche Livebox tv',debugging)
+            end
+        end
+        chaine = jsonValeur.result.data.playedMediaId
         if  chaine ~= nil  then 
             voir_les_logs('--- --- --- Livebox tv en marche chaine (id) '..chaine,debugging)
             for k,v in pairs(les_chaines) do-- On parcourt chaque chaine
                 if tonumber(v.id) == tonumber(chaine) then
                     voir_les_logs('--- --- --- Livebox tv en marche chaine '..v.nom,debugging)
-                    if ( otherdevices[chaine] ~= v.nom and device_chaine ~= nil)  then
-                    commandArray[#commandArray + 1] = { ['UpdateDevice'] = GetDeviceIdxByName(device_chaine)..'|0|'..v.nom }
-                    voir_les_logs('--- --- --- idx du device chaine '..GetDeviceIdxByName(device_chaine),debugging)
-                    voir_les_logs('--- --- --- Mise à jour chaine '..v.nom,debugging)    
-                    end
+                    if device_chaine ~= nil then
+                        if ( otherdevices[device_chaine] ~= v.nom)  then
+                        commandArray[#commandArray + 1] = { ['UpdateDevice'] = otherdevices_idx[device_chaine]..'|0|'..v.nom }                        
+                        voir_les_logs('--- --- --- idx du device chaine '..GetDeviceIdxByName(device_chaine),debugging)
+                        voir_les_logs('--- --- --- Mise à jour chaine '..v.nom,debugging)    
+                        end
+                    end 
                 end
             end    
         end
