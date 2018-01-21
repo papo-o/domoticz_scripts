@@ -129,7 +129,6 @@ time=os.date("*t")
 if script_actif == true then
 voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
 
-                        commandArray[#commandArray + 1] = { ['UpdateDevice'] = otherdevices_idx[device_chaine]..'|0|coucou' }
 --=========== Lecture json livebox TV ===============--
   local config = assert(io.popen(curl..' "'.. liveboxtv_ip ..'/remoteControl/cmd?operation=10"'))           
   local blocjson = config:read('*all')
@@ -168,7 +167,7 @@ voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",de
                     if device_chaine ~= nil then
                         if ( otherdevices[device_chaine] ~= v.nom)  then
                         commandArray[#commandArray + 1] = { ['UpdateDevice'] = otherdevices_idx[device_chaine]..'|0|'..v.nom }                        
-                        voir_les_logs('--- --- --- idx du device chaine '..GetDeviceIdxByName(device_chaine),debugging)
+                        voir_les_logs('--- --- --- idx du device chaine '..otherdevices_idx[device_chaine],debugging)
                         voir_les_logs('--- --- --- Mise à jour chaine '..v.nom,debugging)    
                         end
                     end 
