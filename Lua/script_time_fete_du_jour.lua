@@ -1,7 +1,7 @@
 --[[
 name : script_time_fete_du_jour.lua
 auteur : papoo
-MAJ : 04/01/2018
+MAJ : 24/01/2018
 date : 28/05/2016
 Principe : Ce script a pour but d'afficher dans un device texte l'évenement (anniversaire, jour férié ou fête) du jour et du lendemain
 http://pon.fr/fete-du-jour-et-du-lendemain-en-lua/
@@ -10,7 +10,7 @@ https://easydomoticz.com/forum/viewtopic.php?f=10&t=1878
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local version = "1.49"							-- version du script
+local version = "1.5"							-- version du script
 local debugging = true  						-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local fete_text_idx = nil --391   				-- idx du capteur texte saint du jour, nil si inutilisé
 local fete_demain_text_idx = nil --703 			-- idx du capteur texte saint du lendemain, nil si inutilisé
@@ -111,7 +111,7 @@ saint_jour["21:01"]="les&nbsp;Agnes"
 saint_jour["22:01"]="les&nbsp;Vincent"
 saint_jour["23:01"]="les&nbsp;Barnard"
 saint_jour["24:01"]="les&nbsp;Francois"
-saint_jour["25:01"]="la&nbsp;Conversion&nbsp;de&nbsp;les&nbsp;Paul"
+saint_jour["25:01"]="la&nbsp;Conversion&nbsp;de&nbsp;Paul"
 saint_jour["26:01"]="les&nbsp;Paule"
 saint_jour["27:01"]="les&nbsp;Angele"
 saint_jour["28:01"]="les&nbsp;Thomas"
