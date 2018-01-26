@@ -2,11 +2,11 @@
 name : script_time_liveboxTV.lua
 auteur : papoo
 date de création : 21/01/2018
-Date de mise à jour : 21/01/2018
+Date de mise à jour : 26/01/2018
 Principe : Via l'api de la livebox TV, connaitre son état et afficher la chaine en cours de diffusion
 Les device_chaine et livebox_tv, s'ils sont utilisés, ne sont mis à jour que si vous changez de chaîne (pour device_chaine), allumez/éteignez le player (pour livebox_tv) afin de ne pas remplir les log
 n'hésitez pas à proposer l'ajout de vos chaines préférés
-
+http://easydomoticz.com/forum/viewtopic.php?f=17&t=5762#p48244
 http://pon.fr/etat-livebox-tv-en-lua/
 https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_liveboxTV.lua
 ]]--
@@ -14,7 +14,7 @@ https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_liveboxTV
 ------------ Variables à éditer ------------
 -------------------------------------------- 
 
-local debugging = true  			            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = false  			            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif = true                       -- active (true) ou désactive (false) ce script simplement
 local device_chaine = "Chaine Livebox"          -- nom du  dummy text affichant la chaine en cours de lecture
 local livebox_tv = "Livebox TV"                 -- nom du  dummy interrupteur pour connaitre l'état de la livebox TV, nil si inutilisé
@@ -27,7 +27,7 @@ local domoticzURL = "127.0.0.1:8080"
 ------------- Autres Variables -------------
 --------------------------------------------
 local nom_script = 'Chaine liveboxTV'
-local version = '0.2'
+local version = '0.4'
 local les_chaines = {}
 les_chaines[#les_chaines+1] = {canal="1", nom="TF1", id="192"}
 les_chaines[#les_chaines+1] = {canal="10", nom="TMC", id="195"}
@@ -141,12 +141,15 @@ voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",de
 --=========== Vérification état Livebox TV ===============--
     if etat == '1'then 
     --commandArray[#commandArray+1]={['UpdateDevice'] = idx..'|0|'..'Arret' }
-    voir_les_logs('--- --- --- Livebox tv à l\'arret',debugging)
+    voir_les_logs('--- --- --- Livebox TV Éteinte',debugging)
         if  otherdevices[livebox_tv] ~= nil  then    
             if ( otherdevices[livebox_tv] == 'On') then
                 commandArray[livebox_tv]='Off'
                 voir_les_logs('--- --- --- Mise à l\'arrêt Livebox tv',debugging)
-            end    
+            end
+            if ( otherdevices[device_chaine] ~= "Livebox TV Éteinte")  then -- si la livebox TV est éteinte on efface la dernière chaine lue et on affiche l'état Livebox
+                commandArray[#commandArray + 1] = { ['UpdateDevice'] = otherdevices_idx[device_chaine]..'|0|Livebox TV Éteinte' }                            
+            end
         end
     end
   --
@@ -173,6 +176,9 @@ voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",de
                     end 
                 end
             end    
+        else
+          local osdContext = jsonValeur.result.data.osdContext
+          voir_les_logs('--- --- --- livebox tv sur '..osdContext,debugging)        
         end
     end
 -- ====================================================================================================================	
