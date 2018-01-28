@@ -1,10 +1,10 @@
 --[[   
 ~/domoticz/scripts/lua/script_time_dju.lua
 auteur : papoo
-MAJ : 07/01/2018
+MAJ : 28/01/2018
 création : 26/12/2017
 Principe :
-Calculer, via l'information température d'une sonde extérieure, les Degrés jour Chauffage et Réfrigération "intégrales"
+Calculer, via l'information température d'une sonde extérieure, les Degrés jour Chauffage et Froid "intégrales"
 https://easydomoticz.com/forum/viewtopic.php?f=17&t=1876&p=46879#p46879
 https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_dju.lua
 
@@ -13,7 +13,7 @@ trouvez le coefficient moyen de conversion Gaz/kwh pour votre commune sur https:
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local debugging = false  			                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = true  			                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local temp_ext  = 'Temperature exterieure' 	        -- nom de la sonde de température extérieure
 local domoticzURL = '127.0.0.1:8080'                -- user:pass@ip:port de domoticz
 local var_user_djc = 'dju'                          -- nom de la variable utilisateur de type 2 (chaine) pour le stockage temporaire des données journalières DJC
@@ -21,20 +21,21 @@ local cpt_djc = 'DJU 2' 				            -- nom du  dummy compteur DJC en degré
 local heure_raz_var = 23                            -- heure de l'incrémentation du compteur DJC compteur_djc_idx et de remise à zéro de la variable utilisateur var_user_djc
 local minute_raz_var = 59                           -- Minute de l'incrémentation du compteur DJC compteur_djc_idx et de remise à zéro de la variable utilisateur var_user_djc
 
-local var_user_djr = nil                            -- nom de la variable utilisateur de type 2 (chaine) pour le stockage temporaire des données journalières DJR, nil si inutilisé
-local cpt_djr = 'DJR'   				            -- nom du  dummy compteur DJR en degré, nil si vous ne souhaitez pas calculer les Degrés Jour Climatisation
+local var_user_djf = nil                            -- nom de la variable utilisateur de type 2 (chaine) pour le stockage temporaire des données journalières DJF, nil si inutilisé
+local cpt_djf = 'DJF'   				            -- nom du  dummy compteur DJF en degré, nil si vous ne souhaitez pas calculer les Degrés Jour Climatisation
 
 local coef_gaz = 10.83                              -- coefficient moyen gaz pour votre commune
 local cpt_gaz = 'Compteur Gaz'                      -- nom de votre compteur gaz, nil si vous ne souhaitez pas calculer l'énergie consommée             
 local cpt_nrj = 'Energie consommée chauffage'       -- nom du dummy compteur nrj, nil si vous ne souhaitez pas totaliser l'énergie consommée en Wh
-local var_user_gaz = 'conso_gaz'                    -- nom de la variable utilisateur de type 2 (chaine) pour le stockage temporaire des données
+local var_user_gaz = 'conso_gaz'
+local div = 100                                     -- conversion impulsion gaz en m3 (si impulsions compteur en : hectolitre = 10; décalitres = 100; litres = 1000)
 
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 -------------------------------------------- 
 commandArray = {}
-local nom_script = 'Calcul Degrés jour Chauffage et Réfrigération'
-local version = '1.30'
+local nom_script = 'Calcul Degrés jour Chauffage et Froid'
+local version = '1.31'
 
 local djc
 local somme_djc
@@ -44,9 +45,9 @@ local conso_gaz
 local conso_nrj
 local index_nrj
 
-local djr
-local somme_djr
-local reste_djr
+local djf
+local somme_djf
+local reste_djf
 
 time=os.date("*t")
 --------------------------------------------
@@ -81,9 +82,9 @@ djc  = tonumber((18 - temperature)*1/1440)
 return djc
 end
 --==============================================================================================
-function calc_djr(temperature)-- calcul des degrés jour mode réfrigération proposé par thuglife
-djr  = tonumber((temperature - 18)*1/1440)
-return djr
+function calc_djf(temperature)-- calcul des degrés jour mode réfrigération proposé par thuglife
+djf  = tonumber((temperature - 18)*1/1440)
+return djf
 end
 --============================================================================================== 
 function url_encode(str) -- encode la chaine str pour la passer dans une url 
@@ -125,7 +126,7 @@ function GetDeviceIdxByName(deviceName)
 end -- exemple usage = commandArray['UpdateDevice'] = GetDeviceIdxByName('Compteur Gaz') .. '|0|' .. variable
 
 --============================================================================================== 
-function timeDiff(dName,dType) -- retourne le temps en seconde depuis la dernière maj du péréphérique (Variable 'v' ou Device 'd' 
+function timeDiff(dName,dType) -- retourne le temps en secondes depuis la dernière maj du périphérique (Variable 'v' ou Device 'd' 
         if dType == 'v' then 
             updTime = uservariables_lastupdate[dName]
         elseif dType == 'd' then
@@ -142,7 +143,7 @@ function timeDiff(dName,dType) -- retourne le temps en seconde depuis la derniè
 -------------------------------------------- 
 
 voir_les_logs("========= ".. nom_script .." (v".. version ..") =========",debugging)
--- calcul DJC et DJR
+-- calcul DJC et DJF
 if otherdevices_svalues[temp_ext] ~= nil then
     if (uservariables[var_user_djc] == nil) then creaVar(var_user_djc,2,0)end
     
@@ -159,14 +160,14 @@ if otherdevices_svalues[temp_ext] ~= nil then
         voir_les_logs("--- --- compteur DJC : ".. cpt_djc_index .." --- ---",debugging)
     else --si la température extérieure est supérieure à 18 
         voir_les_logs("--- --- Température extérieure : ".. temperature .."°C  supérieure à 18°C --- ---",debugging)
-        djr = calc_djr(temperature)
-        voir_les_logs("--- --- DJR : ".. round(djr,5) .." --- ---",debugging)
-        voir_les_logs("--- --- Variable DJR : ".. round(tonumber(uservariables[var_user_djr]),4) .." --- ---",debugging)
-        somme_djr = tonumber(uservariables[var_user_djr]) + djr
-        voir_les_logs("--- --- somme DJR : ".. round(somme_djr,4) .." --- ---",debugging)   
-        commandArray[#commandArray+1] = {['Variable:'.. var_user_djr] = tostring(somme_djr)}
-        cpt_djr_index = otherdevices_svalues[cpt_djr]
-        voir_les_logs("--- --- compteur DJR : ".. cpt_djr_index .." --- ---",debugging)
+        djf = calc_djf(temperature)
+        voir_les_logs("--- --- DJF : ".. round(djf,5) .." --- ---",debugging)
+        voir_les_logs("--- --- Variable DJF : ".. round(tonumber(uservariables[var_user_djf]),4) .." --- ---",debugging)
+        somme_djf = tonumber(uservariables[var_user_djf]) + djf
+        voir_les_logs("--- --- somme DJF : ".. round(somme_djf,4) .." --- ---",debugging)   
+        commandArray[#commandArray+1] = {['Variable:'.. var_user_djf] = tostring(somme_djf)}
+        cpt_djf_index = otherdevices_svalues[cpt_djf]
+        voir_les_logs("--- --- compteur DJF : ".. cpt_djf_index .." --- ---",debugging)
         somme_djc = tonumber(uservariables[var_user_djc])
         voir_les_logs("--- --- somme DJC : ".. somme_djc .." --- ---",debugging)
     end -- fin si temp ext
@@ -183,49 +184,51 @@ if otherdevices_svalues[temp_ext] ~= nil then
             commandArray[#commandArray+1] = {['UpdateDevice'] = GetDeviceIdxByName(cpt_djc) .. '|0|'..tostring(cpt_djc_index)}
         end
     end
-    if var_user_djr ~= nil then 
-        if (uservariables[var_user_djr] == nil) then creaVar(var_user_djr,2,0)end
-        if tonumber(uservariables[var_user_djr]) > 1 and cpt_djr ~= nil then -- si variable djr supérieure à 1 on incrémente le compteur de 1 et on réduit la variable de 1
-        voir_les_logs("--- --- mise a jour compteur DJR --- ---",debugging)   
-        reste_djr = tonumber(uservariables[var_user_djr]) - 1
-            if timeDiff(cpt_djr,'d') < 119 then  -- on vérifie si le compteur à été rafraichi depuis moins de deux minutes si c'est le cas on soustrait 1 de la variable
-                voir_les_logs("--- --- dernier rafraichissement compteur DJR : ".. timeDiff(cpt_djr,'d') .." secondes --- ---",debugging)
-                commandArray[#commandArray+1] = {['Variable:'.. var_user_djr] = tostring(reste_djr)}           
-                voir_les_logs("--- --- reste DJR : ".. tonumber(uservariables[var_user_djr]) .." --- ---",debugging)
+    if var_user_djf ~= nil then 
+        if (uservariables[var_user_djf] == nil) then creaVar(var_user_djf,2,0)end
+        if tonumber(uservariables[var_user_djf]) > 1 and cpt_djf ~= nil then -- si variable djf supérieure à 1 on incrémente le compteur de 1 et on réduit la variable de 1
+        voir_les_logs("--- --- mise a jour compteur DJF --- ---",debugging)   
+        reste_djf = tonumber(uservariables[var_user_djf]) - 1
+            if timeDiff(cpt_djf,'d') < 119 then  -- on vérifie si le compteur à été rafraichi depuis moins de deux minutes si c'est le cas on soustrait 1 de la variable
+                voir_les_logs("--- --- dernier rafraichissement compteur DJF : ".. timeDiff(cpt_djf,'d') .." secondes --- ---",debugging)
+                commandArray[#commandArray+1] = {['Variable:'.. var_user_djf] = tostring(reste_djf)}           
+                voir_les_logs("--- --- reste DJF : ".. tonumber(uservariables[var_user_djf]) .." --- ---",debugging)
             else  -- si le compteur n'as pas été rafraichi depuis moins de 2 minutes on l'incrémente de 1
-                cpt_djr_index = tonumber(cpt_djr_index) + 1
-                commandArray[#commandArray+1] = {['UpdateDevice'] = GetDeviceIdxByName(cpt_djr) .. '|0|'..tostring(cpt_djr_index)}
+                cpt_djf_index = tonumber(cpt_djf_index) + 1
+                commandArray[#commandArray+1] = {['UpdateDevice'] = GetDeviceIdxByName(cpt_djf) .. '|0|'..tostring(cpt_djf_index)}
             end
         end 
     end    
 else
     voir_les_logs("--- --- le device : ".. temp_ext .." n\'existe pas --- ---",debugging)
 end -- fin si otherdevices_svalues[temp_ext] ~= nil 
--- fin calcul DJC et DJR
+-- fin calcul DJC et DJF
 --==============================================================================================
 
 -- calcul nrj consommée
 if otherdevices_svalues[cpt_gaz] ~= nil then
     if (uservariables[var_user_gaz] == nil) then creaVar(var_user_gaz,2,0)end
-    voir_les_logs("--- --- Compteur gaz : ".. otherdevices_svalues[cpt_gaz]/100 .." m3 --- ---",debugging) -- /100 car compteur gaz en décalitres, 1 impulsion tous les 0.01 m3
-    voir_les_logs("--- --- Précédent index gaz : ".. uservariables[var_user_gaz]/100 .." m3 --- ---",debugging)-- /100 car compteur gaz en décalitres 1 impulsion tous les 0.01 m3
-    conso_gaz = tonumber(otherdevices_svalues[cpt_gaz]/100) - tonumber(uservariables[var_user_gaz]/100) -- /100 car compteur gaz en décalitres, 1 impulsion tous les 0.01 m3
+    voir_les_logs("--- --- Compteur gaz brut : ".. otherdevices_svalues[cpt_gaz] .." --- ---",debugging)  
+    voir_les_logs("--- --- Compteur gaz corrigé : ".. otherdevices_svalues[cpt_gaz]/tonumber(div) .." m3 --- ---",debugging) 
+    voir_les_logs("--- --- Précédent index gaz : ".. uservariables[var_user_gaz]/tonumber(div) .." m3 --- ---",debugging)
+    conso_gaz = tonumber(otherdevices_svalues[cpt_gaz]/tonumber(div)) - tonumber(uservariables[var_user_gaz]/tonumber(div)) 
     voir_les_logs("--- --- Consommation gaz : ".. round(conso_gaz,4) .." m3 --- ---",debugging)
         if tonumber(conso_gaz) > 0 then
-            conso_nrj = conso_gaz * coef_gaz -- transformation en kWh
+            conso_nrj = conso_gaz * coef_gaz -- transformation gaz (m3) en kWh
             voir_les_logs("--- --- Coeff conversion gaz : ".. coef_gaz .." --- ---",debugging)   
             voir_les_logs("--- --- Consommation nrj : ".. conso_nrj .." kWh--- ---",debugging)
             
             if cpt_nrj ~= nil then
               index_nrj = otherdevices_svalues[cpt_nrj]
-              voir_les_logs("--- --- Compteur nrj : ".. index_nrj .." kWh --- ---",debugging)
-              conso_nrj = tonumber(conso_nrj) + tonumber(index_nrj)
-                commandArray[#commandArray+1] = {['UpdateDevice'] = GetDeviceIdxByName(cpt_nrj) .. '|0|' .. conso_nrj}
+              voir_les_logs("--- --- Index Compteur nrj : ".. index_nrj .." kWh --- ---",debugging)
+              conso_nrj = tonumber(index_nrj) + tonumber(conso_nrj) --index précédent + conso 
+              voir_les_logs("--- --- Nouvel index Compteur nrj : ".. conso_nrj .." kWh --- ---",debugging)
+              commandArray[#commandArray+1] = {['UpdateDevice'] = GetDeviceIdxByName(cpt_nrj) .. '|0|' .. conso_nrj}
             end
         end
     commandArray[#commandArray+1] = {['Variable:'.. var_user_gaz] = tostring(otherdevices_svalues[cpt_gaz])}
 end
 -- fin calcul nrj consommée
-voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
+voir_les_logs("======= Fin ".. nom_script .." (v".. version ..") =======",debugging)
 
 return commandArray
