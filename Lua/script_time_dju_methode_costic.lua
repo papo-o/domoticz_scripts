@@ -7,7 +7,8 @@ Principe :
 Calculer, via l'information température d'une sonde extérieure, les Degrés jour Chauffage méthode COSTIC
 
 Création automatique du device compteur et des variables nécessaire au fonctionnement de ce script.
-pour cela, uploadez ou créez ce script dans le répertoire domoticz/scripts/lua/ 
+Seul pré-requis à la création d'un device par ce script, l'existence d'un hardware dummy dans votre domoticz.
+Pour cela, uploadez ou créez ce script dans le répertoire domoticz/scripts/lua/ 
 éditer éventuellement les noms des devices à créer, passez la variable script_actif à true, sauvegardez et vérifiez vos logs.
 
 Un degré jour est calculé à partir des températures météorologiques extrêmes du lieu et du jour J : 
