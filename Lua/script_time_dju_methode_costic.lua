@@ -28,7 +28,7 @@ https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_dju_metho
 ------------ Variables à éditer ------------
 -------------------------------------------- 
 local debugging = true  			                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
-local script_actif = false                           -- active (true) ou désactive (false) ce script simplement
+local script_actif = true                           -- active (true) ou désactive (false) ce script simplement
 local temp_ext  = 'Temperature exterieure' 	        -- nom de la sonde de température extérieure
 local domoticzURL = '127.0.0.1:8080'                -- user:pass@ip:port de domoticz
 local var_user_djc = 'dju_methode_costic'           -- nom de la variable utilisateur de type 2 (chaine) pour le stockage temporaire des données journalières DJC
@@ -49,7 +49,7 @@ local cpt_djc = 'DJU méthode COSTIC' 				-- nom du  dummy compteur DJC en degr�
 -------------------------------------------- 
 commandArray = {}
 local nom_script = 'Calcul Degrés jour Chauffage méthode COSTIC'
-local version = '0.3'
+local version = '0.4'
 local id
 local djc
 local somme_djc
@@ -208,7 +208,7 @@ if (time.min == 0 and time.hour == 18) then
         S = tonumber(S)
 
         if S > temp_maxi then
-            djc = S - moyenne
+            djc = round(dS - moyenne,0)
         elseif S <= temp_mini_hold then
             djc = 0   
         elseif temp_mini_hold < S and S < temp_maxi then 
