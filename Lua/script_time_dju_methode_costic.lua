@@ -1,7 +1,7 @@
 --[[   
 ~/domoticz/scripts/lua/script_time_dju_methode_costic.lua
 auteur : papoo
-MAJ : 31/01/2018
+MAJ : 03/02/2018
 création : 29/01/2018
 Principe :
 Calculer, via l'information température d'une sonde extérieure, les Degrés jour Chauffage méthode COSTIC
@@ -27,8 +27,8 @@ https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_dju_metho
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local debugging = true  			                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
-local script_actif = true                           -- active (true) ou désactive (false) ce script simplement
+local debugging = false  			                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local script_actif = false                           -- active (true) ou désactive (false) ce script simplement
 local temp_ext  = 'Temperature exterieure' 	        -- nom de la sonde de température extérieure
 local domoticzURL = '127.0.0.1:8080'                -- user:pass@ip:port de domoticz
 local var_user_djc = 'dju_methode_costic'           -- nom de la variable utilisateur de type 2 (chaine) pour le stockage temporaire des données journalières DJC
@@ -49,15 +49,9 @@ local cpt_djc = 'DJU méthode COSTIC' 				-- nom du  dummy compteur DJC en degr�
 -------------------------------------------- 
 commandArray = {}
 local nom_script = 'Calcul Degrés jour Chauffage méthode COSTIC'
-local version = '0.4'
+local version = '0.5'
 local id
 local djc
-local somme_djc
-local reste_djc
-
-local djf
-local somme_djf
-local reste_djf
 
 time=os.date("*t")
 
@@ -197,7 +191,7 @@ if script_actif == true then
 
 if (time.min == 0 and time.hour == 2) then 
 local temp_mini = tonumber(uservariables[Tn])
-commandArray[#commandArray+1] = {['Variable:'.. Tn_Hold] = tostring(temp_mini)} -- mise à jour de la variable Tn_Hold
+commandArray[#commandArray+1] = {['Variable:'.. Tn_hold] = tostring(temp_mini)} -- mise à jour de la variable Tn_hold
 commandArray[#commandArray+1] = {['Variable:'.. Tn] = tostring(150)} -- ré-initialisation de la variable Tn
 end
 if (time.min == 0 and time.hour == 18) then 
