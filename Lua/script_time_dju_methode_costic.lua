@@ -1,7 +1,7 @@
 --[[   
 ~/domoticz/scripts/lua/script_time_dju_methode_costic.lua
 auteur : papoo
-MAJ : 03/02/2018
+MAJ : 04/02/2018
 création : 29/01/2018
 Principe :
 Calculer, via l'information température d'une sonde extérieure, les Degrés jour Chauffage méthode COSTIC
@@ -27,7 +27,7 @@ https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_dju_metho
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local debugging = false  			                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = true  			                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif = false                           -- active (true) ou désactive (false) ce script simplement
 local temp_ext  = 'Temperature exterieure' 	        -- nom de la sonde de température extérieure
 local domoticzURL = '127.0.0.1:8080'                -- user:pass@ip:port de domoticz
@@ -49,7 +49,7 @@ local cpt_djc = 'DJU méthode COSTIC' 				-- nom du  dummy compteur DJC en degr�
 -------------------------------------------- 
 commandArray = {}
 local nom_script = 'Calcul Degrés jour Chauffage méthode COSTIC'
-local version = '0.5'
+local version = '0.6'
 local id
 local djc
 
@@ -202,14 +202,12 @@ if (time.min == 0 and time.hour == 18) then
         S = tonumber(S)
 
         if S > temp_maxi then
-            djc = round(dS - moyenne,0)
+            djc = round(S - moyenne,0)
         elseif S <= temp_mini_hold then
             djc = 0   
         elseif temp_mini_hold < S and S < temp_maxi then 
             local a = S - temp_mini_hold
             local b = temp_maxi - temp_mini_hold
-            --local c = 0.08 + 0.42 * ( a / b)
-            --local d = 
             djc = a * ( 0.08 + 0.42 * a / b )
             djc = round(djc,0)
                 --djc = ( S – temp_mini_hold ) * (0.08 + 0.42 * ( S – temp_mini_hold ) / ( temp_maxi – temp_mini_hold ) )
