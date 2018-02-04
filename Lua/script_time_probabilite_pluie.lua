@@ -1,22 +1,25 @@
 --[[
 name : script_time_probabilite_pluie.lua
 auteur : papoo
-date de création : 08/08/2016
+date de création : 04/02/2018
 Date de mise à jour : 26/12/2017
 Principe : Ce script a pour but d'interroger l'API du site https://www.wunderground.com/ toutes les heures afin de 
 récuperer les calculs de probabilités de pluie et de neige sur 36 heures pour une ville donnée. Cette API utilise une clé gratuite pour 500 requêtes par heure
 Il faut donc s'inscrire sur weatherunderground pour avoir accès à cette API 
 avant l'utilisation de ce script, pensez à créer une variable utilisateur de type chaine pour y stocker votre clé API
 pour créer/modifier une variable utilisateur : domoticz => Réglages => Plus d'options => Variables utilisateur
-URL post : http://easydomoticz.com/forum/viewtopic.php?f=17&t=2301#p20893
+http://pon.fr/probabilite-de-pluie-et-de-neige-en-lua/
+http://easydomoticz.com/forum/viewtopic.php?f=17&t=2301#p20893
+https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_probabilite_pluie.lua
+
 Ce script utilise Lua-Simple-XML-Parser https://github.com/Cluain/Lua-Simple-XML-Parser
 ]]--
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
 local nom_script = 'Probabilite Pluie'
-local version = '1.16'
-local debugging = false  			            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local version = '1.17'
+local debugging = true  			            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local pays='FRANCE'					            -- Votre pays, nécessaire pour l'API
 local api_wu = 'api_weather_underground' 	    -- Nom de la variable utilisateur contenant l'API Weather Underground de 16 caractères préalablement créé (variable de type chaine)
 local ville='Limoges'    			            -- Votre ville ou commune 
@@ -52,7 +55,7 @@ local neige
 function voir_les_logs (s,debugging)
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>--- --- --- ".. s .." --- --- ---</font>")
+        print ("<font color='#f3031d'> ".. s .." </font>")
 		else
 		print ("<font color='#f3031d'>aucune valeur affichable</font>")
 		end
@@ -213,12 +216,13 @@ end
 commandArray = {}
 time=os.date("*t")
 
---if time.min % 2 == 0 then -- éxécution du script toutes les X minute(s) 
-if ((time.min-1) % 60) == 0 then -- éxécution du script toutes les heures à xx:01
-		voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+--if time.min % 2 == 0 then -- exécution du script toutes les X minute(s) 
+if ((time.min-1) % 60) == 0 then -- exécution du script toutes les heures à xx:01
+	voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
 local APIKEY = uservariables[api_wu]
 
     local rid = assert(io.popen("/usr/bin/curl -m8 http://api.wunderground.com/api/"..APIKEY.."/hourly/lang:FR/q/"..pays.."/"..ville..".xml"))
+    voir_les_logs("--- --- --- http://api.wunderground.com/api/"..APIKEY.."/hourly/lang:FR/q/"..pays.."/"..ville..".xml",debugging)
     local testXml = rid:read('*all')
     rid:close()                    
 
@@ -227,7 +231,7 @@ local parsedXml = XmlParser:ParseXmlText(testXml)
 		for i in pairs(abr:children()) do 
 				if proba_pluie_h[i] ~= nil then 
 					pluie = tonumber(abr:children()[i]:children()[19]:value())
-					voir_les_logs("Probabilite de pluie a ".. i .."h => " .. pluie,debugging)
+					voir_les_logs("--- --- --- Probabilite de pluie a ".. i .."h => " .. pluie,debugging)
 					commandArray[#commandArray+1] = {['UpdateDevice'] = proba_pluie_h[i]..'|0|'.. pluie}
 					if seuil_notification ~= nil and pluie > seuil_notification then
 					commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte : '.. pluie ..' % de probabilité de pluie dans '.. i ..'heure(s)'}
@@ -236,12 +240,13 @@ local parsedXml = XmlParser:ParseXmlText(testXml)
 				end
 				if proba_neige_h[i] ~=nil then
 					neige = tonumber(abr:children()[i]:children()[18]:children()[2]:value())
-					voir_les_logs("probabilite de neige a ".. i .."h => " .. neige,debugging)
+					voir_les_logs("--- --- --- probabilite de neige a ".. i .."h => " .. neige,debugging)
 					commandArray[#commandArray+1] = {['UpdateDevice'] = proba_neige_h[i]..'|0|'.. neige}
 					if seuil_notification ~= nil and neige > seuil_notification then
 					commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte : '.. neige ..' % de probabilité de neige dans '.. i ..'heure(s)'}
 					end
-				end
+                    --print(abr:children()[i]:children()[4]:value())
+                end
 		end
 	end	
 	voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
