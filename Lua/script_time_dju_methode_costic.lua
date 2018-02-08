@@ -27,7 +27,7 @@ https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_dju_metho
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local debugging = false  			                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = true  			                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif = true                           -- active (true) ou désactive (false) ce script simplement
 local temp_ext  = 'Temperature exterieure' 	        -- nom de la sonde de température extérieure
 local domoticzURL = '127.0.0.1:8080'                -- user:pass@ip:port de domoticz
@@ -49,7 +49,7 @@ local cpt_djc = 'DJU méthode COSTIC' 				-- nom du  dummy compteur DJC en degr�
 -------------------------------------------- 
 commandArray = {}
 local nom_script = 'Calcul Degrés jour Chauffage méthode COSTIC'
-local version = '0.7'
+local version = '0.8'
 local id
 local djc
 
@@ -58,7 +58,7 @@ time=os.date("*t")
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
-curl = '/usr/bin/curl -m 15 -u domoticzUSER:domoticzPSWD '
+curl = '/usr/bin/curl -m 9 -u domoticzUSER:domoticzPSWD '
 if (package.config:sub(1,1) == '/') then
      luaDir = debug.getinfo(1).source:match("@?(.*/)")
 else
@@ -202,14 +202,18 @@ if (time.min == 0 and time.hour == 18) then
 
         if S > temp_maxi then
             djc = round(S - moyenne,0)
-        elseif S <= temp_mini_hold then
-            djc = 0   
+        voir_les_logs("--- --- --- Le Seuil de "..S..")C est superieur a Tx ("..temp_maxi.."°C)  --- --- --- ",debugging)   
+
+        voir_les_logs("--- --- --- Le Seuil de "..S..")C est inferieur ou egal a Tn_hold ("..temp_mini_hold.."°C)  --- --- --- ",debugging)    
         elseif temp_mini_hold < S and S < temp_maxi then 
             local a = S - temp_mini_hold
             local b = temp_maxi - temp_mini_hold
             djc = a * ( 0.08 + 0.42 * a / b )
             djc = round(djc,0)
-                --djc = ( S – temp_mini_hold ) * (0.08 + 0.42 * ( S – temp_mini_hold ) / ( temp_maxi – temp_mini_hold ) )
+            --djc = ( S – temp_mini_hold ) * (0.08 + 0.42 * ( S – temp_mini_hold ) / ( temp_maxi – temp_mini_hold ) )
+            voir_les_logs("--- --- --- Le Seuil de "..S..")C est superieur a Tx ("..temp_maxi.."°C) est inferieur a Tn_hold  ("..temp_mini_hold.."°C)--- --- --- ",debugging)
+        elseif S <= temp_mini_hold then
+            djc = 0
         end
         commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[cpt_djc] .. '|0|'..tostring(djc)} --mise à jour du compteur
         commandArray[#commandArray+1] = {['Variable:'.. Tx] = tostring(-150)} -- mise à jour de la variable Tx
