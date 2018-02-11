@@ -1,7 +1,7 @@
 --[[   
 ~/domoticz/scripts/lua/script_time_dju_methode_costic.lua
 auteur : papoo
-MAJ : 08/02/2018
+MAJ : 11/02/2018
 création : 29/01/2018
 Principe :
 Calculer, via l'information température d'une sonde extérieure, les Degrés jour Chauffage méthode COSTIC
@@ -49,7 +49,7 @@ local cpt_djc = 'DJU méthode COSTIC' 				-- nom du  dummy compteur DJC en degr�
 -------------------------------------------- 
 commandArray = {}
 local nom_script = 'Calcul Degrés jour Chauffage méthode COSTIC'
-local version = '0.8'
+local version = '0.9'
 local id
 local djc
 
@@ -170,7 +170,10 @@ if script_actif == true then
         
         if (uservariables[Tx] ~= nil) and (uservariables[Tn] ~= nil) and (uservariables[Tn_hold] ~= nil) then
             temperature = tonumber(string.match(otherdevices_svalues[temp_ext], "%d+%.*%d*"))
-            voir_les_logs("--- --- --- Température Ext : "..temperature,debugging)            
+            voir_les_logs("--- --- --- Température Ext : "..temperature,debugging)
+            voir_les_logs("--- --- ---  Tn : "..uservariables[Tn],debugging)
+            voir_les_logs("--- --- ---  Tx : "..uservariables[Tx],debugging)
+            voir_les_logs("--- --- --- Tn_hold : "..uservariables[Tn_hold],debugging)
             if temperature < S then --si la température extérieure est inférieure au seuil S défini dans les variables
             voir_les_logs("--- --- --- Température Extérieure inférieure au seuil de ".. S .."°c",debugging)
                 if temperature < tonumber(uservariables[Tn]) then
@@ -190,32 +193,41 @@ if script_actif == true then
 
 if (time.min == 0 and time.hour == 2) then 
 local temp_mini = tonumber(uservariables[Tn])
-commandArray[#commandArray+1] = {['Variable:'.. Tn_hold] = tostring(temp_mini)} -- mise à jour de la variable Tn_hold
-commandArray[#commandArray+1] = {['Variable:'.. Tn] = tostring(150)} -- ré-initialisation de la variable Tn
+    commandArray[#commandArray+1] = {['Variable:'.. Tn_hold] = tostring(temp_mini)} -- mise à jour de la variable Tn_hold
+    commandArray[#commandArray+1] = {['Variable:'.. Tn] = tostring(150)} -- ré-initialisation de la variable Tn
 end
-if (time.min == 0 and time.hour == 18) then 
+if (time.min == 20 and time.hour == 18) then 
     local temp_mini_hold = tonumber(uservariables[Tn_hold])
     if temp_mini ~= 150 then
         local temp_maxi = tonumber(uservariables[Tx])
+        voir_les_logs("--- --- --- Tx ("..temp_maxi.."°C)  --- --- --- ",debugging)
         local moyenne = tonumber((temp_mini_hold + temp_maxi)/2)
+        voir_les_logs("--- --- --- Moyenne ("..moyenne.."°C)  --- --- --- ",debugging)
         S = tonumber(S)
 
         if S > temp_maxi then
             djc = round(S - moyenne,0)
-        voir_les_logs("--- --- --- Le Seuil de "..S..")C est superieur a Tx ("..temp_maxi.."°C)  --- --- --- ",debugging)   
-
-        voir_les_logs("--- --- --- Le Seuil de "..S..")C est inferieur ou egal a Tn_hold ("..temp_mini_hold.."°C)  --- --- --- ",debugging)    
+        voir_les_logs("--- --- --- Le Seuil de "..S.."°C est superieur a Tx ("..temp_maxi.."°C)  --- --- --- ",debugging)   
+        voir_les_logs("--- --- --- Le Seuil de "..S.."°C est inferieur ou egal a Tn_hold ("..temp_mini_hold.."°C)  --- --- --- ",debugging)
+        voir_les_logs("--- --- --- djc : "..djc,debugging)
         elseif temp_mini_hold < S and S < temp_maxi then 
             local a = S - temp_mini_hold
+            voir_les_logs("--- --- --- a : "..a,debugging)
             local b = temp_maxi - temp_mini_hold
+            voir_les_logs("--- --- --- b : "..b,debugging)
             djc = a * ( 0.08 + 0.42 * a / b )
+            voir_les_logs("--- --- --- djc : "..djc,debugging)
             djc = round(djc,0)
             --djc = ( S – temp_mini_hold ) * (0.08 + 0.42 * ( S – temp_mini_hold ) / ( temp_maxi – temp_mini_hold ) )
             voir_les_logs("--- --- --- Le Seuil de "..S..")C est superieur a Tx ("..temp_maxi.."°C) est inferieur a Tn_hold  ("..temp_mini_hold.."°C)--- --- --- ",debugging)
         elseif S <= temp_mini_hold then
             djc = 0
         end
-        commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[cpt_djc] .. '|0|'..tostring(djc)} --mise à jour du compteur
+        local cpt_djc_index = otherdevices_svalues[cpt_djc]
+        voir_les_logs("--- --- --- compteur avant mise à jour ".. cpt_djc .." : ".. cpt_djc_index .." DJU",debugging)
+        cpt_djc_index = tonumber(cpt_djc_index) + djc
+        voir_les_logs("--- --- --- mise à jour compteur ".. cpt_djc .." : ".. cpt_djc_index .." DJU",debugging)
+        commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[cpt_djc] .. '|0|'..tostring(cpt_djc_index)} --mise à jour du compteur
         commandArray[#commandArray+1] = {['Variable:'.. Tx] = tostring(-150)} -- mise à jour de la variable Tx
     else
         voir_les_logs("--- --- --- Calcul impossible, il n\'y a pas de Température minimum enregistrée, attendre le prochain calcul",debugging)
