@@ -10,7 +10,16 @@ Le délai d"exécution est modifiable simplement (variable delai à renseigner e
 https://easydomoticz.com/forum/viewtopic.php?f=8&t=5732&p=48620#p48620
 http://pon.fr/etre-notifie-de-son-changement-dip-publique-en-lua/
 https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_my_ip_com.lua
-]]--
+
+/!\attention/!\
+si vous souhaitez utiliser ce script dans l'éditeur interne, pour indiquer le chemin complet vers le fichier JSON.lua, il vous faudra changer la ligne 
+json = assert(loadfile(luaDir..'JSON.lua'))()
+par 
+json = assert(loadfile('/le/chemin/vers/le/fichier/lua/JSON.lua'))()
+exemple :
+json = assert(loadfile('/home/pi/domoticz/scripts/lua/JSON.lua'))()
+la reconnaissance automatique du chemin d'exécution de ce script ne fonctionnant pas dans l'éditeur interne
+--]]
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
@@ -22,7 +31,7 @@ local url_my_ip = "https://api.myip.com/"   -- Adresse de l'API permettant de co
 local var_my_ip = "IP Publique"             -- nom de la variable contenant l'IP publique
 local type_ip = "v4"                        -- v4 pour les adresses en IPV4, v6 pour les adresses en IPV6
 local domoticzURL = "127.0.0.1:8080"
-local EmailTo = 'votre@mail.com'   -- adresses mail, séparées par ; si plusieurs (pour la notification par mail) nil si inutilisé
+local EmailTo = 'votre3@mail.com'   -- adresses mail, séparées par ; si plusieurs (pour la notification par mail) nil si inutilisé
 local notification = true                   -- true si l'on  souhaite être notifié  via le système de notification domoticz, sinon false.
 local subsystem = "pushbullet"              -- les différentes valeurs de subsystem acceptées sont : gcm;http;kodi;lms;nma;prowl;pushalot;pushbullet;pushover;pushsafer
                                             -- pour plusieurs modes de notification séparez chaque mode par un point virgule (exemple : "pushalot;pushbullet"). si subsystem = nil toutes les notifications seront activées.
@@ -33,10 +42,20 @@ local subsystem = "pushbullet"              -- les différentes valeurs de subsy
 ------------- Autres Variables -------------
 --------------------------------------------
 local nom_script = 'Mon IP Publique'
-local version = '0.3'
+local version = '0.35'
 local ipv
 local objet
 local message
+
+curl = '/usr/bin/curl -m 5 '		 	-- ne pas oublier l'espace à la fin
+
+-- chemin vers le dossier lua
+	if (package.config:sub(1,1) == '/') then
+		 luaDir = debug.getinfo(1).source:match("@?(.*/)")
+	else
+		 luaDir = string.gsub(debug.getinfo(1).source:match("@?(.*\\)"),'\\','\\\\')
+	end
+	json = assert(loadfile(luaDir..'JSON.lua'))()						-- chargement du fichier JSON.lua
 --------------------------------------------
 ----------- Fin Autres Variables -----------
 --------------------------------------------	
@@ -52,15 +71,6 @@ function voir_les_logs (s, debugging)
 		end
     end
 end	
--------------------------------------------- 
-	-- chemin vers le dossier lua
-	if (package.config:sub(1,1) == '/') then
-		 luaDir = debug.getinfo(1).source:match("@?(.*/)")
-	else
-		 luaDir = string.gsub(debug.getinfo(1).source:match("@?(.*\\)"),'\\','\\\\')
-	end
-	 curl = '/usr/bin/curl -m 5 '		 	-- ne pas oublier l'espace à la fin
-	 json = assert(loadfile(luaDir..'JSON.lua'))()						-- chargement du fichier JSON.lua
 --------------------------------------------
 function creaVar(vname,vvalue,vtype) -- pour créer une variable nommée toto comprenant la valeur 10, de type 2
     if vtype ~= nil then
