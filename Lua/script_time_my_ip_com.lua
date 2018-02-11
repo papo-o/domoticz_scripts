@@ -8,7 +8,7 @@ possibilité de tester une IP en V4 ou V6, d'être notifié seulement par mail e
 mais aussi avec toutes autres notifications paramétrées dans domoticz avec le choix de celles-ci (variable notification pour activer celles-ci, variable subsystem pour ne sélectionner qu'une ou plusieurs notifications parmi celles disponible
 Le délai d"exécution est modifiable simplement (variable delai à renseigner en minutes) ainsi que l'activation/désactivation du fonctionnement de ce script (variable script_actif)
 https://easydomoticz.com/forum/viewtopic.php?f=8&t=5732&p=48620#p48620
-http://pon.fr/etre-notifie-de-son-changement-d-ip-publique-en-lua/
+http://pon.fr/etre-notifie-de-son-changement-dip-publique-en-lua/
 https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_my_ip_com.lua
 ]]--
 --------------------------------------------
