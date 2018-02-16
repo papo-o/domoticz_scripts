@@ -1,7 +1,7 @@
 --[[   
 ~/domoticz/scripts/lua/script_time_dju_methode_costic.lua
 auteur : papoo
-MAJ : 11/02/2018
+MAJ : 16/02/2018
 création : 29/01/2018
 Principe :
 Calculer, via l'information température d'une sonde extérieure, les Degrés jour Chauffage méthode COSTIC
@@ -49,7 +49,7 @@ local cpt_djc = 'DJU méthode COSTIC' 				-- nom du  dummy compteur DJC en degr�
 -------------------------------------------- 
 commandArray = {}
 local nom_script = 'Calcul Degrés jour Chauffage méthode COSTIC'
-local version = '0.9'
+local version = '1.0'
 local id
 local djc
 
@@ -155,9 +155,13 @@ if script_actif == true then
         end
     else     
         local attribut = DeviceInfos(cpt_djc)
-        if attribut.SwitchTypeVal == 0 then
-            voir_les_logs("--- --- --- modification du device RFXMeter  : ".. cpt_djc .. " en compteur de type 3  --- --- ---",debugging) 
-            os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=setused&idx='..otherdevices_idx[cpt_djc]..'&name='..url_encode(cpt_djc)..'&switchtype=3&used=true"')
+        if attribut then
+            if attribut.SwitchTypeVal == 0 then
+                voir_les_logs("--- --- --- modification du device RFXMeter  : ".. cpt_djc .. " en compteur de type 3  --- --- ---",debugging) 
+                os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=setused&idx='..otherdevices_idx[cpt_djc]..'&name='..url_encode(cpt_djc)..'&switchtype=3&used=true"')
+            end
+        else
+            voir_les_logs("--- --- --- impossible d\'extraire les caracteristiques du compteur ".. cpt_djc .."  --- --- ---",debugging)
         end
     end -- if otherdevices[cpt_djc]
     
