@@ -2,7 +2,7 @@
 name : script_time_my_ip_com.lua
 auteur : papoo
 date de création : 23/01/2018
-Date de mise à jour : 11/02/2018
+Date de mise à jour : 16/02/2018
 Principe : tester, via l'api du site myip.com votre adresse publique et être notifié de chaque changement.
 possibilité de tester une IP en V4 ou V6, d'être notifié seulement par mail en renseignant la variable EmailTo avec une plusieurs adresses mails, 
 mais aussi avec toutes autres notifications paramétrées dans domoticz avec le choix de celles-ci (variable notification pour activer celles-ci, variable subsystem pour ne sélectionner qu'une ou plusieurs notifications parmi celles disponible
@@ -31,7 +31,7 @@ local url_my_ip = "https://api.myip.com/"   -- Adresse de l'API permettant de co
 local var_my_ip = "IP Publique"             -- nom de la variable contenant l'IP publique
 local type_ip = "v4"                        -- v4 pour les adresses en IPV4, v6 pour les adresses en IPV6
 local domoticzURL = "127.0.0.1:8080"
-local EmailTo = 'votre3@mail.com'   -- adresses mail, séparées par ; si plusieurs (pour la notification par mail) nil si inutilisé
+local EmailTo = 'votre@mail.com'   -- adresses mail, séparées par ; si plusieurs (pour la notification par mail) nil si inutilisé
 local notification = true                   -- true si l'on  souhaite être notifié  via le système de notification domoticz, sinon false.
 local subsystem = "pushbullet"              -- les différentes valeurs de subsystem acceptées sont : gcm;http;kodi;lms;nma;prowl;pushalot;pushbullet;pushover;pushsafer
                                             -- pour plusieurs modes de notification séparez chaque mode par un point virgule (exemple : "pushalot;pushbullet"). si subsystem = nil toutes les notifications seront activées.
@@ -42,7 +42,7 @@ local subsystem = "pushbullet"              -- les différentes valeurs de subsy
 ------------- Autres Variables -------------
 --------------------------------------------
 local nom_script = 'Mon IP Publique'
-local version = '0.35'
+local version = '0.4'
 local ipv
 local objet
 local message
@@ -109,56 +109,59 @@ if script_actif == true then
         local blocjson = config:read('*all')
         config:close()
         local jsonValeur = json:decode(blocjson)
+        if jsonValeur then
+            local adresse = jsonValeur.ip
+            local country = jsonValeur.country
+            local cc = jsonValeur.cc
 
-        local adresse = jsonValeur.ip
-        local country = jsonValeur.country
-        local cc = jsonValeur.cc
-
-        voir_les_logs('--- --- --- Adresse IP Publique : '..adresse,debugging)
-        voir_les_logs('--- --- --- pays : '..country,debugging)
-        voir_les_logs('--- --- --- code pays format ISO 3166-1 alpha-2 : '..cc,debugging)
-        --=========== Variable  ===============--
-        if var_my_ip ~= nil and var_my_ip ~= "" then -- le nom de la variable utilisateur a-t-il été renseigné ?
-            if(uservariables[var_my_ip] == nil) then -- Création de la variable  car elle n'existe pas
-                voir_les_logs("--- --- --- La Variable " .. var_my_ip .." n'existe pas --- --- --- ",debugging)
-                voir_les_logs("--- --- --- adresse " .. adresse .."  --- --- --- ",debugging);
-                voir_les_logs("--- --- --- Création de la Variable " .. var_my_ip .." manquante --- --- --- ",debugging)
-                creaVar(var_my_ip, 'adresse inconnue',2)
-                print('script supendu')
-            else
-                voir_les_logs("--- --- --- La Variable " .. var_my_ip .." est à : ".. uservariables[var_my_ip],debugging)
-            end
-        --=========== Vérification  ===============--            
-            if(uservariables[var_my_ip] == adresse ) then
-                voir_les_logs("--- --- --- adresse " .. adresse .."  --- --- --- ",debugging);                
-            else 
-                commandArray['Variable:'.. var_my_ip] = tostring(adresse) -- mise à jour de la variable utilisateur
-                if EmailTo ~= nil then
-                    message = 'L\'adresse IP est maintenant : '..adresse
-                    voir_les_logs("--- --- --- Notification par mail activée",debugging)            
-                    objet = 'Changement de l\'adresse IP  à '..os.date("%H:%M")
-                    voir_les_logs("--- --- --- Objet:"..objet,debugging)
-                    voir_les_logs("--- --- --- Corps du message: "..message,debugging)
-                    voir_les_logs("--- --- --- Destinataire: "..EmailTo,debugging)
-                    commandArray['SendEmail']= objet..'#'.. message  .. '#' .. EmailTo
+            voir_les_logs('--- --- --- Adresse IP Publique : '..adresse,debugging)
+            voir_les_logs('--- --- --- pays : '..country,debugging)
+            voir_les_logs('--- --- --- code pays format ISO 3166-1 alpha-2 : '..cc,debugging)
+            --=========== Variable  ===============--
+            if var_my_ip ~= nil and var_my_ip ~= "" then -- le nom de la variable utilisateur a-t-il été renseigné ?
+                if(uservariables[var_my_ip] == nil) then -- Création de la variable  car elle n'existe pas
+                    voir_les_logs("--- --- --- La Variable " .. var_my_ip .." n'existe pas --- --- --- ",debugging)
+                    voir_les_logs("--- --- --- adresse " .. adresse .."  --- --- --- ",debugging);
+                    voir_les_logs("--- --- --- Création de la Variable " .. var_my_ip .." manquante --- --- --- ",debugging)
+                    creaVar(var_my_ip, 'adresse inconnue',2)
+                    print('script supendu')
                 else
-                    voir_les_logs("--- --- --- Notification par mail désactivée",debugging)  
-                end -- if notif_mail
-                
-                if notification ~= nil then -- notifications système
-                    if subsystem ~= nil then
-                        voir_les_logs("--- --- --- Notification système activée pour les services "..subsystem,debugging)
-                        commandArray[#commandArray+1] = {['SendNotification'] = 'Attention# L\'adresse IP vient de changer. La nouvelle adresse est maintenant : '..adresse ..'#0###'.. subsystem ..''}
-                    else
-                        voir_les_logs("--- --- --- toutes les Notifications système sont activées",debugging)
-                        commandArray[#commandArray+1] = {['SendNotification'] = 'Attention# L\'adresse IP vient de changer. La nouvelle adresse est maintenant : '..adresse}
-                    end
+                    voir_les_logs("--- --- --- La Variable " .. var_my_ip .." est à : ".. uservariables[var_my_ip],debugging)
                 end
-                
+            --=========== Vérification  ===============--            
+                if(uservariables[var_my_ip] == adresse ) then
+                    voir_les_logs("--- --- --- adresse " .. adresse .."  --- --- --- ",debugging);                
+                else 
+                    commandArray['Variable:'.. var_my_ip] = tostring(adresse) -- mise à jour de la variable utilisateur
+                    if EmailTo ~= nil then
+                        message = 'La nouvelle adresse IP est maintenant => http://'..adresse..':8080'
+                        voir_les_logs("--- --- --- Notification par mail activée",debugging)            
+                        objet = 'Changement de l\'adresse IP  à '..os.date("%H:%M")
+                        voir_les_logs("--- --- --- Objet:"..objet,debugging)
+                        voir_les_logs("--- --- --- Corps du message: "..message,debugging)
+                        voir_les_logs("--- --- --- Destinataire: "..EmailTo,debugging)
+                        commandArray['SendEmail']= objet..'#'.. message  .. '#' .. EmailTo
+                    else
+                        voir_les_logs("--- --- --- Notification par mail désactivée",debugging)  
+                    end -- if notif_mail
+                    
+                    if notification ~= nil then -- notifications système
+                        if subsystem ~= nil then
+                            voir_les_logs("--- --- --- Notification système activée pour les services "..subsystem,debugging)
+                            commandArray[#commandArray+1] = {['SendNotification'] = 'Attention# L\'adresse IP vient de changer. La nouvelle adresse est maintenant : http://'..adresse..':8080#0###'.. subsystem ..''}
+                        else
+                            voir_les_logs("--- --- --- toutes les Notifications système sont activées",debugging)
+                            commandArray[#commandArray+1] = {['SendNotification'] = 'Attention# L\'adresse IP vient de changer. La nouvelle adresse est maintenant : http://'..adresse..':8080'}
+                        end
+                    end
+                    
+                end
+            else
+                voir_les_logs("--- --- --- La Variable  var_my_ip n\'a pas été renseignée, impossible de surveiller le changement",debugging)        
             end
         else
-            voir_les_logs("--- --- --- La Variable  var_my_ip n\'a pas été renseignée, impossible de surveiller le changement",debugging)        
-        end
+            voir_les_logs('--- --- --- aucun resultat a decoder',debugging)
+        end --if jsonValeur
     -- ====================================================================================================================	
 
     voir_les_logs("======== Fin ".. nom_script .." (v".. version ..") ==========",debugging)        
