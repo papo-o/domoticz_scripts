@@ -12,6 +12,7 @@ Vous avez la possibilité de surveiller plusieurs compteurs il suffit pour cela 
 Le script est lu toutes les minutes mais ne vérifie les données que toutes les 5 minutes.
 http://pon.fr/script-detection-fuite-deau
 http://easydomoticz.com/forum/viewtopic.php?f=8&t=1913&hilit=d%C3%A9tection+fuite+eau#p16950
+https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_detec_fuite_eau.lua
 --]]
 
 --------------------------------------------
@@ -30,7 +31,7 @@ les_compteurs[#les_compteurs+1] = {name="Compteur Eau Chaude", idx=644, dummy="P
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = "detection fuite d\'eau"
-local version = "1.23"
+local version = "1.24"
 --------------------------------------------
 ---------------- Fonctions -----------------
 --------------------------------------------
