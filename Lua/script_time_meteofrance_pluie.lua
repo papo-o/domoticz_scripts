@@ -4,7 +4,7 @@ Download JSON.lua : http://regex.info/blog/lua/json 
   
 auteur : papoo
 
-maj : 11/04/2017
+maj : 22/02/2018
 date : 11/05/2016
 Principe :	V1 récupérer via l'API non documentée de météo France, les informations de précipitation 
 de votre commune sur un device text et/ou alert et/ou notifications. http://easydomoticz.com/forum/viewtopic.php?f=10&t=1991
@@ -35,7 +35,7 @@ pour trouver le code de votre commune => http://www.insee.fr/fr/methodes/nomencl
 											  }  
 									
 									Si votre device ne s'appelle pas "d4" pnsez à modifier la variable ActivePage dans ce script avec  le meme nom de device dans le fichier frontpage_settings.js
-]]--
+--]]
 
 package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"
 require('fonctions_perso')
@@ -44,7 +44,7 @@ require('fonctions_perso')
 ------------ Variables à éditer ------------
 -------------------------------------------- 
 local nom_script = "script_time_meteofrance_pluie"
-local version = "2.30"
+local version = "2.31"
 local debugging = false				-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local ip = "127.0.0.1:8080" 		-- <username:password@>domoticz-ip<:port>
 local CityCode = 870850 			-- Le code de votre ville est l'ID retourné par cette URL : http://www.meteofrance.com/mf3-rpc-portlet/rest/lieu/facet/pluie/search/nom_de_votre_ville
@@ -112,18 +112,10 @@ commandArray = {}
 time = os.date("*t")
 if ((time.min-1) % 5) == 0 then -- toutes les 5 minutes en commençant par xx:01
 	--if time.min % 5 == 0 then -- toutes les 5 minutes
---print("script_time_meteofrance_pluie.lua")
+
 		voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
 
 	 local delay = os.time()
-	-- if system == "windows" then
-		-- json = (loadfile "C:\\Domoticz\\scripts\\lua\\json.lua")()  -- For Windows
-	-- elseif system == "synology" then
-		-- json = (loadfile "/volume1/@appstore/domoticz/var/scripts/lua/JSON.lua")()  -- For Synology
-	-- else
-		-- json = (loadfile "/home/pi/domoticz/scripts/lua/JSON.lua")()  -- For Linux
-	-- end
-
 	-- chemin vers le dossier lua
 	if (package.config:sub(1,1) == '/') then
 		 luaDir = debug.getinfo(1).source:match("@?(.*/)")
@@ -138,116 +130,119 @@ if ((time.min-1) % 5) == 0 then -- toutes les 5 minutes en commençant par xx:01
 	local location = config:read('*all')
 	   config:close()
 		if location ~= nil then
-		   local jsonLocation = json:decode(location)
-		   local niveauPluieText={}   
-		   niveauPluieText = jsonLocation.niveauPluieText
-		   -- concaténation des entrées de la table et formatage
-		   local PluieText = ''
-			if niveauPluieText ~= nil then
-			   for Index, Value in pairs( niveauPluieText ) do
-				  PluieText = PluieText..format(Value)..' '
-				  voir_les_logs("--- --- --- niveauPluieText["..Index.."] : ".. Value .." --- --- ---",debugging)  
-			   end
-		   voir_les_logs("--- --- --- PluieText : ".. PluieText .. " --- --- ---",debugging)  
-			end
-				if CustomPage ~= nil then
-					--Récuperation des informations toutes les 5mn pour rafraichir les données des variables
-				   local dataCadran={}   
-				   dataCadran = jsonLocation.dataCadran
-				   local InfoNiveauPluieText = {}
-				   local InfoNiveauPluie = {}
-				   local InfoColor = {}
-					if dataCadran ~= nil then
-						for i, Result in ipairs( dataCadran ) do
-						 InfoNiveauPluieText[i] = Result.niveauPluieText
-						 InfoNiveauPluie[i] = Result.niveauPluie
-						 InfoColor[i] = Result.color	
-						 voir_les_logs("--- --- --- index : ".. i .. "  Info : "..  InfoNiveauPluieText[i].. " Niveau : "..  InfoNiveauPluie[i] .. " couleur :" ..  InfoColor[i] .. " --- --- ---",debugging) 
-						end
-					 end
-					for key, valeur in pairs(VariablesPluie) do	
-						if(uservariables[valeur.nom] == nil) then
-							commandArray[#commandArray+1]={['OpenURL']=ip..'/json.htm?type=command&param=saveuservariable&vname='..url_encode(valeur.nom)..'&vtype=2&vvalue='..url_encode(tostring("<font color='#".. InfoColor[key] .."'>".. InfoNiveauPluieText[key] .."</font>"))}
-						   
-							voir_les_logs("--- --- --- creation variable manquante "..valeur.nom.."  --- --- --- ",debugging)
-						else 
-						voir_les_logs("--- --- --- key :" .. key .." - "..valeur.nom.."  --- --- --- ",debugging)
-						commandArray['Variable:'..valeur.nom] =	tostring("<font color='#".. InfoColor[key] .."'>".. InfoNiveauPluieText[key] .."</font>")
-						end
-					end	
-				end	
-		   if text_idx ~= nil and PluieText ~= nil then -- pour l'affichage dans un device text
-			  commandArray[#commandArray+1] = {['UpdateDevice'] = text_idx .. '|0| ' .. PluieText}
-			  
-		   end
-				
-		   if string.find(niveauPluieText[1], "Pas de précipitations")  then
-			  if rain_alert_idx ~= nil then
-				 commandArray[#commandArray+1] = {['UpdateDevice'] = rain_alert_idx..'|1|Pas de précipitations'}
-				 
-					 if CustomPage ~= nil and ActivePage ~= nil then 
-					 commandArray[ActivePage]='Off'
-					 end
-			  end
-			  if send_notification > 0 and send_notification < 2 then
-				 commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte Météo#Pas de précipitations prévue!'}
-				 
-			  end
-			  voir_les_logs("--- --- --- Pas de précipitations --- --- ---",debugging)
+            local jsonLocation = json:decode(location)
+            if jsonLocation ~= nil then
+                   local niveauPluieText={}   
+                   niveauPluieText = jsonLocation.niveauPluieText
+                   -- concaténation des entrées de la table et formatage
+                   local PluieText = ''
+                    if niveauPluieText ~= nil then
+                        for Index, Value in pairs( niveauPluieText ) do
+                          PluieText = PluieText..format(Value)..' '
+                          voir_les_logs("--- --- --- niveauPluieText["..Index.."] : ".. Value .." --- --- ---",debugging)  
+                        end
+                        voir_les_logs("--- --- --- PluieText : ".. PluieText .. " --- --- ---",debugging)  
+                    end
+                        if CustomPage ~= nil then
+                            --Récuperation des informations toutes les 5mn pour rafraichir les données des variables
+                           local dataCadran={}   
+                           dataCadran = jsonLocation.dataCadran
+                           local InfoNiveauPluieText = {}
+                           local InfoNiveauPluie = {}
+                           local InfoColor = {}
+                            if dataCadran ~= nil then
+                                for i, Result in ipairs( dataCadran ) do
+                                 InfoNiveauPluieText[i] = Result.niveauPluieText
+                                 InfoNiveauPluie[i] = Result.niveauPluie
+                                 InfoColor[i] = Result.color	
+                                 voir_les_logs("--- --- --- index : ".. i .. "  Info : "..  InfoNiveauPluieText[i].. " Niveau : "..  InfoNiveauPluie[i] .. " couleur :" ..  InfoColor[i] .. " --- --- ---",debugging) 
+                                end
+                            end
+                            for key, valeur in pairs(VariablesPluie) do	
+                                if(uservariables[valeur.nom] == nil) then
+                                    commandArray[#commandArray+1]={['OpenURL']=ip..'/json.htm?type=command&param=saveuservariable&vname='..url_encode(valeur.nom)..'&vtype=2&vvalue='..url_encode(tostring("<font color='#".. InfoColor[key] .."'>".. InfoNiveauPluieText[key] .."</font>"))}
+                                   
+                                    voir_les_logs("--- --- --- creation variable manquante "..valeur.nom.."  --- --- --- ",debugging)
+                                else 
+                                voir_les_logs("--- --- --- key :" .. key .." - "..valeur.nom.."  --- --- --- ",debugging)
+                                commandArray['Variable:'..valeur.nom] =	tostring("<font color='#".. InfoColor[key] .."'>".. InfoNiveauPluieText[key] .."</font>")
+                                end
+                            end	
+                        end	
+                   if text_idx ~= nil and PluieText ~= nil then -- pour l'affichage dans un device text
+                      commandArray[#commandArray+1] = {['UpdateDevice'] = text_idx .. '|0| ' .. PluieText}
+                   end
+                        
+                   if string.find(niveauPluieText[1], "Pas de précipitations")  then
+                      if rain_alert_idx ~= nil then
+                         commandArray[#commandArray+1] = {['UpdateDevice'] = rain_alert_idx..'|1|Pas de précipitations'}
+                         
+                             if CustomPage ~= nil and ActivePage ~= nil then 
+                             commandArray[ActivePage]='Off'
+                             end
+                      end
+                      if send_notification > 0 and send_notification < 2 then
+                         commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte Météo#Pas de précipitations prévue!'}
+                         
+                      end
+                      voir_les_logs("--- --- --- Pas de précipitations --- --- ---",debugging)
 
-		   elseif string.find(niveauPluieText[1], "faibles")  then
-			  if rain_alert_idx ~= nil then
-				 commandArray[#commandArray+1] = {['UpdateDevice'] = rain_alert_idx..'|2|Précipitations Faibles'}
-				 
-					 if CustomPage ~= nil and ActivePage ~= nil then 
-					 commandArray[ActivePage]='On'
-					 end
-			  end
-			  if send_notification > 0 and send_notification < 3 then
-				 commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte Météo#Précipitations Faibles!'}
-				 
-			  end
-			  voir_les_logs("--- --- --- Précipitations Faibles --- --- ---",debugging)   
-
-
-		   elseif string.find(niveauPluieText[1], "modérées")  then
-			  if rain_alert_idx ~= nil then
-				 commandArray[#commandArray+1] = {['UpdateDevice'] = rain_alert_idx..'|3|Précipitations modérées'}
-				 
-					 if CustomPage ~= nil and ActivePage ~= nil then 
-					 commandArray[ActivePage]='On'
-					 end
-			  end
-			  if send_notification > 0 and send_notification < 4 then
-				 commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte Météo#Précipitations modérées!'}
-				 
-			  end
-			  voir_les_logs("--- --- --- Précipitations modérées --- --- ---",debugging)      
+                   elseif string.find(niveauPluieText[1], "faibles")  then
+                      if rain_alert_idx ~= nil then
+                         commandArray[#commandArray+1] = {['UpdateDevice'] = rain_alert_idx..'|2|Précipitations Faibles'}
+                         
+                             if CustomPage ~= nil and ActivePage ~= nil then 
+                             commandArray[ActivePage]='On'
+                             end
+                      end
+                      if send_notification > 0 and send_notification < 3 then
+                         commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte Météo#Précipitations Faibles!'}
+                         
+                      end
+                      voir_les_logs("--- --- --- Précipitations Faibles --- --- ---",debugging)   
 
 
-		   elseif string.find(niveauPluieText[1], "fortes")  then
-			  if rain_alert_idx ~= nil then
-				 commandArray[#commandArray+1] = {['UpdateDevice'] = rain_alert_idx..'|4|Précipitations fortes'}
-				 
-					 if CustomPage ~= nil and ActivePage ~= nil then 
-					 commandArray[ActivePage]='On'
-					 end
-			  end
-			  if send_notification > 0 and send_notification < 5 then
-				 commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte Météo#Précipitations fortes!'}
-				 
-			  end
-			  voir_les_logs("--- --- --- Précipitations fortes --- --- ---",debugging)
+                   elseif string.find(niveauPluieText[1], "modérées")  then
+                      if rain_alert_idx ~= nil then
+                         commandArray[#commandArray+1] = {['UpdateDevice'] = rain_alert_idx..'|3|Précipitations modérées'}
+                         
+                             if CustomPage ~= nil and ActivePage ~= nil then 
+                             commandArray[ActivePage]='On'
+                             end
+                      end
+                      if send_notification > 0 and send_notification < 4 then
+                         commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte Météo#Précipitations modérées!'}
+                         
+                      end
+                      voir_les_logs("--- --- --- Précipitations modérées --- --- ---",debugging)      
 
-		   else
-			  print("niveau non defini")
-		   end
 
-			delay = os.time() - delay 
-			voir_les_logs("--- --- --- Delai d'execution du script : " .. delay .."ms --- --- ---",debugging)	
-			voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
+                   elseif string.find(niveauPluieText[1], "fortes")  then
+                      if rain_alert_idx ~= nil then
+                         commandArray[#commandArray+1] = {['UpdateDevice'] = rain_alert_idx..'|4|Précipitations fortes'}
+                         
+                             if CustomPage ~= nil and ActivePage ~= nil then 
+                             commandArray[ActivePage]='On'
+                             end
+                      end
+                      if send_notification > 0 and send_notification < 5 then
+                         commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte Météo#Précipitations fortes!'}
+                         
+                      end
+                      voir_les_logs("--- --- --- Précipitations fortes --- --- ---",debugging)
+
+                   else
+                      print("niveau non defini")
+                   end
+
+                    delay = os.time() - delay 
+                    voir_les_logs("--- --- --- Delai d'execution du script : " .. delay .."ms --- --- ---",debugging)	
+                    voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
+            else
+                print("Erreur lors du decodage du fichier JSON dans le script ".. nom_script)
+            end        
 		else 
-		print("Delai d'execution de la commande Curl trop longue dans ".. nom_script)
+            print("Delai d'execution de la commande Curl trop longue dans le script ".. nom_script)
 		end
 end --if time
 return commandArray
