@@ -200,7 +200,7 @@ local temp_mini = tonumber(uservariables[Tn])
     commandArray[#commandArray+1] = {['Variable:'.. Tn_hold] = tostring(temp_mini)} -- mise à jour de la variable Tn_hold
     commandArray[#commandArray+1] = {['Variable:'.. Tn] = tostring(150)} -- ré-initialisation de la variable Tn
 end
-if (time.min == 20 and time.hour == 18) then 
+if (time.min == 01 and time.hour == 18) then 
     local temp_mini_hold = tonumber(uservariables[Tn_hold])
     if temp_mini ~= 150 then
         local temp_maxi = tonumber(uservariables[Tx])
