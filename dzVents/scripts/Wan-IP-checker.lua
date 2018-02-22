@@ -1,17 +1,18 @@
 --[[
-Stocker le script sous le nom Wan-IP-checker.lua dans domoticz/scripts/dzVents/scripts   
+Stocker le script sous le nom Wan-IP-checker.lua dans le répertoire domoticz/scripts/dzVents/scripts   
 script originel : Emme (Milano, Italy) https://www.domoticz.com/forum/viewtopic.php?t=14489
 modifié légèrement par Manjh http://www.domoticz.com/forum/viewtopic.php?f=65&t=16266&start=120#p171957
 modifié par papoo (22/02/2018) pour suppression de l'utilisation du fichier temporaire et création du device text si inexistant
 
- Le script va:
- 1. récupérer votre adresse IP publique actuelle et la stocker dans le device text  auto créé
- 2. la comparer à l'IP précédente
- 3. vous envoyer un message d'avertissement si les deux adresses sont différentes via les notifications domoticz et mettre à jour le device text
+Le script est exécuté toutes les 30 minutes (modifiable) et va :
+ 1. créer un nouveau custom device de type text si un hardware correspondant existe (Dummy (Does nothing, use for virtual switches only)) ce n'est pas immédiat attendre au moins les 30 premières minutes avant de s’inquiéter
+ 2. récupérer votre adresse IP publique actuelle et la stocker dans le device text  auto créé
+ 3. la comparer à l'IP précédente
+ 4. vous envoyer un message d'avertissement si les deux adresses sont différentes via les notifications domoticz et mettre à jour le device text
  documentation DzVents : https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting
  
- 
- 
+ https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/Wan-IP-checker.lua
+  https://pon.fr/dzvents-changement-dip-publique/
 --]]
 
 return {
@@ -32,7 +33,7 @@ return {
 		}
 	},
 	execute = function(domoticz, item)
---------------------------------------------
+--------------------------------------------      
 ------------ Variables à éditer ------------
 -------------------------------------------- 
         local devName       = 'Adresse IP publique'
@@ -45,7 +46,7 @@ return {
         
         local dzb           = domoticz.LOG_FORCE -- domoticz.LOG_INFO or domoticz.LOG_MODULE_EXEC_INFO or domoticz.LOG_DEBUG or domoticz.LOG_ERROR or domoticz.LOG_FORCE
         local script        = 'Wan-IP-checker'
-        local version       = '1.0'
+        local version       = '1.1'
         local devIP         = domoticz.devices(devName)    
         local getIP         = 'https://4.ifcfg.me/'
         local actIP         = ''
