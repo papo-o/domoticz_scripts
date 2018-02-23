@@ -48,7 +48,7 @@ return {
 --------------------------------------------         
         
         local script        = 'Wan-IP-checker'
-        local version       = '1.2'
+        local version       = '1.3'
         local devIP         = domoticz.devices(devName)    
         local getIP         = 'https://4.ifcfg.me/'
         local actIP         = ''
@@ -57,6 +57,7 @@ return {
         
         
 		if (item.isTimer) and devIP then -- si le device existe on exécute normalement le script
+
             domoticz.log(script..' Version : '..version)
             local currIP        = devIP.text
             info = assert(io.popen(curl..getIP))
@@ -85,6 +86,12 @@ return {
                 elseif actIP ~= currIP  and testIP == true then
                     msgTxt = 'L\'IP publique a changé : '..currIP..' ==> '..actIP
                     domoticz.log(msgTxt)
+                    --[[ pour une notification sur un seul système, les différents systèmes disponibles sont :
+                        NSS_GOOGLE_CLOUD_MESSAGING NSS_HTTP NSS_KODI NSS_LOGITECH_MEDIASERVER NSS_NMA NSS_PROWL NSS_PUSHALOT NSS_PUSHBULLET NSS_PUSHOVER NSS_PUSHSAFER
+                        la syntaxe diverge de la notification standard il faut ajouter deux champs supplémentaires
+                        exemple : domoticz.notify('test notification pushbullet ', "message test", domoticz.PRIORITY_EMERGENCY,'','',domoticz.NSS_PUSHBULLET)
+                        CAD => ,'','',domoticz.NSS_PUSHBULLET à la fin avant la parenthèse
+                    --]]
                     domoticz.notify('Attention! Changement d\'IP publique : '..location, msgTxt, domoticz.PRIORITY_EMERGENCY)
                     devIP.updateText(actIP)
 
