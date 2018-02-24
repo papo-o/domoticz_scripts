@@ -46,7 +46,7 @@ local cpt_djc = 'DJU méthode COSTIC' 				-- nom du  dummy compteur DJC en degr�
 -------------------------------------------- 
 commandArray = {}
 local nom_script = 'Calcul Degrés jour Chauffage méthode COSTIC'
-local version = '1.01'
+local version = '1.02'
 local id
 local djc
 
@@ -64,7 +64,7 @@ end
 json = assert(loadfile(luaDir..'JSON.lua'))()-- chargement du fichier JSON.lua
 
 --==============================================================================================
-function voir_les_logs (s, debbuging)
+function voir_les_logs (s, debugging)
     if (debugging) then 
 		if s ~= nil then
         print ("<font color='#f3031d'>".. s .."</font>");
