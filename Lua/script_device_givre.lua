@@ -9,7 +9,7 @@ Calculer via les informations température et hygrometrie d'une sonde exterieure
 puis en comparant ensuite le point de givre et l'a température extérieure, création d'une alerte givre.
 http://pon.fr/script-calcul-et-alerte-givre/
 http://easydomoticz.com/forum/viewtopic.php?f=21&t=1085&start=10#p17545
-]]--
+--]]
 
 --------------------------------------------
 ------------ Variables à éditer ------------
@@ -32,7 +32,7 @@ if devicechanged[temp_ext] then  -- si script_device
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
-function voir_les_logs (s, debbuging)
+function voir_les_logs (s, debugging)
     if (debugging) then 
 		if s ~= nil then
         print ("<font color='#f3031d'>".. s .."</font>");

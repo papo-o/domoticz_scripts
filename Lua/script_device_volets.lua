@@ -46,7 +46,7 @@ les_volets[6] = {volet="Chambre Audrey", idx=473, Type="velux", Groupe="haut"}
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
-function voir_les_logs (s, debbuging)
+function voir_les_logs (s, debugging)
     if (debugging) then 
 		if s ~= nil then
         print ("<font color='#f3031d'>".. s .."</font>");
