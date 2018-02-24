@@ -1,7 +1,7 @@
 --[[   
 ~/domoticz/scripts/lua/script_time_dju_methode_costic.lua
 auteur : papoo
-MAJ : 16/02/2018
+MAJ : 24/02/2018
 création : 29/01/2018
 Principe :
 Calculer, via l'information température d'une sonde extérieure, les Degrés jour Chauffage méthode COSTIC
@@ -21,13 +21,15 @@ Pour un calcul de déficits  de température par rapport au seuil choisi : 
 - Si S ≤ TN (cas exceptionnel en début ou en fin de saison de chauffe) : DJ = 0 
 - Si TN < S ≤ TX (cas possible en début ou en fin de saison de chauffe) : DJ = ( S – TN ) * (0.08 + 0.42 * ( S –TN ) / ( TX – TN ))
 
-https://easydomoticz.com/forum/viewtopic.php?f=17&t=1876&p=46879#p46879
+
 https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_dju_methode_costic.lua
+https://pon.fr/calcul-de-dju-methode-costic/
+http://easydomoticz.com/forum/viewtopic.php?f=17&t=5984
 --]]
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local debugging = true  			                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = false  			                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif = true                           -- active (true) ou désactive (false) ce script simplement
 local temp_ext  = 'Temperature exterieure' 	        -- nom de la sonde de température extérieure
 local domoticzURL = '127.0.0.1:8080'                -- user:pass@ip:port de domoticz
@@ -37,11 +39,6 @@ local Tx = "Tx_methode_costic"                      -- température minimale du 
 local Tn_hold = "Tn_Hold_methode_costic"            -- variable de stockage de la température mini.
 local S = 18                                        -- seuil de température de non chauffage, par convention : 18°C
 local cpt_djc = 'DJU méthode COSTIC' 				-- nom du  dummy compteur DJC en degré
--- local heure_raz_var = 23                         -- heure de l'incrémentation du compteur DJC compteur_djc_idx et de remise à zéro de la variable utilisateur var_user_djc
--- local minute_raz_var = 59                        -- Minute de l'incrémentation du compteur DJC compteur_djc_idx et de remise à zéro de la variable utilisateur var_user_djc
-
--- local var_user_djf = nil                         -- nom de la variable utilisateur de type 2 (chaine) pour le stockage temporaire des données journalières DJF, nil si inutilisé
--- local cpt_djf = 'DJF'   				            -- nom du  dummy compteur DJF en degré, nil si vous ne souhaitez pas calculer les Degrés Jour Climatisation
 
 
 --------------------------------------------
@@ -49,7 +46,7 @@ local cpt_djc = 'DJU méthode COSTIC' 				-- nom du  dummy compteur DJC en degr�
 -------------------------------------------- 
 commandArray = {}
 local nom_script = 'Calcul Degrés jour Chauffage méthode COSTIC'
-local version = '1.0'
+local version = '1.01'
 local id
 local djc
 
@@ -58,7 +55,7 @@ time=os.date("*t")
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
-curl = '/usr/bin/curl -m 9 -u domoticzUSER:domoticzPSWD '
+curl = '/usr/bin/curl -m 9 '
 if (package.config:sub(1,1) == '/') then
      luaDir = debug.getinfo(1).source:match("@?(.*/)")
 else
@@ -238,7 +235,7 @@ if (time.min == 01 and time.hour == 18) then
     end
 end
 
-    -- fin calcul DJC et DJF
+    -- fin calcul DJC
     -- --==============================================================================================
 
     voir_les_logs("======= Fin ".. nom_script .." (v".. version ..") =======",debugging)
