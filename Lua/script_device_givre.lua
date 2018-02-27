@@ -1,7 +1,7 @@
 --[[   
 ~/domoticz/scripts/lua/script_device_givre.lua
 auteur : papoo
-MAJ : 27/01/2017
+MAJ : 27/02/2018
 création : 06/05/2016
 Principe :
 Calculer via les informations température et hygrometrie d'une sonde exterieure
@@ -14,15 +14,18 @@ http://easydomoticz.com/forum/viewtopic.php?f=21&t=1085&start=10#p17545
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local version = 1.11						-- version du script
-local debugging = false  					-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+
+local debugging = true  					-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local temp_ext  = 'Temperature exterieure' 	-- nom de la sonde de température/humidité extérieure
-local dew_point_idx =696 					-- idx de l'éventuel dummy température point de rosée si vous souhaitez le suivre
-local freeze_point_idx =697 				-- idx du dummy température point de givre
-local freeze_alert_idx =698 				-- idx du dummy alert point de givre
+local dev_dew_point = 'Point de rosée'  	-- nom de l'éventuel dummy température point de rosée si vous souhaitez le suivre sinon nil
+local dev_freeze_point = 'Point de givrage'	-- nom de l'éventuel dummy température point de givre si vous souhaitez le suivre sinon nil
+local freeze_alert_idx = 'Risque de givre'	-- nom de l'éventuel dummy alert point de givre si vous souhaitez le suivre sinon nil
 --------------------------------------------
 ----------- Fin variables à éditer ---------
--------------------------------------------- 
+--------------------------------------------
+local nom_script = 'Point de rosée et point de givrage'
+local version = 1.12						-- version du script
+
 commandArray = {}
 
 time=os.date("*t")
@@ -69,38 +72,42 @@ end
 --------------------------------------------
 -------------- Fin Fonctions ---------------
 -------------------------------------------- 
-voir_les_logs("=========== Point de rosée et point de givrage (v".. version ..") ===========",debugging)
+voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
 Temp, Humidity = otherdevices_svalues[temp_ext]:match("([^;]+);([^;]+)")		
 voir_les_logs("--- --- --- Température Ext : ".. Temp,debugging)
 voir_les_logs("--- --- --- Humidité : ".. Humidity,debugging)
 
 
-	if dew_point_idx ~= nil and freeze_point_idx ~= nil then
+	if dev_dew_point ~= nil then
 		DewPoint = round(dewPoint(Temp,Humidity),2)
 		voir_les_logs("--- --- --- Point de Rosée : ".. DewPoint,debugging)
-		commandArray[1] = {['UpdateDevice'] = dew_point_idx .. "|0|" .. DewPoint} -- Mise à jour point de rosée
+		commandArray[1] = {['UpdateDevice'] = otherdevices_idx[dev_dew_point] .. "|0|" .. DewPoint} -- Mise à jour point de rosée
+    end    
+    if  dev_freeze_point ~= nil then   
 		FreezingPoint = round(freezing_point(DewPoint, tonumber(Temp)),2)
 		voir_les_logs("--- --- --- Point de Givrage : ".. FreezingPoint,debugging)
-		commandArray[2] = {['UpdateDevice'] = freeze_point_idx .. "|0|" .. FreezingPoint} -- Mise à jour point de givrage
+		commandArray[2] = {['UpdateDevice'] = otherdevices_idx[dev_freeze_point] .. "|0|" .. FreezingPoint} -- Mise à jour point de givrage
 	end
 
-	if(tonumber(Temp)<=1 and tonumber(FreezingPoint)<=0)then
-		voir_les_logs("--- --- --- Givre --- --- ---",debugging)
-		commandArray[3]={['UpdateDevice'] = freeze_alert_idx..'|4|'..FreezingPoint}
-		if (time.min == 50 and time.hour == 6) then
-		commandArray['SendNotification'] = 'Alert#Présence de givre!'
-		end
-	elseif(tonumber(Temp)<=3 and tonumber(FreezingPoint)<=0)then
-		voir_les_logs("--- --- --- Risque de Givre --- --- ---",debugging)
-		commandArray[3]={['UpdateDevice'] = freeze_alert_idx..'|2|'..FreezingPoint}
-		if (time.min == 50 and time.hour == 6) then
-		commandArray['SendNotification'] = 'Alert#Risque de givre!'
-		end
-	else
-		voir_les_logs("--- --- --- Aucun risque de Givre --- --- ---",debugging)
-		commandArray[3]={['UpdateDevice'] = freeze_alert_idx..'|1|'..'Pas de givre'}
-	end 
-		voir_les_logs("=========== Fin Point de rosée et point de givrage (v".. version ..") ===========",debugging)
+    if dev_freeze_alert ~= nil then
+        if(tonumber(Temp)<=1 and tonumber(FreezingPoint)<=0)  then
+            voir_les_logs("--- --- --- Givre --- --- ---",debugging)
+            commandArray[3]={['UpdateDevice'] = otherdevices_idx[dev_freeze_alert]..'|4|'..FreezingPoint}
+            if (time.min == 50 and time.hour == 6) then
+            commandArray['SendNotification'] = 'Alert#Présence de givre!'
+            end
+        elseif(tonumber(Temp)<=3 and tonumber(FreezingPoint)<=0)then
+            voir_les_logs("--- --- --- Risque de Givre --- --- ---",debugging)
+            commandArray[3]={['UpdateDevice'] = otherdevices_idx[dev_freeze_alert]..'|2|'..FreezingPoint}
+            if (time.min == 50 and time.hour == 6) then
+            commandArray['SendNotification'] = 'Alert#Risque de givre!'
+            end
+        else
+            voir_les_logs("--- --- --- Aucun risque de Givre --- --- ---",debugging)
+            commandArray[3]={['UpdateDevice'] = otherdevices_idx[dev_freeze_alert]..'|1|'..'Pas de givre'}
+        end
+    end
+voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
 end	
 
 return commandArray
