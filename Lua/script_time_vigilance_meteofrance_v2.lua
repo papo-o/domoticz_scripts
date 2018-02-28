@@ -2,7 +2,7 @@
 name : script_time_vigilance_meteofrance_V2.lua
 auteur : papoo
 date de création : 11/12/2017
-Date de mise à jour : 13/12/2017
+Date de mise à jour : 28/02/2018
 Principe : Ce script a pour but de remonter les informations de vigilance de météoFrance 3 fois par jour à 07H15 13H15 et 18H15 
 Les informations disponibles sont :
 - couleur vigilance météo (Rouge, Orange, Jaune, Vert)
@@ -18,9 +18,9 @@ Ce script utilise Lua-Simple-XML-Parser https://github.com/Cluain/Lua-Simple-XML
 ------------ Variables à éditer ------------
 -------------------------------------------- 
 
-local debugging = false  			-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = true  			-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local nom_script = 'vigilance meteofrance V2'
-local version = '1.04'
+local version = '1.05'
 local departement = 87				-- renseigner votre numéro de département sur 2 chiffres exemples : 01 ou 07 ou 87 
 local dz_vigilance_alert = 392		-- renseigner l'idx du device alert vigilance meteo associé (dummy - alert)
 local dz_alert_vague = 708			-- renseigner l'idx du device alert vigilance vague submersion associé (dummy - alert)
@@ -236,7 +236,7 @@ end
 commandArray = {}
 time=os.date("*t")
 if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 18))) then -- 3 éxecutions du script par jour à 7H15, 13h15 et 18H15
---if (time.min-1) % 1 == 0 then -- éxécution du script toutes les X minutes
+--if (time.min-1) % 3 == 0 then -- éxécution du script toutes les X minutes
 voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
           
  
@@ -252,9 +252,9 @@ if (parsedXml) then local abr = parsedXml.CV
         if (abr:children()[i]:name() == "DV") then 
 
 
-            if (tonumber(abr:children()[i]["@dep"]) == departement) then 
+            if (tonumber(abr:children()[i]["@dep"]) == departement) then -- si les informations concernent le département
             Couleur_vigilance = tonumber(abr:children()[i]["@coul"])
-                if tonumber(CouleurVigilance) < tonumber(Couleur_vigilance) then CouleurVigilance = Couleur_vigilance end
+                if tonumber(CouleurVigilance) < tonumber(Couleur_vigilance) then CouleurVigilance = Couleur_vigilance 
             voir_les_logs("--- --- --- Couleur Vigilance : ".. CouleurVigilance .. " pour le departement : ".. departement,debugging) 
                  if (#abr:children()[i]:children() > 0) then 
                      for j = 1, #abr:children()[i]:children() do 
@@ -269,7 +269,7 @@ if (parsedXml) then local abr = parsedXml.CV
                          end
                      end 
                  end
-            
+            end
 
                 
             elseif (tonumber(abr:children()[i]["@dep"]) == departementsub) then -- Recherche risque vague submersion
@@ -321,10 +321,12 @@ end
 
 risque = risqueTxt(risque)
  if risques ~= nil then
+
+
      for k,v in pairs(risques) do
         voir_les_logs("--- --- --- vigilance  : ".. risqueTxt(v),debugging)
         vigilances = vigilances .. ", " .. risqueTxt(v)
-     end
+     end -- end for
      vigilances = string.gsub (vigilances, "^, ", "")
      voir_les_logs("--- --- --- vigilances  : ".. vigilances,debugging)
  end
