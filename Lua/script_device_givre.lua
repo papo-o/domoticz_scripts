@@ -1,7 +1,7 @@
 --[[   
 ~/domoticz/scripts/lua/script_device_givre.lua
 auteur : papoo
-MAJ : 27/02/2018
+MAJ : 28/02/2018
 création : 06/05/2016
 Principe :
 Calculer via les informations température et hygrometrie d'une sonde exterieure
@@ -19,12 +19,12 @@ local debugging = true  					-- true pour voir les logs dans la console log Dz o
 local temp_ext  = 'Temperature exterieure' 	-- nom de la sonde de température/humidité extérieure
 local dev_dew_point = 'Point de rosée'  	-- nom de l'éventuel dummy température point de rosée si vous souhaitez le suivre sinon nil
 local dev_freeze_point = 'Point de givrage'	-- nom de l'éventuel dummy température point de givre si vous souhaitez le suivre sinon nil
-local freeze_alert_idx = 'Risque de givre'	-- nom de l'éventuel dummy alert point de givre si vous souhaitez le suivre sinon nil
+local dev_freeze_alert = 'Risque de givre'	-- nom de l'éventuel dummy alert point de givre si vous souhaitez le suivre sinon nil
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = 'Point de rosée et point de givrage'
-local version = 1.12						-- version du script
+local version = 1.13						-- version du script
 
 commandArray = {}
 
