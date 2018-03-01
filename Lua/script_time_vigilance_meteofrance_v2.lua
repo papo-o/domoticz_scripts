@@ -19,10 +19,10 @@ Ce script utilise Lua-Simple-XML-Parser https://github.com/Cluain/Lua-Simple-XML
 -------------------------------------------- 
 local debugging = true  			                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local departement = 87				                -- renseigner votre numéro de département sur 2 chiffres exemples : 01 ou 07 ou 87 
-local dev_vigilance_alert = 'Vigilance Météo'		-- renseigner le nom du device alert vigilance météo associé (dummy - alert)
-local dev_alert_vague = 'Vigilance Crue'			-- renseigner le nom du device alert vigilance vague submersion associé (dummy - alert)
-local dev_conseil_meteo =  nil		                -- renseigner le nom du device texte Conseils Météo associé si souhaité, sinon nil 
-local dev_commentaire_meteo = nil 	                -- renseigner le nom du device texte Commentaire Météo associé si souhaité, sinon nil
+local dz_vigilance_alert = '392'		            -- renseigner l'idx du device alert vigilance météo associé (dummy - alert)
+local dz_alert_vague = '708'			            -- renseigner l'idx du device alert vigilance vague submersion associé (dummy - alert)
+local dz_conseil_meteo =  nil		                -- renseigner l'idx du device texte Conseils Météo associé si souhaité, sinon nil 
+local dz_commentaire_meteo = nil 	                -- renseigner l'idx du device texte Commentaire Météo associé si souhaité, sinon nil
 local send_notification = 3 		                -- 0: aucune notification, 1: toutes (même verte), 2: vigilances jaune, orange et rouge, 3: vigilances orange et rouge 4: seulement vigilance rouge
 local send_notification_vague = 3 	                -- 0: aucune notification, 1: toutes (même verte), 2: vigilances jaune, orange et rouge, 3: vigilances orange et rouge 4: seulement vigilance rouge
 local display_conseils = false  	                -- true pour voir les conseils sans condition, false seulement en cas de vigilance dans le département sélectionné
@@ -32,7 +32,7 @@ local display_commentaire = false 	                -- true pour voir les comment
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = 'vigilance meteofrance V2'
-local version = '1.06'
+local version = '1.07'
 local risques = {}
 local vigilances = ""
 local departementsub = tonumber(departement .. 10)
@@ -235,13 +235,9 @@ end
 commandArray = {}
 time=os.date("*t")
 if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 18))) then -- 3 exécutions du script par jour à 7H15, 13h15 et 18H15
---if (time.min-1) % 2 == 0 then -- exécution du script toutes les X minutes
+--if (time.min-1) % 3 == 0 then -- exécution du script toutes les X minutes
 voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
-    
-local dz_vigilance_alert    = otherdevices_idx[dev_vigilance_alert]
-local dz_alert_vague        = otherdevices_idx[dev_alert_vague]
-local dz_conseil_meteo      = otherdevices_idx[dev_conseil_meteo]
-local dz_commentaire_meteo  = otherdevices_idx[dev_commentaire_meteo] 
+
  
 local rid = assert(io.popen("/usr/bin/curl -m5 http://vigilance.meteofrance.com/data/NXFR33_LFPW_.xml")) --merci jacklayster
 local testXml = rid:read('*all')
@@ -317,10 +313,8 @@ if (parsedXml) then local abr = parsedXml.CV
 else
 print("erreur parsedXml")
 end	
-
 risque = risqueTxt(risque)
  if risques ~= nil then
-
 
      for k,v in pairs(risques) do
         voir_les_logs("--- --- --- vigilance  : ".. risqueTxt(v),debugging)
@@ -336,7 +330,6 @@ risque = risqueTxt(risque)
                 commandArray[#commandArray+1] = {['UpdateDevice'] = dz_vigilance_alert ..'|0|Vigilance Meteo'}
             end	 
 	end	
-
 
 	if CouleurVigilance	~= nil then	
 		voir_les_logs("--- --- --- CouleurVigilance : ".. CouleurVigilance,debugging)
