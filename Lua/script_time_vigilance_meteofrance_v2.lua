@@ -2,7 +2,7 @@
 name : script_time_vigilance_meteofrance_V2.lua
 auteur : papoo
 date de création : 11/12/2017
-Date de mise à jour : 28/02/2018
+Date de mise à jour : 01/03/2018
 Principe : Ce script a pour but de remonter les informations de vigilance de météoFrance 3 fois par jour à 07H15 13H15 et 18H15 
 Les informations disponibles sont :
 - couleur vigilance météo (Rouge, Orange, Jaune, Vert)
@@ -17,23 +17,22 @@ Ce script utilise Lua-Simple-XML-Parser https://github.com/Cluain/Lua-Simple-XML
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-
-local debugging = true  			-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
-local nom_script = 'vigilance meteofrance V2'
-local version = '1.05'
-local departement = 87				-- renseigner votre numéro de département sur 2 chiffres exemples : 01 ou 07 ou 87 
-local dz_vigilance_alert = 392		-- renseigner l'idx du device alert vigilance meteo associé (dummy - alert)
-local dz_alert_vague = 708			-- renseigner l'idx du device alert vigilance vague submersion associé (dummy - alert)
-local dz_conseil_meteo =  nil		-- renseigner l'idx du device texte Conseils Météo associé si souhaité, sinon nil 
-local dz_commentaire_meteo = nil 	-- renseigner l'idx du device texte Commentaire Météo associé si souhaité, sinon nil
-local send_notification = 3 		-- 0: aucune notification, 1: toutes (meme verte), 2: vigilances jaune, orange et rouge, 3: vigilances orange et rouge 4: seulement vigilance rouge
-local send_notification_vague = 3 	-- 0: aucune notification, 1: toutes (meme verte), 2: vigilances jaune, orange et rouge, 3: vigilances orange et rouge 4: seulement vigilance rouge
-local display_conseils = false  	-- true pour voir les conseils sans condition, false seulement en cas de vigilance dans le département sélectionné
-local display_commentaire = false 	-- true pour voir les commentaires sans condition, false seulement en cas de vigilance dans le département sélectionné
+local debugging = true  			                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local departement = 87				                -- renseigner votre numéro de département sur 2 chiffres exemples : 01 ou 07 ou 87 
+local dev_vigilance_alert = 'Vigilance Météo'		-- renseigner le nom du device alert vigilance météo associé (dummy - alert)
+local dev_alert_vague = 'Vigilance Crue'			-- renseigner le nom du device alert vigilance vague submersion associé (dummy - alert)
+local dev_conseil_meteo =  nil		                -- renseigner le nom du device texte Conseils Météo associé si souhaité, sinon nil 
+local dev_commentaire_meteo = nil 	                -- renseigner le nom du device texte Commentaire Météo associé si souhaité, sinon nil
+local send_notification = 3 		                -- 0: aucune notification, 1: toutes (même verte), 2: vigilances jaune, orange et rouge, 3: vigilances orange et rouge 4: seulement vigilance rouge
+local send_notification_vague = 3 	                -- 0: aucune notification, 1: toutes (même verte), 2: vigilances jaune, orange et rouge, 3: vigilances orange et rouge 4: seulement vigilance rouge
+local display_conseils = false  	                -- true pour voir les conseils sans condition, false seulement en cas de vigilance dans le département sélectionné
+local display_commentaire = false 	                -- true pour voir les commentaires sans condition, false seulement en cas de vigilance dans le département sélectionné
 
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
+local nom_script = 'vigilance meteofrance V2'
+local version = '1.06'
 local risques = {}
 local vigilances = ""
 local departementsub = tonumber(departement .. 10)
@@ -61,7 +60,7 @@ function risqueTxt(nombre)
       elseif nombre == 7 then return "grand-froid" 
       elseif nombre == 8 then return "avalanche"
       elseif nombre == 9 then return "vagues-submersion"	  
-	 -- else return "risque non defini" end
+	 -- else return "risque non défini" end
 	else return "Vigilance Meteo" end
 end
 
@@ -235,22 +234,25 @@ end
 --------------------------------------------
 commandArray = {}
 time=os.date("*t")
-if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 18))) then -- 3 éxecutions du script par jour à 7H15, 13h15 et 18H15
---if (time.min-1) % 3 == 0 then -- éxécution du script toutes les X minutes
+if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 18))) then -- 3 exécutions du script par jour à 7H15, 13h15 et 18H15
+--if (time.min-1) % 2 == 0 then -- exécution du script toutes les X minutes
 voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
-          
+    
+local dz_vigilance_alert    = otherdevices_idx[dev_vigilance_alert]
+local dz_alert_vague        = otherdevices_idx[dev_alert_vague]
+local dz_conseil_meteo      = otherdevices_idx[dev_conseil_meteo]
+local dz_commentaire_meteo  = otherdevices_idx[dev_commentaire_meteo] 
  
-    local rid = assert(io.popen("/usr/bin/curl -m5 http://vigilance.meteofrance.com/data/NXFR33_LFPW_.xml")) --merci jacklayster
-    local testXml = rid:read('*all')
-    rid:close() 
- 
-    local parsedXml = XmlParser:ParseXmlText(testXml)
+local rid = assert(io.popen("/usr/bin/curl -m5 http://vigilance.meteofrance.com/data/NXFR33_LFPW_.xml")) --merci jacklayster
+local testXml = rid:read('*all')
+rid:close() 
+
+local parsedXml = XmlParser:ParseXmlText(testXml)
 
 if (parsedXml) then local abr = parsedXml.CV 	
 
     for i in pairs(abr:children()) do 
         if (abr:children()[i]:name() == "DV") then 
-
 
             if (tonumber(abr:children()[i]["@dep"]) == departement) then -- si les informations concernent le département
             Couleur_vigilance = tonumber(abr:children()[i]["@coul"])
@@ -270,32 +272,29 @@ if (parsedXml) then local abr = parsedXml.CV
                      end 
                  end
             end
-
-                
+               
             elseif (tonumber(abr:children()[i]["@dep"]) == departementsub) then -- Recherche risque vague submersion
             Couleur_vigilance = tonumber(abr:children()[i]["@coul"])
-                if tonumber(CouleurVigilance) < tonumber(Couleur_vigilance) then CouleurVigilance = Couleur_vigilance end
-            voir_les_logs("--- --- --- Couleur Vigilance Vague submersion : ".. CouleurVigilance .. " pour le departement : ".. departement,debugging) 
-                 if (#abr:children()[i]:children() > 0) then 
-                     for j = 1, #abr:children()[i]:children() do 
-                         if (abr:children()[i]:children()[j]:name() == "risque") then 
-                             vague_sub = tonumber(abr:children()[i]:children()[j]["@val"])
-                                 if vague_sub ~= nil then
-                                 voir_les_logs("--- --- --- risque Vague submersiontrouv&eacute;e : ".. vague_sub,debugging) 
-                                 else
-                                 voir_les_logs("--- --- --- pas d'information risque Vague submersion trouv&eacute;e",debugging)
-                                 end
-                             elseif (abr:children()[i]:children()[j]:name() == "risque") then 
-                             vague_sub = tonumber(abr:children()[i]:children()[j]["@valeur"]) 
-                             voir_les_logs("--- --- --- Risque Vague submersion trouv&eacute;e : ".. vague_sub,debugging) 
-                             end
-                         end    
-                     end 
-                 end
-            
-
-            
-            
+                if tonumber(CouleurVigilance) < tonumber(Couleur_vigilance) then CouleurVigilance = Couleur_vigilance 
+                voir_les_logs("--- --- --- Couleur Vigilance Vague submersion : ".. CouleurVigilance .. " pour le departement : ".. departement,debugging) 
+                    if (#abr:children()[i]:children() > 0) then 
+                        for j = 1, #abr:children()[i]:children() do 
+                            if (abr:children()[i]:children()[j]:name() == "risque") then 
+                                vague_sub = tonumber(abr:children()[i]:children()[j]["@val"])
+                                    if vague_sub ~= nil then
+                                    voir_les_logs("--- --- --- risque Vague submersiontrouv&eacute;e : ".. vague_sub,debugging) 
+                                    else
+                                    voir_les_logs("--- --- --- pas d'information risque Vague submersion trouv&eacute;e",debugging)
+                                    end
+                                elseif (abr:children()[i]:children()[j]:name() == "risque") then 
+                                vague_sub = tonumber(abr:children()[i]:children()[j]["@valeur"]) 
+                                voir_les_logs("--- --- --- Risque Vague submersion trouv&eacute;e : ".. vague_sub,debugging) 
+                                end
+                            end    
+                        end 
+                    end
+                end
+           
             elseif (abr:children()[i]:name() == "EV") then -- recherche commentaires
                  for j in pairs(abr:children()[i]:children()) do 
                      if (abr:children()[i]:children()[j]:name() == "VCOMMENTAIRE") then 
@@ -382,7 +381,7 @@ risque = risqueTxt(risque)
 			end
 			  voir_les_logs("--- --- --- vigilance très forte ".. vigilances.. " --- --- ---",debugging)
 		else
-		  print("niveau non defini")
+		  print("niveau non défini")
 		end
 	end
 	   
