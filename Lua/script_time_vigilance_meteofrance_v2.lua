@@ -234,15 +234,6 @@ end
 return(string.sub(texte, 1, DernierIndex))
 end
 
-function GetDeviceIdxByName(deviceName) 
-    for i, v in pairs(otherdevices_idx) do
-      if i == deviceName then
-         return v
-      end
-   end
-   return 0
-end -- exemple usage = commandArray['UpdateDevice'] = GetDeviceIdxByName('Compteur Gaz') .. '|0|' .. variable
-
 --------------------------------------------
 -------------- Fin Fonctions ---------------
 --------------------------------------------
