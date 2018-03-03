@@ -2,40 +2,40 @@
 name : script_time_vigilance_meteofrance_V2.lua
 UTF8 sans BOM
 auteur : papoo
-date de crÃ©ation : 11/12/2017
-Date de mise Ã  jour : 03/03/2018
-Principe : Ce script a pour but de remonter les informations de vigilance de mÃ©tÃ©oFrance 3 fois par jour Ã  07H15 13H15 et 18H15 
+date de création : 11/12/2017
+Date de mise à  jour : 03/03/2018
+Principe : Ce script a pour but de remonter les informations de vigilance de météoFrance 3 fois par jour à  07H15 13H15 et 18H15 
 Les informations disponibles sont :
-- couleur vigilance mÃ©tÃ©o (Rouge, Orange, Jaune, Vert)
-- risque associÃ© : vent violent, pluie-inondation, orages, inondations, neige-verglas, canicule, grand-froid, avalanche, vagues-submersion
-Une vigilance peut ne pas Ãªtre associÃ©e Ã  un risque. dans ce cas, affichage de la mention "vigilance mÃ©tÃ©o".
-- Conseils mÃ©tÃ©o 
-- commentaires mÃ©tÃ©o
+- couleur vigilance météo (Rouge, Orange, Jaune, Vert)
+- risque associé : vent violent, pluie-inondation, orages, inondations, neige-verglas, canicule, grand-froid, avalanche, vagues-submersion
+Une vigilance peut ne pas être associée à  un risque. dans ce cas, affichage de la mention "vigilance météo".
+- Conseils météo 
+- commentaires météo
 URL forum : http://easydomoticz.com/forum/viewtopic.php?f=17&t=5492
 URL blog : http://pon.fr/vigilance-meteofrance-v2/
 URL github : https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_vigilance_meteofrance_v2.lua
 Ce script utilise Lua-Simple-XML-Parser https://github.com/Cluain/Lua-Simple-XML-Parser
 --]]
 --------------------------------------------
------------- Variables Ã  Ã©diter ------------
+------------ Variables à  éditer ------------
 -------------------------------------------- 
 
 local debugging                = true            	 -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
-local departement              = 87				     -- renseigner votre numÃ©ro de dÃ©partement sur 2 chiffres exemples : 01 ou 07 ou 87 
-local dev_vigilance_alert      = 'Vigilance MÃ©tÃ©o'	 -- renseigner le nom de l'Ã©ventuel device alert vigilance mÃ©tÃ©o associÃ© (dummy - alert)
-local dev_alert_vague          = 'Vigilance Crue'    -- renseigner le nom de l'Ã©ventuel device alert vigilance vague submersion associÃ© (dummy - alert)
-local dev_conseil_meteo        = 'Conseil MÃ©tÃ©o'    -- renseigner le nom de l'Ã©ventuel device texte Conseils MÃ©tÃ©o associÃ© si souhaitÃ©, sinon nil 
-local dev_commentaire_meteo    = nil                 -- renseigner le nom de l'Ã©ventuel device texte Commentaire MÃ©tÃ©o associÃ© si souhaitÃ©, sinon nil
-local send_notification        = 3 		             -- 0: aucune notification, 1: toutes (mÃªme verte), 2: vigilances jaune, orange et rouge, 3: vigilances orange et rouge 4: seulement vigilance rouge
-local send_notification_vague  = 3 	                 -- 0: aucune notification, 1: toutes (mÃªme verte), 2: vigilances jaune, orange et rouge, 3: vigilances orange et rouge 4: seulement vigilance rouge
-local display_conseils         = false  	         -- true pour voir les conseils sans condition, false seulement en cas de vigilance dans le dÃ©partement sÃ©lectionnÃ©
-local display_commentaire      = false 	             -- true pour voir les commentaires sans condition, false seulement en cas de vigilance dans le dÃ©partement sÃ©lectionnÃ©
+local departement              = 87				     -- renseigner votre numéro de département sur 2 chiffres exemples : 01 ou 07 ou 87 
+local dev_vigilance_alert      = 'Vigilance Météo'	 -- renseigner le nom de l'éventuel device alert vigilance météo associé (dummy - alert)
+local dev_alert_vague          = 'Vigilance Crue'    -- renseigner le nom de l'éventuel device alert vigilance vague submersion associé (dummy - alert)
+local dev_conseil_meteo        = 'Conseil Météo'    -- renseigner le nom de l'éventuel device texte Conseils Météo associé si souhaité, sinon nil 
+local dev_commentaire_meteo    = nil                 -- renseigner le nom de l'éventuel device texte Commentaire Météo associé si souhaité, sinon nil
+local send_notification        = 3 		             -- 0: aucune notification, 1: toutes (même verte), 2: vigilances jaune, orange et rouge, 3: vigilances orange et rouge 4: seulement vigilance rouge
+local send_notification_vague  = 3 	                 -- 0: aucune notification, 1: toutes (même verte), 2: vigilances jaune, orange et rouge, 3: vigilances orange et rouge 4: seulement vigilance rouge
+local display_conseils         = false  	         -- true pour voir les conseils sans condition, false seulement en cas de vigilance dans le département sélectionné
+local display_commentaire      = false 	             -- true pour voir les commentaires sans condition, false seulement en cas de vigilance dans le département sélectionné
 
 --------------------------------------------
------------ Fin variables Ã  Ã©diter ---------
+----------- Fin variables à  éditer ---------
 --------------------------------------------
 
-local nom_script = 'vigilance mÃ©tÃ©ofrance V2'
+local nom_script = 'vigilance météofrance V2'
 local version = 1.1
 local risques = {}
 local vigilances = ""
@@ -65,8 +65,8 @@ function risqueTxt(nombre)
       elseif nombre == 7 then return "grand-froid" 
       elseif nombre == 8 then return "avalanche"
       elseif nombre == 9 then return "vagues-submersion"	  
-	 -- else return "risque non dÃ©fini" end
-	else return "Vigilance MÃ©tÃ©o" end
+	 -- else return "risque non défini" end
+	else return "Vigilance Météo" end
 end
 
 ---------------------------------------------------------------------------------
@@ -219,7 +219,7 @@ function newNode(name)
     return node
 end
 --------------------------------------------
-function TronquerTexte(texte, nb)  --texte Ã  tronquer, nb limite de caractÃ¨re Ã  afficher (240 max pour un device text)
+function TronquerTexte(texte, nb)  --texte à  tronquer, nb limite de caractère à  afficher (240 max pour un device text)
 local sep ='[!?.]'
 local DernierIndex = nil
 texte = string.sub(texte, 1, nb)
@@ -248,8 +248,8 @@ end -- exemple usage = commandArray['UpdateDevice'] = GetDeviceIdxByName('Compte
 --------------------------------------------
 commandArray = {}
 time=os.date("*t")
-if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 18))) then -- 3 exÃ©cutions du script par jour 7H15, 13h15 et 18H15
---if (time.min-1) % 1 == 0 then -- exÃ©cution du script toutes les X minutes
+if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 18))) then -- 3 exécutions du script par jour 7H15, 13h15 et 18H15
+--if (time.min-1) % 1 == 0 then -- exécution du script toutes les X minutes
     voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
     if dev_vigilance_alert then
     dz_vigilance_alert = otherdevices_idx[dev_vigilance_alert]
@@ -279,7 +279,7 @@ if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 1
         for i in pairs(abr:children()) do 
             if (abr:children()[i]:name() == "DV") then 
 
-                if (tonumber(abr:children()[i]["@dep"]) == departement) then -- si les informations concernent le dÃ©partement
+                if (tonumber(abr:children()[i]["@dep"]) == departement) then -- si les informations concernent le département
                 Couleur_vigilance = tonumber(abr:children()[i]["@coul"])
                     if tonumber(CouleurVigilance) < tonumber(Couleur_vigilance) then CouleurVigilance = Couleur_vigilance 
                 voir_les_logs("--- --- --- Couleur Vigilance : ".. CouleurVigilance .. " pour le departement : ".. departement,debugging) 
@@ -301,19 +301,19 @@ if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 1
                 elseif (tonumber(abr:children()[i]["@dep"]) == departementsub) then -- Recherche risque vague submersion
                 Couleur_vigilance = tonumber(abr:children()[i]["@coul"])
                     if tonumber(CouleurVigilance) < tonumber(Couleur_vigilance) then CouleurVigilance = Couleur_vigilance 
-                    voir_les_logs("--- --- --- Couleur Vigilance Vague submersion : ".. CouleurVigilance .. " pour le departement : ".. departement,debugging) 
+                    voir_les_logs("--- --- --- Couleur Vigilance Vague submersion : ".. CouleurVigilance .. " pour le département : ".. departement,debugging) 
                         if (#abr:children()[i]:children() > 0) then 
                             for j = 1, #abr:children()[i]:children() do 
                                 if (abr:children()[i]:children()[j]:name() == "risque") then 
                                     vague_sub = tonumber(abr:children()[i]:children()[j]["@val"])
                                         if vague_sub ~= nil then
-                                        voir_les_logs("--- --- --- risque Vague submersiontrouv&eacute;e : ".. vague_sub,debugging) 
+                                        voir_les_logs("--- --- --- risque Vague submersion trouvé : ".. vague_sub,debugging) 
                                         else
-                                        voir_les_logs("--- --- --- pas d'information risque Vague submersion trouv&eacute;e",debugging)
+                                        voir_les_logs("--- --- --- pas d'information risque Vague submersion trouvé",debugging)
                                         end
                                     elseif (abr:children()[i]:children()[j]:name() == "risque") then 
                                     vague_sub = tonumber(abr:children()[i]:children()[j]["@valeur"]) 
-                                    voir_les_logs("--- --- --- Risque Vague submersion trouv&eacute;e : ".. vague_sub,debugging) 
+                                    voir_les_logs("--- --- --- Risque Vague submersion trouvé : ".. vague_sub,debugging) 
                                     end
                                 end    
                             end 
@@ -354,9 +354,9 @@ if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 1
     end
 
     if CouleurVigilance == nil then
-        voir_les_logs("--- --- --- Aucune donn&eacute;e disponible pour la dÃ©partement : ".. departement,debugging)
+        voir_les_logs("--- --- --- Aucune donnée disponible pour la département : ".. departement,debugging)
             if dz_vigilance_alert ~= nil then
-                voir_les_logs("--- --- --- mise Ã  jour du device : ".. dev_vigilance_alert,debugging)
+                voir_les_logs("--- --- --- mise à  jour du device : ".. dev_vigilance_alert,debugging)
                 commandArray[#commandArray+1] = {['UpdateDevice'] = dz_vigilance_alert ..'|0|Vigilance Meteo'}
             end	 
     end	
@@ -365,7 +365,7 @@ if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 1
 		voir_les_logs("--- --- --- CouleurVigilance : ".. CouleurVigilance,debugging)
 		if tonumber(CouleurVigilance) == 1   then -- niveau 1
 			if dz_vigilance_alert ~= nil then
-                voir_les_logs("--- --- --- mise Ã  jour du device : ".. dev_vigilance_alert,debugging)
+                voir_les_logs("--- --- --- mise à  jour du device : ".. dev_vigilance_alert,debugging)
 				commandArray[#commandArray+1] = {['UpdateDevice'] = dz_vigilance_alert..'|1|Pas de vigilance'}
 			end
 			if send_notification > 0 and send_notification < 2 then
@@ -374,7 +374,7 @@ if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 1
                 voir_les_logs("--- --- --- Pas de vigilance --- --- ---",debugging)
 		elseif tonumber(CouleurVigilance) == 2   then -- niveau 2
 			if dz_vigilance_alert ~= nil then
-				voir_les_logs("--- --- --- mise Ã  jour du device : ".. dev_vigilance_alert,debugging)
+				voir_les_logs("--- --- --- mise à  jour du device : ".. dev_vigilance_alert,debugging)
                 commandArray[#commandArray+1] = {['UpdateDevice'] = dz_vigilance_alert..'|2|'.. vigilances}
 			end
             if send_notification > 0 and send_notification < 3 then
@@ -383,7 +383,7 @@ if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 1
 			  voir_les_logs("--- --- --- vigilance faible ".. vigilances.. " --- --- ---",debugging)   
 		elseif tonumber(CouleurVigilance) == 3   then -- niveau 3
 			if dz_vigilance_alert ~= nil then
-				voir_les_logs("--- --- --- mise Ã  jour du device : ".. dev_vigilance_alert,debugging)
+				voir_les_logs("--- --- --- mise à  jour du device : ".. dev_vigilance_alert,debugging)
                 commandArray[#commandArray+1] = {['UpdateDevice'] = dz_vigilance_alert..'|3|'.. vigilances}
 				 
 			end
@@ -393,48 +393,48 @@ if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 1
 			  voir_les_logs("--- --- --- vigilance Forte ".. vigilances.. " --- --- ---",debugging)      
 		elseif tonumber(CouleurVigilance) > 3  then -- niveau 4
 			if dz_vigilance_alert ~= nil then
-				voir_les_logs("--- --- --- mise Ã  jour du device : ".. dev_vigilance_alert,debugging)
+				voir_les_logs("--- --- --- mise à  jour du device : ".. dev_vigilance_alert,debugging)
                 commandArray[#commandArray+1] = {['UpdateDevice'] = dz_vigilance_alert..'|4|'.. vigilances}
 			end
 			if send_notification > 0 and send_notification < 5 then
 				commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte vigilance meteo#'.. vigilances}
 			end
-			  voir_les_logs("--- --- --- vigilance trÃ¨s forte ".. vigilances.. " --- --- ---",debugging)
+			  voir_les_logs("--- --- --- vigilance très forte ".. vigilances.. " --- --- ---",debugging)
 		else
-		  print("niveau non dÃ©fini")
+		  print("niveau non défini")
 		end
 	end
 	   
 -- ====================================================================================================================	
--- Conseil mÃ©tÃ©o	  
+-- Conseil météo	  
 -- ====================================================================================================================			
-    if ( dz_conseil_meteo ~= nil and conseil ~= nil and CouleurVigilance > 1 ) or ( dz_conseil_meteo ~= nil and conseil ~= nil and display_conseils == true ) then -- Mise Ã our du devise texte conseil mÃ©tÃ©o si il existe
-        voir_les_logs("--- --- --- mise Ã  jour du device : ".. dev_conseil_meteo,debugging)
+    if ( dz_conseil_meteo ~= nil and conseil ~= nil and CouleurVigilance > 1 ) or ( dz_conseil_meteo ~= nil and conseil ~= nil and display_conseils == true ) then -- Mise à our du devise texte conseil météo si il existe
+        voir_les_logs("--- --- --- mise à  jour du device : ".. dev_conseil_meteo,debugging)
         commandArray[#commandArray+1] = {['UpdateDevice'] = dz_conseil_meteo..'|0|'.. TronquerTexte(conseil,240)}
      
-    elseif (dz_conseil_meteo ~= nil and conseil == nil) or ( dz_conseil_meteo ~= nil and conseil ~= nil and display_conseils == false ) then -- Mise Ã  jour du devise texte conseil mÃ©tÃ©o si il existe mÃªme s'il n'y a pas de conseil disponible
-        voir_les_logs("--- --- --- mise Ã  jour du device : ".. dev_conseil_meteo,debugging)                
+    elseif (dz_conseil_meteo ~= nil and conseil == nil) or ( dz_conseil_meteo ~= nil and conseil ~= nil and display_conseils == false ) then -- Mise à  jour du devise texte conseil météo si il existe même s'il n'y a pas de conseil disponible
+        voir_les_logs("--- --- --- mise à  jour du device : ".. dev_conseil_meteo,debugging)                
         commandArray[#commandArray+1] = {['UpdateDevice'] = dz_conseil_meteo..'|0|Aucun conseil disponible'}
           
     end
 -- ====================================================================================================================	
--- Commentaire mÃ©tÃ©o	  
+-- Commentaire météo	  
 -- ====================================================================================================================		  
 	  
     if ( dz_commentaire_meteo ~= nil and commentaire ~= nil and CouleurVigilance > 1 ) or ( dz_commentaire_meteo ~= nil and commentaire ~= nil and display_commentaire == true ) then -- Mise à jour du devise texte commentaire météo si il existe
-        voir_les_logs("--- --- --- mise Ã  jour du device : ".. dev_commentaire_meteo,debugging)                
+        voir_les_logs("--- --- --- mise à  jour du device : ".. dev_commentaire_meteo,debugging)                
         commandArray[#commandArray+1] = {['UpdateDevice'] = dz_commentaire_meteo..'|0|'.. commentaire}
                  
-    elseif (dz_commentaire_meteo ~= nil and commentaire == nil ) or ( dz_commentaire_meteo ~= nil and commentaire ~= nil and display_commentaire == false ) then -- Mise Ã  jour du devise texte commentaire météo si il existe même s'il n'y a pas de commentaire disponible
-        voir_les_logs("--- --- --- mise Ã  jour du device : ".. dev_commentaire_meteo,debugging)                 
+    elseif (dz_commentaire_meteo ~= nil and commentaire == nil ) or ( dz_commentaire_meteo ~= nil and commentaire ~= nil and display_commentaire == false ) then -- Mise à  jour du devise texte commentaire météo si il existe même s'il n'y a pas de commentaire disponible
+        voir_les_logs("--- --- --- mise à  jour du device : ".. dev_commentaire_meteo,debugging)                 
         commandArray[#commandArray+1] = {['UpdateDevice'] = dz_commentaire_meteo..'|0|Aucun commentaire disponible'}
     end
  
 -- ====================================================================================================================	
 -- vigilance vague submersion	  
 -- ====================================================================================================================
-    if vague_sub == nil and dz_alert_vague ~= nil then -- pas de donnÃ©e
-        voir_les_logs("--- --- --- mise Ã  jour du device : ".. dev_alert_vague,debugging)         
+    if vague_sub == nil and dz_alert_vague ~= nil then -- pas de donnée
+        voir_les_logs("--- --- --- mise à  jour du device : ".. dev_alert_vague,debugging)         
         commandArray[#commandArray+1] = {['UpdateDevice'] = dz_alert_vague..'|1|Aucune donn&eacute;e vague submersion'}
                  
     elseif dz_alert_vague ~= nil and vague_sub ~= nil then	
@@ -442,7 +442,7 @@ if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 1
                   
             if tonumber(vague_sub) == 1   then -- niveau 1
                 if dz_alert_vague ~= nil then
-                    voir_les_logs("--- --- --- mise Ã  jour du device : ".. dev_alert_vague,debugging)                 
+                    voir_les_logs("--- --- --- mise à  jour du device : ".. dev_alert_vague,debugging)                 
                     commandArray[#commandArray+1] = {['UpdateDevice'] = dz_alert_vague..'|1|Pas de vigilance vague submersion'}
                 end
                 if send_notification_vague > 0 and send_notification_vague < 2 then
@@ -451,36 +451,36 @@ if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 1
                 voir_les_logs("--- --- --- Pas de vigilance vague submersion --- --- ---",debugging)
             elseif tonumber(vague_sub) == 2   then -- niveau 2
                 if dz_alert_vague ~= nil then
-                    voir_les_logs("--- --- --- mise Ã  jour du device : ".. dev_alert_vague,debugging)                
+                    voir_les_logs("--- --- --- mise à  jour du device : ".. dev_alert_vague,debugging)                
                     commandArray[#commandArray+1] = {['UpdateDevice'] = dz_alert_vague..'|2|Risque de vague submersion g&eacute;n&eacute;ratrice de d&eacute;bordements localis&eacute;s'} 
                 end
                 if send_notification_vague > 0 and send_notification_vague < 3 then
-                    commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte vigilance vague submersion#Risque de vague submersion gÃ©nÃ©ratrice de dÃ©bordements localisÃ©s'}
+                    commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte vigilance vague submersion#Risque de vague submersion génératrice de débordements localisés'}
                 end
                 voir_les_logs("--- --- --- vigilance faible vague submersion --- --- ---",debugging)   
             elseif tonumber(vague_sub) == 3   then -- niveau 3
                 if dz_alert_vague ~= nil then
-                    voir_les_logs("--- --- --- mise Ã  jour du device : ".. dev_alert_vague,debugging)                
+                    voir_les_logs("--- --- --- mise à  jour du device : ".. dev_alert_vague,debugging)                
                     commandArray[#commandArray+1] = {['UpdateDevice'] = dz_alert_vague..'|3|Risque de vague submersion g&eacute;n&eacute;ratrice de d&eacute;bordements importants'}
                 end
                 if send_notification_vague > 0 and send_notification_vague < 4 then
-                    commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte vigilance vague submersion#Risque de vague submersion gÃ©nÃ©ratrice de dÃ©bordements importants'} 
+                    commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte vigilance vague submersion#Risque de vague submersion génératrice de débordements importants'} 
                 end
                 voir_les_logs("--- --- --- vigilance Forte vague submersion --- --- ---",debugging)      
             elseif tonumber(vague_sub) > 3  then -- niveau 4
                 if dz_alert_vague ~= nil then
-                    voir_les_logs("--- --- --- mise Ã  jour du device : ".. dev_alert_vague,debugging)                      
+                    voir_les_logs("--- --- --- mise à  jour du device : ".. dev_alert_vague,debugging)                      
                     commandArray[#commandArray+1] = {['UpdateDevice'] = dz_alert_vague..'|4|Risque de vague submersion majeur'}
                 end
                 if send_notification_vague > 0 and send_notification_vague < 5 then
                     commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte vigilance vague submersion#Risque de vague submersion majeur'}
                 end
-                voir_les_logs("--- --- --- vigilance trÃ¨s forte vague submersion --- --- ---",debugging)
+                voir_les_logs("--- --- --- vigilance très forte vague submersion --- --- ---",debugging)
             else
-                print("niveau non dÃ©fini")
+                print("niveau non défini")
             end		  
             if dz_alert_vague ~= nil and vague_sub == nil then
-                voir_les_logs("--- --- --- mise Ã  jour du device : ".. dev_alert_vague,debugging)                   
+                voir_les_logs("--- --- --- mise à  jour du device : ".. dev_alert_vague,debugging)                   
                 commandArray[#commandArray+1] = {['UpdateDevice'] = dz_alert_vague..'|0|Pas d\'information vigilance vague submersion'}
             end
         end			
