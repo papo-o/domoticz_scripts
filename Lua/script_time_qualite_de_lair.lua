@@ -62,7 +62,7 @@ end
 --------------------------------------------
 commandArray = {}
 time = os.date("*t")
-if ((time.min-1) % 1) == 0 then -- toutes les 5 minutes en commençant par xx:01
+if ((time.min-1) % 5) == 0 then -- toutes les 5 minutes en commençant par xx:01
 	voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)    
 
     if dev_air_quality then
