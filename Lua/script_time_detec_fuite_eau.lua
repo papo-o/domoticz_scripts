@@ -27,9 +27,9 @@ https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_detec_fui
 local debugging       = true                    -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif    = true                    -- active (true) ou désactive (false) ce script simplement
 local url             = '127.0.0.1:8080'        -- user:pass@ip:port de domoticz
-local heure           = 0			    	    -- (0-24) heure de début de la période zéro consommation
+local heure           = 2			    	    -- (0-24) heure de début de la période zéro consommation
 local minute          = 15                      -- (0-60) minute de début de la période zéro consommation
-local delai           = 5                       -- délai en heure de la période d'observation zéro consommation
+local delai           = 3                       -- délai en heure de la période d'observation zéro consommation
 local EmailTo         = nil                     -- adresse pour être notifié par mail nil si inutilisé. Séparer les adresses par un ; exemple : 'premiere.adresse@mail.com;deuxieme.adresse@mail.com'
 local notification    = 1                       -- 0: aucune notification, 1: toutes , 2: seulement en cas de fuite
 local subsystem       = 'telegram'              -- les différentes valeurs de subsystem acceptées sont : gcm;http;kodi;lms;nma;prowl;pushalot;pushbullet;pushover;pushsafer;telegram
