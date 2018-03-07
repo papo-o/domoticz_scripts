@@ -1,6 +1,6 @@
 --[[script_time_detec_fuite_eau.lua
 auteur : papoo
-MAJ : 05/03/2018
+MAJ : 07/03/2018
 Création : 25/04/2016
 Script LUA pour Domoticz permettant la vérification périodique de la consommation d'eau (toutes les 5 minutes) par comparaison avec l'index précédent, présent dans une variable utilisateur créée automatiquement lors de la première exécution du script.
 - Si l'index compteur et l'index -5mn sont identique, le device probabilité est remis à zéro => pas de fuite.
@@ -20,7 +20,6 @@ http://pon.fr/lua-script-de-detection-fuite-deau-v2
 http://easydomoticz.com/forum/viewtopic.php?f=8&t=1913&hilit=d%C3%A9tection+fuite+eau#p16950
 https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_detec_fuite_eau.lua
 --]]
-
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
@@ -44,7 +43,7 @@ les_compteurs[#les_compteurs+1] = {name="Compteur Eau Chaude", dummy="Probabilit
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = "détection fuite d\'eau"
-local version = "2.0"
+local version = "2.1"
 --------------------------------------------
 ---------------- Fonctions -----------------
 --------------------------------------------
@@ -67,17 +66,13 @@ function url_encode(str) -- encode la chaine str pour la passer dans une url
    end
    return str
 end
-
 -- package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"
 -- require('fonctions_perso')
-
 --------------------------------------------
 -------------- Fin Fonctions ---------------
 --------------------------------------------
-
 commandArray = {}
 time=os.date("*t")
-
 -- ********************************************************************************
 if script_actif == true then
     if ((time.min-1) % 5) == 0 then
@@ -85,12 +80,10 @@ if script_actif == true then
         for i,d in ipairs(les_compteurs) do
         voir_les_logs("--- --- ---  Boucle ".. i .." --- --- --- ",debugging)
         v=otherdevices[d.name]
-
         if v==nil or v=="" then                  -- multi valued ?
             v=otherdevices_svalues[d.name] or ""
         end
         voir_les_logs("--- --- --- "..d.name.." = "..v,debugging)
-                    
             if(uservariables[d.name.."_zero"] == nil) then -- Création de la variable  car elle n'existe pas
                 voir_les_logs("--- --- --- La Variable " .. d.name .." n'existe pas --- --- --- ",debugging)
                 commandArray['OpenURL'] = url..'/json.htm?type=command&param=saveuservariable&vname='..url_encode(d.name.."_zero")..'&vtype=2&vvalue=1'
@@ -99,7 +92,6 @@ if script_actif == true then
                 voir_les_logs("--- --- --- Création de la Variable " .. d.name .."_zero manquante --- --- --- ",debugging)
                 print('script supendu')
             end
-                    
             if(uservariables[d.name] == nil) then -- Création de la variable  car elle n'existe pas
                 voir_les_logs("--- --- --- La Variable " .. d.name .." n'existe pas --- --- --- ",debugging)
                 commandArray['OpenURL']=url..'/json.htm?type=command&param=saveuservariable&vname='..url_encode(d.name)..'&vtype=2&vvalue=1'
@@ -108,30 +100,27 @@ if script_actif == true then
                 voir_les_logs("--- --- --- Création de la Variable " .. d.name .." manquante --- --- --- ",debugging)
                 print('script supendu')
             else
-                --voir_les_logs("--- --- --- la Variable : "..d.name.." existe",debugging);
-            
                 if (tonumber(uservariables[d.name]) < tonumber(v) ) then --La  variable est inférieure au compteur => consommation d'eau
                     conso = tonumber(v) - tonumber(uservariables[d.name])
                     voir_les_logs("--- --- --- sur le "..d.name.." il a été consommé  : " .. conso .." Litre(s) --- --- --- ",debugging)		
                     commandArray[#commandArray+1] = {['Variable:'..d.name] = tostring(v)} -- Mise à jour Variable
                     voir_les_logs("--- --- ---  Mise à jour de la variable "..d.name.." --- --- --- ",debugging)
                     
-                    if(otherdevices_idx[d.name] ~= "" and d.dummy ~= "") then
-                        voir_les_logs("--- --- --- valeur de la variable pourcentage "..otherdevices_svalues[d.dummy].."%  --- --- --- ",debugging)	--tonumber(otherdevices_svalues['lamp dimmer'])
+                    if (d.name ~= "" and otherdevices_idx[d.dummy] ~= nil) then
+                        voir_les_logs("--- --- --- valeur de la variable pourcentage "..otherdevices_svalues[d.name].."%  --- --- --- ",debugging)	--tonumber(otherdevices_svalues['lamp dimmer'])
                         local result = tonumber(otherdevices_svalues[d.dummy]) + 8
-                        commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[d.name] .. "|0|" .. result} -- Mise à jour probabilité => 8% * (60/5) = 96% en 1 heure
+                        commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[d.dummy] .. "|0|" .. result} -- Mise à jour probabilité => 8% * (60/5) = 96% en 1 heure
                         
                     end
                 end
                 if (tonumber(uservariables[d.name]) == tonumber(v) ) then -- aucune consommation 
-                    if(otherdevices_idx[d.name] ~= "" and d.dummy ~= "") then
+                    if (d.name ~= "" and otherdevices_idx[d.dummy] ~= nil) then
                         local result = "0"
-                        commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[d.name] .. "|0|" .. result} -- Mise à jour probabilité à 0%
-                        voir_les_logs("--- --- ---  Aucune consommation sur le "..d.name..", Mise à jour du device ".. otherdevices_idx[d.name] .." ".. d.dummy .." à zéro --- --- --- ",debugging)		
+                        commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[d.dummy] .. "|0|" .. result} -- Mise à jour probabilité à 0%
+                        voir_les_logs("--- --- ---  Aucune consommation sur le "..d.name..", Mise à jour du device ".. otherdevices_idx[d.dummy] .." ".. d.dummy .." à zéro --- --- --- ",debugging)		
                     end				
                     voir_les_logs("--- --- ---  Aucune consommation sur le "..d.name.." --- --- --- ",debugging)
                 end
-                
                 if tonumber(uservariables[d.name])~= nil and tonumber(uservariables[d.name]) > tonumber(v)  then --La  variable est supérieure au compteur => Mise à jour index consommation d'eau
                     conso =  tonumber(uservariables[d.name]) - tonumber(v)
                     voir_les_logs("--- --- --- sur le "..d.name.." il a un écart de  : " .. conso .." Litre(s) --- --- --- ",debugging)		
@@ -148,7 +137,6 @@ if script_actif == true then
         voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
     end -- if time
 
-
     -- ********************************************************************************
 
     if (time.min == minute and time.hour == heure) then
@@ -162,13 +150,11 @@ if script_actif == true then
             voir_les_logs("--- --- --- "..d.name.." = "..v,debugging)
             commandArray[#commandArray+1] = {['Variable:'..d.name.."_zero"] = tostring(v)} -- Mise à jour Variable
             voir_les_logs("--- --- ---  Mise à jour de la variable "..d.name.."_zero --- --- --- ",debugging)        
-
         end --end for
         local objet = 'Surveillance consommation d\'eau'
         local message = 'Début de la période surveillance zéro consommation à  '..heure..'h'..minute
         voir_les_logs("--- --- --- ".. message .." --- --- --- ",debugging)
         if EmailTo ~= nil then commandArray[#commandArray+1] = {['SendEmail'] =  objet..'#'.. message  .. '#' .. EmailTo} end
-        --if api_telegram ~= nil and chatID ~= nil then telegram(uservariables[api_telegram], uservariables[chatID], message) end 
         voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") Début Période zéro consommation =========",debugging)
     end
     
@@ -183,7 +169,6 @@ if script_actif == true then
                 v=otherdevices_svalues[d.name] or ""
             end
             voir_les_logs("--- --- --- "..d.name.." = "..v,debugging)
-            
             if (tonumber(uservariables[d.name.."_zero"]) < tonumber(v) ) then -- La  variable est inférieure au compteur => consommation d'eau
                 conso = tonumber(v) - tonumber(uservariables[d.name.."_zero"])
                 voir_les_logs("--- --- --- sur le "..d.name.." il a été consommé  : " .. conso .." Litre(s) --- --- --- ",debugging)		
@@ -209,7 +194,6 @@ if script_actif == true then
                 local objet = 'Surveillance consommation d\'eau'
                 local message = 'consommation d\'eau détectée entre '..heure..'h'..minute..' et '..heure + delai ..'h'..minute
                 if EmailTo ~= nil then commandArray[#commandArray+1] = {['SendEmail'] =  objet..'#'.. message  .. '#' .. EmailTo} end
-            
             else
                 local objet = 'Surveillance consommation d\'eau'
                 local message = 'Aucune consommation d\'eau détectée entre '..heure..'h'..minute..' et '..heure + delai ..'h'..minute  
@@ -225,13 +209,9 @@ if script_actif == true then
                         commandArray[#commandArray+1] = {['SendNotification'] = objet..'#Aucune consommation d\'eau détectée sur le ' .. d.name .. ' entre '.. heure ..'h'.. minute ..' et '.. heure + delai ..'h'.. minute}
                     end
                 end
-                
             end
-
         end --end for
-       
         voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") Fin Période zéro consommation =========",debugging)
     end    
-
 end -- if script_actif
 return commandArray
