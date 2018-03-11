@@ -8,6 +8,7 @@ exporter les données de compteurs, Températures, etc.. sur le site https://emo
 Le script est lu toutes les minutes mais n'exporte les données que toutes les 2 minutes
 http://easydomoticz.com/forum/viewtopic.php?f=17&t=2017
 http://pon.fr/exporter-des-donnees-vers-le-site-emoncms/
+https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_export_emoncms.lua
 ]]--
 
 --------------------------------------------
