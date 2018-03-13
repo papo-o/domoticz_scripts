@@ -1,6 +1,6 @@
 --[[script_time_detec_fuite_eau.lua
 auteur : papoo
-MAJ : 07/03/2018
+MAJ : 13/03/2018
 Création : 25/04/2016
 Script LUA pour Domoticz permettant la vérification périodique de la consommation d'eau (toutes les 5 minutes) par comparaison avec l'index précédent, présent dans une variable utilisateur créée automatiquement lors de la première exécution du script.
 - Si l'index compteur et l'index -5mn sont identique, le device probabilité est remis à zéro => pas de fuite.
@@ -26,11 +26,11 @@ https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_detec_fui
 local debugging       = true                    -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif    = true                    -- active (true) ou désactive (false) ce script simplement
 local url             = '127.0.0.1:8080'        -- user:pass@ip:port de domoticz
-local heure           = 2			    	    -- (0-24) heure de début de la période zéro consommation
+local heure           = 0			    	    -- (0-24) heure de début de la période zéro consommation
 local minute          = 15                      -- (0-60) minute de début de la période zéro consommation
-local delai           = 3                       -- délai en heure de la période d'observation zéro consommation
+local delai           = 5                       -- délai en heure de la période d'observation zéro consommation
 local EmailTo         = nil                     -- adresse pour être notifié par mail nil si inutilisé. Séparer les adresses par un ; exemple : 'premiere.adresse@mail.com;deuxieme.adresse@mail.com'
-local notification    = 1                       -- 0: aucune notification, 1: toutes , 2: seulement en cas de fuite
+local notification    = 2                       -- 0: aucune notification, 1: toutes , 2: seulement en cas de fuite
 local subsystem       = 'telegram'              -- les différentes valeurs de subsystem acceptées sont : gcm;http;kodi;lms;nma;prowl;pushalot;pushbullet;pushover;pushsafer;telegram
                                                 -- pour plusieurs modes de notification séparez chaque mode par un point virgule (exemple : "pushalot;pushbullet"). si subsystem = nil toutes les notifications seront activées.
 local les_compteurs = {};
@@ -43,7 +43,7 @@ les_compteurs[#les_compteurs+1] = {name="Compteur Eau Chaude", dummy="Probabilit
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = "détection fuite d\'eau"
-local version = "2.1"
+local version = "2.2"
 --------------------------------------------
 ---------------- Fonctions -----------------
 --------------------------------------------
@@ -83,7 +83,7 @@ if script_actif == true then
         if v==nil or v=="" then                  -- multi valued ?
             v=otherdevices_svalues[d.name] or ""
         end
-        voir_les_logs("--- --- --- "..d.name.." = "..v,debugging)
+        voir_les_logs("--- --- --- "..d.name.." idx : ".. otherdevices_idx[d.name] .." = ".. v .." litre(s)",debugging)
             if(uservariables[d.name.."_zero"] == nil) then -- Création de la variable  car elle n'existe pas
                 voir_les_logs("--- --- --- La Variable " .. d.name .." n'existe pas --- --- --- ",debugging)
                 commandArray['OpenURL'] = url..'/json.htm?type=command&param=saveuservariable&vname='..url_encode(d.name.."_zero")..'&vtype=2&vvalue=1'
@@ -107,7 +107,7 @@ if script_actif == true then
                     voir_les_logs("--- --- ---  Mise à jour de la variable "..d.name.." --- --- --- ",debugging)
                     
                     if (d.name ~= "" and otherdevices_idx[d.dummy] ~= nil) then
-                        voir_les_logs("--- --- --- valeur de la variable pourcentage "..otherdevices_svalues[d.name].."%  --- --- --- ",debugging)	--tonumber(otherdevices_svalues['lamp dimmer'])
+                        voir_les_logs("--- --- --- valeur de la variable pourcentage "..otherdevices_svalues[d.dummy].."%  --- --- --- ",debugging)	--tonumber(otherdevices_svalues['lamp dimmer'])
                         local result = tonumber(otherdevices_svalues[d.dummy]) + 8
                         commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[d.dummy] .. "|0|" .. result} -- Mise à jour probabilité => 8% * (60/5) = 96% en 1 heure
                         
@@ -175,7 +175,7 @@ if script_actif == true then
                 
                 if(otherdevices_idx[d.name] ~= "" and d.dummy ~= "") then
                     voir_les_logs("--- --- --- valeur de la variable pourcentage "..otherdevices_svalues[d.dummy].."%  --- --- --- ",debugging)	--tonumber(otherdevices_svalues['lamp dimmer'])                     
-                    commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[d.name] .. "|0|100"} -- Mise à jour probabilité à100%
+                    commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[d.dummy] .. "|0|100"} -- Mise à jour probabilité à100%
                 local objet = 'Surveillance consommation d\'eau'
                 local message = ' Une consommation d\'eau de ' .. conso ..' Litre(s) a été détectée sur le ' .. d.name .. ' entre '..heure..'h'..minute..' et '..heure + delai ..'h'..minute                    
                 voir_les_logs("--- --- --- ".. message .." --- --- --- ",debugging)
