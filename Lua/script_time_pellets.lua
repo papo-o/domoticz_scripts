@@ -3,7 +3,7 @@ name : script_time_pellets.lua
 auteur : papoo
 date de création : 15/02/2018
 Date de mise à jour : 17/03/2018
-Principe : 
+Principe : ce script utilise l'api du site https://www.ecopellets.fr/ 
 
 /!\attention/!\
 si vous souhaitez utiliser ce script dans l'éditeur interne, pour indiquer le chemin complet vers le fichier JSON.lua, il vous faudra changer la ligne 
@@ -19,43 +19,42 @@ la reconnaissance automatique du chemin d'exécution de ce script ne fonctionnan
 -------------------------------------------- 
 
 local debugging = true                                                      -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
-local script_actif = true                                                   -- active (true) ou désactive (false) ce script simplement
+local script_actif = true                                                  -- active (true) ou désactive (false) ce script simplement
 local delai = 30                                                             -- délai d'exécution de ce script en minutes de 1 à 59 (délai entre deux appels à l'API)
 local url_info_pellets = "https://www.ecopellets.fr/appjson.php?uniqid="    -- Adresse de l'API ecopellets
-local uniqid = "c49f8579b9aec326eac372e8a70xxxxx"             -- votre uniqid
+local uniqid = "c49f8579b9aec326eac372e8a70xxxxx"                           -- votre uniqid
 local domoticzURL = "127.0.0.1:8080"
 local les_devices = {};
 -- comment remplir le tableau les_devices ?  
 -- device = le nom du dispositif à créer/incrémenter
 -- sensortype = le ype de device à créer/incrémenter  
-
+-- commentez les devices que vous ne souhaitez pas utiliser
 -- les_devices[#les_devices+1] = {device="", sensortype =""}
-les_devices[#les_devices+1] = {device = "qtemois" , nom = "Consommation mois en cours", sensortype = 5} -- 1er device
-les_devices[#les_devices+1] = {device = "prixmois" , nom = "Coût mensuel", sensortype = 5} -- 2éme device
-les_devices[#les_devices+1] = {device = "tendance" , nom = "Tendance", sensortype = 5} -- 3éme device
-les_devices[#les_devices+1] = {device = "stock0" , nom = "Stock zéro", sensortype = 5} -- 4éme device
+les_devices[#les_devices+1] = {device = "qtemois" , nom = "Consommation mois en cours", sensortype = 113} -- 1er device
+les_devices[#les_devices+1] = {device = "prixmois" , nom = "Coût mensuel", sensortype = 113} -- 2éme device
+les_devices[#les_devices+1] = {device = "tendance" , nom = "Tendance", sensortype = 113} -- 3éme device
+les_devices[#les_devices+1] = {device = "stock0" , nom = "Stock zéro", sensortype = 113} -- 4éme device
 les_devices[#les_devices+1] = {device = "datestock0" , nom = "Date stock zéro", sensortype = 5} -- 5éme device
-les_devices[#les_devices+1] = {device = "qtelastmonth" , nom = "Quantité mois passé", sensortype = 5} -- 6éme device
-les_devices[#les_devices+1] = {device = "prixlastmonth" , nom = "Coût mois passé", sensortype = 5} -- 7éme device
-les_devices[#les_devices+1] = {device = "qtesept" , nom = "Quantité depuis septembre", sensortype = 5} -- 8éme device
-les_devices[#les_devices+1] = {device = "coutsept" , nom = "Coût depuis septembre", sensortype = 5} -- 9éme device
-les_devices[#les_devices+1] = {device = "qtestock" , nom = "État du stock", sensortype = 5} -- 10éme device
-les_devices[#les_devices+1] = {device = "prixstock" , nom = "Coût du stock", sensortype = 5} -- 11éme device
-les_devices[#les_devices+1] = {device = "coutotal" , nom = "Coût total", sensortype = 5} -- 12éme device
-les_devices[#les_devices+1] = {device = "coutreparation" , nom = "Coût réparation", sensortype = 5} -- 13éme device
-les_devices[#les_devices+1] = {device = "coutentretien" , nom = "Coût entretien", sensortype = 5} -- 14éme device
+les_devices[#les_devices+1] = {device = "qtelastmonth" , nom = "Quantité mois passé", sensortype = 113} -- 6éme device
+les_devices[#les_devices+1] = {device = "prixlastmonth" , nom = "Coût mois passé", sensortype = 113} -- 7éme device
+les_devices[#les_devices+1] = {device = "qtesept" , nom = "Quantité depuis septembre", sensortype = 113} -- 8éme device
+les_devices[#les_devices+1] = {device = "coutsept" , nom = "Coût depuis septembre", sensortype = 113} -- 9éme device
+les_devices[#les_devices+1] = {device = "qtestock" , nom = "État du stock", sensortype = 113} -- 10éme device
+les_devices[#les_devices+1] = {device = "prixstock" , nom = "Coût du stock", sensortype = 113} -- 11éme device
+les_devices[#les_devices+1] = {device = "coutotal" , nom = "Coût total", sensortype = 113} -- 12éme device
+les_devices[#les_devices+1] = {device = "coutreparation" , nom = "Coût réparation", sensortype = 113} -- 13éme device
+les_devices[#les_devices+1] = {device = "coutentretien" , nom = "Coût entretien", sensortype = 113} -- 14éme device
 
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
-
 --------------------------------------------
 ------------- Autres Variables -------------
 --------------------------------------------
 local nom_script = 'Infos ecopellets.fr'
-local version = '0.3'
-curl = '/usr/bin/curl -m 5 '		 	-- ne pas oublier l'espace à la fin
-
+local version = '1.0'
+curl = '/usr/bin/curl -m 5 '		 	    -- pour linux, ne pas oublier l'espace à la fin
+-- curl = 'c:\\Programs\\Curl\\curl -m 5 '  -- pour windows, ne pas oublier l'espace à la fin
 -- chemin vers le dossier lua
 	if (package.config:sub(1,1) == '/') then
 		 luaDir = debug.getinfo(1).source:match("@?(.*/)")
@@ -90,8 +89,8 @@ function url_encode(str) -- encode la chaine str pour la passer dans une url
    end
    return str
 end 
-
-function CreateVirtualSensor(dname, sensortype)  --text =>5
+--------------------------------------------
+function CreateVirtualSensor(dname, sensortype)
     -- recherche d'un hardware dummy pour l'associer au futur device
     local config = assert(io.popen(curl..'"'.. domoticzURL ..'/json.htm?type=hardware" &'))
     local blocjson = config:read('*all')
@@ -106,7 +105,8 @@ function CreateVirtualSensor(dname, sensortype)  --text =>5
            end  
        end
     end
-    if id ~= nil then 
+
+    if id ~= nil then -- si un hardware dummy existe on peut créer le device
         voir_les_logs("--- --- --- création du device   : ".. dname .. " --- --- ---",debugging)
         voir_les_logs(curl..'"'.. domoticzURL ..'/json.htm?type=createvirtualsensor&idx='..id..'&sensorname='..url_encode(dname)..'&sensortype='..sensortype..'"',debugging)
         os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=createvirtualsensor&idx='..id..'&sensorname='..url_encode(dname)..'&sensortype='..sensortype..'"')
@@ -127,6 +127,40 @@ function CreateVirtualSensor(dname, sensortype)  --text =>5
 
 end 
 --------------------------------------------
+function DeviceInfos(device)  
+    --[[
+        inspiré de  http://www.domoticz.com/forum/viewtopic.php?f=61&t=15556&p=115795&hilit=otherdevices_SwitchTypeVal&sid=dda0949f5f3d71cb296b865a14827a34#p115795
+    Attributs disponibles :
+    AddjMulti; AddjMulti2; AddjValue; AddjValue2; BatteryLevel; CustomImage; Data; Description; Favorite; 
+    HardwareID; HardwareName; HardwareType; HardwareTypeVal; HaveDimmer; HaveGroupCmd; HaveTimeout; ID; 
+    Image; IsSubDevice; LastUpdate; Level; LevelInt; MaxDimLevel; Name; Notifications; PlanID; PlanIDs; 
+    Protected; ShowNotifications; SignalLevel; Status; StrParam1; StrParam2; SubType; SwitchType; 
+    SwitchTypeVal; Timers; Type; TypeImg; Unit; Used; UsedByCamera; XOffset; YOffset; idx
+    --]]
+local config = assert(io.popen(curl..'"'.. domoticzURL ..'/json.htm?type=devices&rid='..otherdevices_idx[device]..'"'))
+local blocjson = config:read('*all')
+config:close()
+local jsonValeur = json:decode(blocjson)
+    if jsonValeur ~= nil then
+        return json:decode(blocjson).result[1]    
+    end       
+end --[[usage : 
+        local attribut = DeviceInfos(device)
+        if attribut.SwitchTypeVal == 0 then    end
+    --]]
+--------------------------------------------
+function ConvertCounter(devicename)
+local attribut = DeviceInfos(devicename)
+    if attribut then
+        if attribut.SwitchTypeVal == 0 then
+            voir_les_logs("--- --- --- modification du device RFXMeter  : ".. devicename .. " en compteur de type 3  --- --- ---",debugging) 
+            os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=setused&idx='..otherdevices_idx[devicename]..'&name='..url_encode(devicename)..'&switchtype=3&used=true"')
+        end
+    else
+        voir_les_logs("--- --- --- impossible d\'extraire les caractéristiques du compteur ".. devicename .."  --- --- ---",debugging)
+    end
+end   
+--------------------------------------------
 -------------- Fin Fonctions ---------------
 --------------------------------------------
 commandArray = {}
@@ -135,13 +169,7 @@ time = os.date("*t")
 if script_actif == true then
     if ((time.min-1) % delai) == 0 then -- toutes les xx minutes en commençant par xx:01    
         voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
---if otherdevices["test2"] == nil then CreateVirtualSensor("test2", "pourcentage") end
         --=========== Lecture json ===============--
-
-
-        
-        
-        
         local config = assert(io.popen(curl..' "'.. url_info_pellets .. uniqid ..'"')) 
         --end
         local blocjson = config:read('*all')
@@ -197,7 +225,17 @@ if script_actif == true then
                     CreateVirtualSensor(Vnom, Vtype) 
                     voir_les_logs('--- --- --- création device : '..Vdevice.. ' sensortype : '..Vtype,debugging)
                 end
+                if Vtype == 113 then 
+                    local attribut = DeviceInfos(Vnom)
+                    if attribut.SwitchTypeVal == 0 then
+                        voir_les_logs("--- --- --- modification du device RFXMeter  : ".. Vnom .. " en compteur de type 3  --- --- ---",debugging) 
+                        os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=setused&idx='..otherdevices_idx[Vnom]..'&name='..url_encode(Vnom)..'&switchtype=3&used=true"')
+                    end
+                end 
+                
+                
                 if otherdevices[Vnom] ~= nil then
+
                 local variable = tostring(_G[Vdevice])
                     --print(variable)
                     voir_les_logs("--- --- --- mise à jour  ".. Vnom.." : "..variable,debugging)
