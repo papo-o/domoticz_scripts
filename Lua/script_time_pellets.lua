@@ -2,9 +2,11 @@
 name : script_time_pellets.lua
 auteur : papoo
 date de création : 15/02/2018
-Date de mise à jour : 17/03/2018
+Date de mise à jour : 18/03/2018
 Principe : ce script utilise l'api du site https://www.ecopellets.fr/ 
-
+https://pon.fr/lua-recuperation-des-informations-du-site-ecopellets/
+https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_pellets.lua
+http://easydomoticz.com/forum/viewtopic.php?f=10&t=6122&p=51452#p51452
 /!\attention/!\
 si vous souhaitez utiliser ce script dans l'éditeur interne, pour indiquer le chemin complet vers le fichier JSON.lua, il vous faudra changer la ligne 
 json = assert(loadfile(luaDir..'JSON.lua'))()
@@ -13,6 +15,7 @@ json = assert(loadfile('/le/chemin/vers/le/fichier/lua/JSON.lua'))()
 exemple :
 json = assert(loadfile('/home/pi/domoticz/scripts/lua/JSON.lua'))()
 la reconnaissance automatique du chemin d'exécution de ce script ne fonctionnant pas dans l'éditeur interne
+
 --]]
 --------------------------------------------
 ------------ Variables à éditer ------------
@@ -22,14 +25,14 @@ local debugging = true                                                      -- t
 local script_actif = true                                                  -- active (true) ou désactive (false) ce script simplement
 local delai = 30                                                             -- délai d'exécution de ce script en minutes de 1 à 59 (délai entre deux appels à l'API)
 local url_info_pellets = "https://www.ecopellets.fr/appjson.php?uniqid="    -- Adresse de l'API ecopellets
-local uniqid = "c49f8579b9aec326eac372e8a70xxxxx"                           -- votre uniqid
+local uniqid = "c49f8579b9aec326eac372e8a7xxxxx"                           -- votre uniqid
 local domoticzURL = "127.0.0.1:8080"
 local les_devices = {};
 -- comment remplir le tableau les_devices ?  
 -- device = le nom du dispositif à créer/incrémenter
 -- sensortype = le ype de device à créer/incrémenter  
 -- commentez les devices que vous ne souhaitez pas utiliser
--- les_devices[#les_devices+1] = {device="", sensortype =""}
+-- les_devices[#les_devices+1] = {device="", nom ="", sensortype =""}
 les_devices[#les_devices+1] = {device = "qtemois" , nom = "Consommation mois en cours", sensortype = 113} -- 1er device
 les_devices[#les_devices+1] = {device = "prixmois" , nom = "Coût mensuel", sensortype = 113} -- 2éme device
 les_devices[#les_devices+1] = {device = "tendance" , nom = "Tendance", sensortype = 113} -- 3éme device
@@ -52,7 +55,7 @@ les_devices[#les_devices+1] = {device = "coutentretien" , nom = "Coût entretien
 ------------- Autres Variables -------------
 --------------------------------------------
 local nom_script = 'Infos ecopellets.fr'
-local version = '1.0'
+local version = '1.1'
 curl = '/usr/bin/curl -m 5 '		 	    -- pour linux, ne pas oublier l'espace à la fin
 -- curl = 'c:\\Programs\\Curl\\curl -m 5 '  -- pour windows, ne pas oublier l'espace à la fin
 -- chemin vers le dossier lua
@@ -137,17 +140,21 @@ function DeviceInfos(device)
     Protected; ShowNotifications; SignalLevel; Status; StrParam1; StrParam2; SubType; SwitchType; 
     SwitchTypeVal; Timers; Type; TypeImg; Unit; Used; UsedByCamera; XOffset; YOffset; idx
     --]]
-local config = assert(io.popen(curl..'"'.. domoticzURL ..'/json.htm?type=devices&rid='..otherdevices_idx[device]..'"'))
-local blocjson = config:read('*all')
-config:close()
-local jsonValeur = json:decode(blocjson)
-    if jsonValeur ~= nil then
-        return json:decode(blocjson).result[1]    
-    end       
+local idx =  otherdevices_idx[device]   
+    if idx then
+        local config = assert(io.popen(curl..'"'.. domoticzURL ..'/json.htm?type=devices&rid='..otherdevices_idx[device]..'"'))
+        local blocjson = config:read('*all')
+        config:close()
+        local jsonValeur = json:decode(blocjson)
+        if jsonValeur ~= nil then
+            return json:decode(blocjson).result[1]    
+        end
+    end    
 end --[[usage : 
         local attribut = DeviceInfos(device)
         if attribut.SwitchTypeVal == 0 then    end
     --]]
+    
 --------------------------------------------
 function ConvertCounter(devicename)
 local attribut = DeviceInfos(devicename)
@@ -226,11 +233,7 @@ if script_actif == true then
                     voir_les_logs('--- --- --- création device : '..Vdevice.. ' sensortype : '..Vtype,debugging)
                 end
                 if Vtype == 113 then 
-                    local attribut = DeviceInfos(Vnom)
-                    if attribut.SwitchTypeVal == 0 then
-                        voir_les_logs("--- --- --- modification du device RFXMeter  : ".. Vnom .. " en compteur de type 3  --- --- ---",debugging) 
-                        os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=setused&idx='..otherdevices_idx[Vnom]..'&name='..url_encode(Vnom)..'&switchtype=3&used=true"')
-                    end
+                    ConvertCounter(Vnom)
                 end 
                 
                 
