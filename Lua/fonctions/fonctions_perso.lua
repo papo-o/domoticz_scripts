@@ -254,7 +254,7 @@ end
 	
 --============================================================================================== 
   function Pushbullet(Message)  -- séparer titre et message par un ;
-    local pb_token = ''
+    local pb_token = 'o.vzvYdwX71Jazyy1QcyIV9Vgj24RnTObR'
     local pb_total = Message
     local val=string.find(pb_total,";")
     local pb_title = string.sub(pb_total,1,val-1)
@@ -393,6 +393,30 @@ function validIP(ip) --https://stackoverflow.com/questions/10975935/lua-function
     else
         return false
     end
+--==============================================================================================    
+function CreateVirtualSensor(dname, sensortype)
+    -- recherche d'un hardware dummy pour l'associer au futur device
+    local config = assert(io.popen(curl..'"'.. domoticzURL ..'/json.htm?type=hardware" &'))
+    local blocjson = config:read('*all')
+    config:close()
+    local jsonValeur = json:decode(blocjson)
+    if jsonValeur ~= nil then
+       for Index, Value in pairs( jsonValeur.result ) do
+           if Value.Type == 15 then -- hardware dummy = 15
+              voir_les_logs("--- --- --- idx hardware dummy  : ".. Value.idx .." --- --- ---",debugging)
+              voir_les_logs("--- --- --- Nom hardware dummy  : ".. Value.Name .." --- --- ---",debugging)                  
+              id = Value.idx
+           end  
+       end
+    end
+    if id ~= nil then -- si un hardware dummy existe on peut créer le device
+        voir_les_logs("--- --- --- création du device   : ".. dname .. " --- --- ---",debugging)
+        voir_les_logs(curl..'"'.. domoticzURL ..'/json.htm?type=createvirtualsensor&idx='..id..'&sensorname='..url_encode(dname)..'&sensortype='..sensortype..'"',debugging)
+        os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=createvirtualsensor&idx='..id..'&sensorname='..url_encode(dname)..'&sensortype='..sensortype..'"')
+        voir_les_logs("--- --- --- device   : ".. dname .. " créé --- --- ---",debugging)         
+    end
+end
+--https://github.com/domoticz/domoticz/blob/development/hardware/hardwaretypes.h    
 -------------------------------------------
 -------------Fin Fonctions-----------------
 -------------------------------------------
