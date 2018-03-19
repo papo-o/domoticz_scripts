@@ -19,7 +19,7 @@ URL github : https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_t
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local debugging = false  	            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = true  	            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif    = true            -- active (true) ou désactive (false) ce script simplement
 local delai = 2                         -- délai d'exécution de ce script en minutes de 1 à 59
 local only_mail = false                 -- true si l'on ne souhaite être notifié que par mail, false si l'on souhaite toutes les notifications disponible.
