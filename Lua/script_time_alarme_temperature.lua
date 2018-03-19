@@ -1,5 +1,5 @@
 --[[
-name : script_time_alarme_temperature.lua
+script_time_alarme_temperature.lua
 auteur : papoo
 
 MAJ : 13/03/2018
@@ -7,19 +7,19 @@ création : 15/08/2016
 
 Principe : ce script vérifie toutes les deux minutes (modifiable via la variable delai) si il n'y a pas une augmentation de température anormale
 sur les sondes de températures référencées dans le tableau les_devices.
-vous pouvez définir un seuil de température (en °C) par sonde ou par groupe ou par defaut, actuellement 3 groupes disponible : ambiance, frigo, congel
+vous pouvez définir un seuil de température (en °C) par sonde ou par groupe ou par défaut, actuellement 3 groupes disponible : ambiance, frigo, congel
 le seuil défini par sonde est prioritaire sur le seuil par groupe qui est prioritaire sur le seuil par défaut
-comparaison de chaque température au seuil fixé.
-Si une ou plusieurs températures sont supérieures à ce seuil, envoie d'une notification pour chacune d'elle.
+comparaison de chaque température au seuil fixé et envoi d'une notification si dépassement du seuil.
+Si plusieurs températures sont supérieures au(x) seuil(s), envoie d'une notification pour chacune d'elle.
 /!\ si le seuil est fixé trop bas, cela risque de générer beaucoup de notifications et éventuellement bloquer les services de type pushbullet.
-url blog : https://pon.fr/lua-alarme-augme…n-temperature-v2/
+url blog : https://pon.fr/lua-alarme-augmentation-temperature-v2
 URL post : http://easydomoticz.com/forum/viewtopic.php?f=17&t=2319
 URL github : https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_alarme_temperature.lua
 --]]
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local debugging = true  	            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = false  	            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif    = true            -- active (true) ou désactive (false) ce script simplement
 local delai = 2                         -- délai d'exécution de ce script en minutes de 1 à 59
 local only_mail = false                 -- true si l'on ne souhaite être notifié que par mail, false si l'on souhaite toutes les notifications disponible.
@@ -32,8 +32,8 @@ local seuil_congel = '-5'               -- seuil en °C par défaut avant notifi
 local les_devices = {};
 -- comment remplir le tableau les_devices ?  
 -- device = le nom du dispositif à surveiller
--- type_device = le nom du groupe auquel appartient le device à surveiller : ambiance, frigo, congel.  
--- seuil = seuil particulier à n'utiliser que sur le device concerné, inhibe le seuil affecté au groupe. si aucun seuil particulier, nil.
+-- type_device = le nom du groupe auquel appartient le device à surveiller : ambiance, frigo, congel.  Si aucun groupe particulier, nil.
+-- seuil = seuil particulier à n'utiliser que sur le device concerné, inhibe le seuil affecté au groupe et le seuil par défaut . Si aucun seuil particulier, nil.
 -- si type_device = nil et seuil = nil le seuil defaut_seuil sera appliqué.
 -- Pour activer un ou plusieurs mode de notifications particuliers renseigner subsystem
 -- les différentes valeurs de subsystem acceptées sont : gcm;http;kodi;lms;nma;prowl;pushbullet;pushover;pushsafer;telegram
@@ -47,9 +47,7 @@ les_devices[#les_devices+1] = {device="Temperature Cuisine",  type_device = "amb
 les_devices[#les_devices+1] = {device="Temperature Douche",  type_device = "ambiance", seuil = nil, subsystem = nil} -- 6eme device
 les_devices[#les_devices+1] = {device="Réfrigérateur",  type_device = "frigo", seuil = nil, subsystem = "telegram"} -- 7eme device
 les_devices[#les_devices+1] = {device="Congélateur",  type_device = "congel", seuil = nil, subsystem = "telegram"} -- 8eme device
-les_devices[#les_devices+1] = {device="Temperature Maud", type_device ="ambiance", seuil = nil, subsystem = nil} -- 9eme device
-les_devices[#les_devices+1] = {device="Temperature Audrey",  type_device = "ambiance", seuil = nil, subsystem = nil} -- 10eme device
-les_devices[#les_devices+1] = {device="Temperature Entree",  type_device = "ambiance", seuil = nil, subsystem = nil} -- 11eme device
+
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
