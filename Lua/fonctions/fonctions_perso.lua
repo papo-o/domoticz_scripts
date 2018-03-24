@@ -378,6 +378,7 @@ function validIP(ip) --https://stackoverflow.com/questions/10975935/lua-function
     else
         return false
     end
+end
 --==============================================================================================    
 function CreateVirtualSensor(dname, sensortype)
     -- recherche d'un hardware dummy pour l'associer au futur device
