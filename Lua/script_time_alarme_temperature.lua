@@ -13,7 +13,7 @@ comparaison de chaque température au seuil fixé et envoi d'une notification si
 Si plusieurs températures sont supérieures au(x) seuil(s), envoie d'une notification pour chacune d'elle.
 /!\ si le seuil est fixé trop bas, cela risque de générer beaucoup de notifications et éventuellement bloquer les services de type pushbullet.
 url blog : https://pon.fr/lua-alarme-augmentation-temperature-v2
-URL post : http://easydomoticz.com/forum/viewtopic.php?f=17&t=2319
+URL post : http://easydomoticz.com/forum/viewtopic.php?f=17&t=6205
 URL github : https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_alarme_temperature.lua
 --]]
 --------------------------------------------
