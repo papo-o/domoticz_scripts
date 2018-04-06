@@ -1,7 +1,7 @@
 --[[   
 ~/domoticz/scripts/lua/script_time_dju.lua
 auteur : papoo
-MAJ : 28/01/2018
+MAJ : 06/04/2018
 création : 26/12/2017
 Principe :
 Calculer, via l'information température d'une sonde extérieure, les Degrés jour Chauffage et Froid "intégrales"
@@ -23,7 +23,7 @@ local heure_raz_var = 23                            -- heure de l'incrémentatio
 local minute_raz_var = 59                           -- Minute de l'incrémentation du compteur DJC compteur_djc_idx et de remise à zéro de la variable utilisateur var_user_djc
 
 local var_user_djf = nil                            -- nom de la variable utilisateur de type 2 (chaine) pour le stockage temporaire des données journalières DJF, nil si inutilisé
-local cpt_djf = 'DJF'   				            -- nom du  dummy compteur DJF en degré, nil si vous ne souhaitez pas calculer les Degrés Jour Climatisation
+local cpt_djf = nil   				            -- nom du  dummy compteur DJF en degré, nil si vous ne souhaitez pas calculer les Degrés Jour Climatisation
 
 local coef_gaz = 10.83                              -- coefficient moyen gaz pour votre commune
 local cpt_gaz = 'Compteur Gaz'                      -- nom de votre compteur gaz, nil si vous ne souhaitez pas calculer l'énergie consommée             
@@ -36,7 +36,7 @@ local div = 100                                     -- conversion impulsion gaz 
 -------------------------------------------- 
 commandArray = {}
 local nom_script = 'Calcul Degrés jour Chauffage et Froid'
-local version = '1.31'
+local version = '1.32'
 
 local djc
 local somme_djc
@@ -159,18 +159,20 @@ if script_actif == true then
             commandArray[#commandArray+1] = {['Variable:'.. var_user_djc] = tostring(somme_djc)}
             cpt_djc_index = otherdevices_svalues[cpt_djc]
             voir_les_logs("--- --- compteur DJC : ".. cpt_djc_index .." --- ---",debugging)
-        else --si la température extérieure est supérieure à 18 
+        else --si la température extérieure est supérieure à 18
             voir_les_logs("--- --- Température extérieure : ".. temperature .."°C  supérieure à 18°C --- ---",debugging)
             djf = calc_djf(temperature)
             voir_les_logs("--- --- DJF : ".. round(djf,5) .." --- ---",debugging)
-            voir_les_logs("--- --- Variable DJF : ".. round(tonumber(uservariables[var_user_djf]),4) .." --- ---",debugging)
-            somme_djf = tonumber(uservariables[var_user_djf]) + djf
-            voir_les_logs("--- --- somme DJF : ".. round(somme_djf,4) .." --- ---",debugging)   
-            commandArray[#commandArray+1] = {['Variable:'.. var_user_djf] = tostring(somme_djf)}
-            cpt_djf_index = otherdevices_svalues[cpt_djf]
-            voir_les_logs("--- --- compteur DJF : ".. cpt_djf_index .." --- ---",debugging)
-            somme_djc = tonumber(uservariables[var_user_djc])
-            voir_les_logs("--- --- somme DJC : ".. somme_djc .." --- ---",debugging)
+            if var_user_djf ~= nil and cpt_djf ~= nil then
+                voir_les_logs("--- --- Variable DJF : ".. round(tonumber(uservariables[var_user_djf]),4) .." --- ---",debugging)
+                somme_djf = tonumber(uservariables[var_user_djf]) + djf
+                voir_les_logs("--- --- somme DJF : ".. round(somme_djf,4) .." --- ---",debugging)   
+                commandArray[#commandArray+1] = {['Variable:'.. var_user_djf] = tostring(somme_djf)}
+                cpt_djf_index = otherdevices_svalues[cpt_djf]
+                voir_les_logs("--- --- compteur DJF : ".. cpt_djf_index .." --- ---",debugging)
+                somme_djc = tonumber(uservariables[var_user_djc])
+                voir_les_logs("--- --- somme DJC : ".. somme_djc .." --- ---",debugging)
+            end
         end -- fin si temp ext
      
         if tonumber(uservariables[var_user_djc]) > 1 and cpt_djc ~= nil then -- si variable djc supérieure à 1 on incrémente le compteur de 1 et on réduit la variable de 1 
