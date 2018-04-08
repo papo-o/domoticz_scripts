@@ -1,8 +1,8 @@
 --[[
 name : script_time_probabilite_pluie.lua
 auteur : papoo
-date de création : 04/02/2018
-Date de mise à jour : 16/02/2018
+Date de mise à jour : 08/04/2018
+date de création : 09/08/2016
 Principe : Ce script a pour but d'interroger l'API du site https://www.wunderground.com/ toutes les heures afin de 
 récuperer les calculs de probabilités de pluie et de neige sur 36 heures pour une ville donnée. Cette API utilise une clé gratuite pour 500 requêtes par heure
 Il faut donc s'inscrire sur weatherunderground pour avoir accès à cette API 
@@ -13,12 +13,14 @@ http://easydomoticz.com/forum/viewtopic.php?f=17&t=2301#p20893
 https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_probabilite_pluie.lua
 
 Ce script utilise Lua-Simple-XML-Parser https://github.com/Cluain/Lua-Simple-XML-Parser
-]]--
+--]]
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
 
-local debugging = false  			            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = true  			            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local script_actif = true                       -- active (true) ou désactive (false) ce script simplement
+local delai = 60                                -- délai d'exécution de ce script en minutes de 1 à 59
 local pays='FRANCE'					            -- Votre pays, nécessaire pour l'API
 local api_wu = 'api_weather_underground' 	    -- Nom de la variable utilisateur contenant l'API Weather Underground de 16 caractères préalablement créé (variable de type chaine)
 local ville='Limoges'    			            -- Votre ville ou commune 
@@ -31,6 +33,7 @@ proba_pluie_h[4]=639   				            -- renseigner l'idx du device % probabili
 proba_pluie_h[6]=506    			            -- renseigner l'idx du device % probabilité pluie à 6 heures associé, nil si non utilisé
 proba_pluie_h[12]=507   			            -- renseigner l'idx du device % probabilité pluie à 12 heures associé, nil si non utilisé
 proba_pluie_h[24]=508   			            -- renseigner l'idx du device % probabilité pluie à 24 heures associé, nil si non utilisé
+
                                                 -- L'api fournie 36 probabilités de neige, 1 par heure.
 local proba_neige_h={}				            -- comme pour la pluie Ajoutez, modifiez ou supprimez les variables proba_neige_h[] 
                                                 -- en changeant le N° entre [] correspondant à l'heure souhaitée pour l'associer au device concerné dans dz	
@@ -47,9 +50,21 @@ local seuil_notification= nil	                -- pourcentage au delà duquel vous
 ----------- Fin variables à éditer ---------
 -------------------------------------------- 
 local nom_script = 'Probabilite Pluie'
-local version = '1.18'
+local version = '1.19'
 local pluie
 local neige
+
+-- chemin vers le dossier lua et curl
+if (package.config:sub(1,1) == '/') then
+	-- system linux
+	luaDir = debug.getinfo(1).source:match("@?(.*/)")
+	curl = '/usr/bin/curl -m 8 '		 							-- ne pas oublier l'espace à la fin
+else
+	-- system windows
+	luaDir = string.gsub(debug.getinfo(1).source:match("@?(.*\\)"),'\\','\\\\')
+	-- download curl : https://bintray.com/vszakats/generic/download_file?file_path=curl-7.54.0-win32-mingw.7z
+	curl = 'c:\\Programs\\Curl\\curl.exe '		 					-- ne pas oublier l'espace à la fin
+end
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
@@ -215,42 +230,43 @@ end
 -------------- Fin Fonctions ---------------
 -------------------------------------------- 
 commandArray = {}
-time=os.date("*t")
+if script_actif == true then
+    time=os.date("*t")
 
---if time.min % 2 == 0 then -- exécution du script toutes les X minute(s) 
-if ((time.min-1) % 60) == 0 then -- exécution du script toutes les heures à xx:01
-	voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
-local APIKEY = uservariables[api_wu]
+    if ((time.min-1) % delai) == 0 then -- toutes les xx minutes en commençant par xx:01.  xx définissable via la variable delai
+        voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+    local APIKEY = uservariables[api_wu]
 
-    local rid = assert(io.popen("/usr/bin/curl -m8 http://api.wunderground.com/api/"..APIKEY.."/hourly/lang:FR/q/"..pays.."/"..ville..".xml"))
-    voir_les_logs("--- --- --- http://api.wunderground.com/api/"..APIKEY.."/hourly/lang:FR/q/"..pays.."/"..ville..".xml",debugging)
-    local testXml = rid:read('*all')
-    rid:close()                    
+        local rid = assert(io.popen("curl http://api.wunderground.com/api/"..APIKEY.."/hourly/lang:FR/q/"..pays.."/"..ville..".xml"))
+        voir_les_logs("--- --- --- http://api.wunderground.com/api/"..APIKEY.."/hourly/lang:FR/q/"..pays.."/"..ville..".xml",debugging)
+        local testXml = rid:read('*all')
+        rid:close()                    
 
-local parsedXml = XmlParser:ParseXmlText(testXml)
-	if parsedXml then 
-        local abr = parsedXml.response.hourly_forecast	
-		for i in pairs(abr:children()) do 
-				if proba_pluie_h[i] ~= nil then 
-					pluie = tonumber(abr:children()[i]:children()[19]:value())
-					voir_les_logs("--- --- --- Probabilite de pluie a ".. i .."h => " .. pluie,debugging)
-					commandArray[#commandArray+1] = {['UpdateDevice'] = proba_pluie_h[i]..'|0|'.. pluie}
-					if seuil_notification ~= nil and pluie > seuil_notification then
-					commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte : '.. pluie ..' % de probabilité de pluie dans '.. i ..'heure(s)'}
-					
-					end
-				end
-				if proba_neige_h[i] ~=nil then
-					neige = tonumber(abr:children()[i]:children()[18]:children()[2]:value())
-					voir_les_logs("--- --- --- probabilite de neige a ".. i .."h => " .. neige,debugging)
-					commandArray[#commandArray+1] = {['UpdateDevice'] = proba_neige_h[i]..'|0|'.. neige}
-					if seuil_notification ~= nil and neige > seuil_notification then
-					commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte : '.. neige ..' % de probabilité de neige dans '.. i ..'heure(s)'}
-					end
-                    --print(abr:children()[i]:children()[4]:value())
-                end
-		end
-	end	
-	voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
-end -- if time
+    local parsedXml = XmlParser:ParseXmlText(testXml)
+        if parsedXml then 
+            local abr = parsedXml.response.hourly_forecast	
+            for i in pairs(abr:children()) do 
+                    if proba_pluie_h[i] ~= nil then 
+                        pluie = tonumber(abr:children()[i]:children()[19]:value())
+                        voir_les_logs("--- --- --- Probabilite de pluie a ".. i .."h => " .. pluie,debugging)
+                        commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[proba_pluie_h[i]]..'|0|'.. pluie}
+                        if seuil_notification ~= nil and pluie > seuil_notification then
+                        commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte : '.. pluie ..' % de probabilité de pluie dans '.. i ..'heure(s)'}
+                        
+                        end
+                    end
+                    if proba_neige_h[i] ~=nil then
+                        neige = tonumber(abr:children()[i]:children()[18]:children()[2]:value())
+                        voir_les_logs("--- --- --- probabilite de neige a ".. i .."h => " .. neige,debugging)
+                        commandArray[#commandArray+1] = {['UpdateDevice'] = proba_neige_h[i]..'|0|'.. neige}
+                        if seuil_notification ~= nil and neige > seuil_notification then
+                        commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte : '.. neige ..' % de probabilité de neige dans '.. i ..'heure(s)'}
+                        end
+                        --print(abr:children()[i]:children()[4]:value())
+                    end
+            end
+        end	
+        voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
+    end -- if time
+end    
 return commandArray
