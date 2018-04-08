@@ -2,7 +2,7 @@
 name : script_time_probabilite_pluie.lua
 auteur : papoo
 date de création : 04/02/2018
-Date de mise à jour : 26/12/2017
+Date de mise à jour : 16/02/2018
 Principe : Ce script a pour but d'interroger l'API du site https://www.wunderground.com/ toutes les heures afin de 
 récuperer les calculs de probabilités de pluie et de neige sur 36 heures pour une ville donnée. Cette API utilise une clé gratuite pour 500 requêtes par heure
 Il faut donc s'inscrire sur weatherunderground pour avoir accès à cette API 
@@ -17,9 +17,8 @@ Ce script utilise Lua-Simple-XML-Parser https://github.com/Cluain/Lua-Simple-XML
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local nom_script = 'Probabilite Pluie'
-local version = '1.17'
-local debugging = true  			            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+
+local debugging = false  			            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local pays='FRANCE'					            -- Votre pays, nécessaire pour l'API
 local api_wu = 'api_weather_underground' 	    -- Nom de la variable utilisateur contenant l'API Weather Underground de 16 caractères préalablement créé (variable de type chaine)
 local ville='Limoges'    			            -- Votre ville ou commune 
@@ -47,6 +46,8 @@ local seuil_notification= nil	                -- pourcentage au delà duquel vous
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 -------------------------------------------- 
+local nom_script = 'Probabilite Pluie'
+local version = '1.18'
 local pluie
 local neige
 --------------------------------------------
@@ -227,7 +228,8 @@ local APIKEY = uservariables[api_wu]
     rid:close()                    
 
 local parsedXml = XmlParser:ParseXmlText(testXml)
-	if (parsedXml) then local abr = parsedXml.response.hourly_forecast	
+	if parsedXml then 
+        local abr = parsedXml.response.hourly_forecast	
 		for i in pairs(abr:children()) do 
 				if proba_pluie_h[i] ~= nil then 
 					pluie = tonumber(abr:children()[i]:children()[19]:value())
