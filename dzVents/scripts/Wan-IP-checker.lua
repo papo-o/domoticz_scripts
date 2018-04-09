@@ -3,7 +3,7 @@ Stocker le script sous le nom Wan-IP-checker.lua dans le répertoire domoticz/sc
 script originel : Emme (Milano, Italy) https://www.domoticz.com/forum/viewtopic.php?t=14489
 modifié légèrement par Manjh http://www.domoticz.com/forum/viewtopic.php?f=65&t=16266&start=120#p171957
 modifié par papoo le 22/02/2018 pour suppression de l'utilisation du fichier temporaire, test de l'adresse IP résultante de la requête et création du device text si inexistant
-MAJ le : 23/02/2018
+MAJ le : 05/04/2018
 Le script est exécuté toutes les 30 minutes (modifiable) et va :
  1. créer un nouveau custom device de type text si un hardware correspondant existe (Dummy (Does nothing, use for virtual switches only)) ce n'est pas immédiat attendre au moins les 30 premières minutes avant de s’inquiéter
  2. récupérer votre adresse IP publique actuelle et la stocker dans le device text  auto créé (il faudra attendre 30 minutes supplémentaires pour que le device se mette à jour)
@@ -20,8 +20,10 @@ return {
     active = true,
 	on = {
 		timer = {
-            'every 30 minutes'
+            'every 2 hours'
+            --'every 2 minutes'
             --'every minute'
+            --'every 30 minutes'
 	},
         
         logging = { -- La section de journalisation facultative vous permet de remplacer le paramètre de journalisation globale de dzVents 
@@ -48,13 +50,15 @@ return {
 --------------------------------------------         
         
         local script        = 'Wan-IP-checker'
-        local version       = '1.3'
+        local version       = '1.4'
         local devIP         = domoticz.devices(devName)    
-        local getIP         = 'https://4.ifcfg.me/'
+        --local getIP         = 'https://4.ifcfg.me/'
+        local getIP         = 'http://whatismyip.akamai.com/'        
         local actIP         = ''
         local info          = ''
         local testIP        = ''
-        
+
+   
         
 		if (item.isTimer) and devIP then -- si le device existe on exécute normalement le script
 
@@ -92,7 +96,7 @@ return {
                         exemple : domoticz.notify('test notification pushbullet ', "message test", domoticz.PRIORITY_EMERGENCY,'','',domoticz.NSS_PUSHBULLET)
                         CAD => ,'','',domoticz.NSS_PUSHBULLET à la fin avant la parenthèse
                     --]]
-                    domoticz.notify('Attention! Changement d\'IP publique : '..location, msgTxt, domoticz.PRIORITY_EMERGENCY)
+                    domoticz.notify('Attention! Changement d\'IP publique : '..location, msgTxt, domoticz.PRIORITY_EMERGENCY,'','',domoticz.NSS_TELEGRAM)
                     devIP.updateText(actIP)
 
                 else 
