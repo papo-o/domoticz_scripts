@@ -1,7 +1,7 @@
 --[[
 name : script_time_probabilite_pluie.lua
 auteur : papoo
-Date de mise à jour : 08/04/2018
+Date de mise à jour : 09/04/2018
 date de création : 09/08/2016
 Principe : Ce script a pour but d'interroger l'API du site https://www.wunderground.com/ toutes les heures afin de 
 récuperer les calculs de probabilités de pluie et de neige sur 36 heures pour une ville donnée. Cette API utilise une clé gratuite pour 500 requêtes par heure
@@ -50,7 +50,7 @@ local seuil_notification= nil	                -- pourcentage au delà duquel vous
 ----------- Fin variables à éditer ---------
 -------------------------------------------- 
 local nom_script = 'Probabilite Pluie'
-local version = '1.19'
+local version = '1.20'
 local pluie
 local neige
 
@@ -249,7 +249,7 @@ if script_actif == true then
                     if proba_pluie_h[i] ~= nil then 
                         pluie = tonumber(abr:children()[i]:children()[19]:value())
                         voir_les_logs("--- --- --- Probabilite de pluie a ".. i .."h => " .. pluie,debugging)
-                        commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[proba_pluie_h[i]]..'|0|'.. pluie}
+                        commandArray[#commandArray+1] = {['UpdateDevice'] = proba_pluie_h[i]..'|0|'.. pluie}
                         if seuil_notification ~= nil and pluie > seuil_notification then
                         commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte : '.. pluie ..' % de probabilité de pluie dans '.. i ..'heure(s)'}
                         
