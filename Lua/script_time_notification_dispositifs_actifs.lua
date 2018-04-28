@@ -3,8 +3,8 @@ script_time_notification_dispositifs_actifs.lua
 Principe : être notifié lorsqu'un device reste à "On" ou "open" plus de X minutes
 possibilités de gestion des temps avant notification par groupes ou personnalisés par device
 Possibilités de personnaliser le type de notification pour chaque device
+Date MAJ : 28/04/2018
 Date Création : 22/12/2017 
-Date MAJ : 26/12/2017
 http://easydomoticz.com/forum/viewtopic.php?f=17&t=5540
 http://pon.fr/notification-dispositifs-actifs-en-lua
 ]]--
@@ -12,15 +12,13 @@ http://pon.fr/notification-dispositifs-actifs-en-lua
 --------------------------------------------
 ------------ Variables à éditer ------------
 --------------------------------------------
-local debugging = true  			-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
-local nom_script = 'Notification dispositifs actifs'
-local version = '1.12'
+local debugging = false  			-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local defaut_delai = "10"           -- délai en minutes par défaut avant notification pour tout les devices non personnalisés
 local delai_portes = "5"            -- délai en minutes par défaut avant notification pour les devices du groupe portes
 local delai_fenetres = "60"         -- délai en minutes par défaut avant notification pour les devices du groupe fenêtres
-local delai_lumieres = "120"        -- délai en minutes par défaut avant notification pour les devices du groupe lumieres
-local delai_TV = "150"              -- délai en minutes par défaut avant notification pour les devices du groupe TV
-local delai_ordinateurs = "180"            -- délai en minutes par défaut avant notification pour les devices du groupe ordinateurs
+local delai_lumieres = "120"        -- délai en minutes par défaut avant notification pour les devices du groupe lumières
+local delai_TV = "360"              -- délai en minutes par défaut avant notification pour les devices du groupe TV
+local delai_ordinateurs = "180"     -- délai en minutes par défaut avant notification pour les devices du groupe ordinateurs
 local les_devices = {};
 -- comment remplir le tableau les_devices ?  
 -- device = le nom du dispositif à surveiller
@@ -37,40 +35,48 @@ les_devices[#les_devices+1] = {device="porte cave",  type_device = "portes", del
 les_devices[#les_devices+1] = {device="fenetre douche",  type_device = "fenetres", delai = nil, subsystem = nil, etat = "On"} -- 3eme device
 les_devices[#les_devices+1] = {device="lumiere_rdc_2",  type_device = "lumieres", delai = nil, subsystem = "pushbullet", etat = "On"} -- 4eme device
 les_devices[#les_devices+1] = {device="TV Sony",  type_device = "TV", delai = nil, subsystem = nil, etat = "On"} -- 5eme device
-les_devices[#les_devices+1] = {device="TV Salon",  type_device = "TV", delai = "150", subsystem = nil, etat = "On"} -- 6eme device
+les_devices[#les_devices+1] = {device="TV Salon",  type_device = "TV", delai = nil, subsystem = nil, etat = "On"} -- 6eme device
 les_devices[#les_devices+1] = {device="I7-3500",  type_device = "ordinateurs", delai = "360", subsystem = nil, etat = "On"} -- 7eme device
 les_devices[#les_devices+1] = {device="Synology",  type_device = "ordinateurs", delai = "2", subsystem = nil, etat = "Off"} -- 8eme device
 les_devices[#les_devices+1] = {device="Routeur MiWiFi",  type_device = "ordinateurs", delai = "2", subsystem = nil, etat = "Off"} -- 9eme device
+--les_devices[#les_devices+1] = {device="Sondes Cave",  type_device = "ordinateurs", delai = "2", subsystem = nil, etat = "Off"} -- 10eme device
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
+local nom_script = 'Notification dispositifs actifs'
+local version = '1.14'
 t1 = os.time()
 local open
 --------------------------------------------
 -------------Fonctions----------------------
 -------------------------------------------- 
-function voir_les_logs (s, debugging) -- nécessite la variable local debugging
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[function voir_les_logs (s, debugging) -- nécessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>")
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>")
+		print ("aucune valeur affichable")
 		end
     end
-end	-- usage : voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
---============================================================================================== 
+end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+--------------------------------------------
 function ConvTime(timestamp) -- convertir un timestamp 
    y, m, d, H, M, S = timestamp:match("(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)")
    return os.time{year=y, month=m, day=d, hour=H, min=M, sec=S}
 end
---============================================================================================== 
+-------------------------------------------- 
 function round(value, digits) -- arrondi
   local precision = 10^digits
   return (value >= 0) and
       (math.floor(value * precision + 0.5) / precision) or
       (math.ceil(value * precision - 0.5) / precision)
 end
---============================================================================================== 
+--]]
+-------------------------------------------- 
 function return_delai(type_device, delai)
     if  type_device == "portes" and delai == nil then 
         return delai_portes
