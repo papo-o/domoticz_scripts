@@ -1,58 +1,66 @@
 --[[
 name : script_time_horoscope.lua
 auteur : papoo
-Mise à jour : 17/04/2018
+Mise à jour : 28/04/2018
 date : 26/06/2016
 Principe :
  Ce script a pour but de remonter les informations du site https://astro.rtl.fr/horoscope-jour-gratuit/ dans un device texte 
  sur domoticz pour un signe donné et de nous alerter le cas échéant selon le niveau de notification choisi
  Fil de discussion : https://easydomoticz.com/forum/viewtopic.php?f=17&t=2176&p=34662#p34662
 ]]--
--- ========================================================================
--- Variables à éditer
--- ========================================================================
-local debugging = true  	                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+--------------------------------------------
+------------ Variables à éditer ------------
+-------------------------------------------- 
+local debugging = false  	                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif = true                   -- active (true) ou désactive (false) ce script simplement
 local send_notification = 0                 -- 0: notifications désactivées, 1: notifications actives
 local les_horoscopes = {}                   --[[ renseigner le signe choisi en minuscule sans accent : belier, taureau, gemeaux, cancer, lion, vierge, 
                                                  balance, scorpion, sagittaire, capricorne, verseau, poissons ]]--
-les_horoscopes[#les_horoscopes+1] = {device = 'Horoscope Cancer', signe = 'cancer'}
-les_horoscopes[#les_horoscopes+1] = {device = 'Horoscope Capricorne', signe = 'capricorne'}
-
--- ========================================================================
--- Fin Variables à éditer
--- ========================================================================
+les_horoscopes[#les_horoscopes+1] = {device = 'Horoscope 1', signe = 'belier'}
+les_horoscopes[#les_horoscopes+1] = {device = 'Horoscope 2', signe = 'scorpion'}
+--------------------------------------------
+----------- Fin variables à éditer ---------
+--------------------------------------------
 local nom_script = 'Horoscope'
-local version = '1.21'
+local version = '1.22'
 local horoscope = ''
 local device = ''
 local signe = ''
--- ======================================================================== 
--- Fonctions
--- ========================================================================
-function voir_les_logs (s)
-    if (debugging) then 
-        print ("<font color='#f3031d'>".. s .."</font>")
-    end
-end	
---============================================================================================== 
-function TronquerTexte(texte, nb)  --texte à tronquer, nb limite de caractère à afficher
-local sep ="[!?.]"
-local DernierIndex = nil
-texte = string.sub(texte, 1, nb)
-local p = string.find(texte, sep, 1)
-DernierIndex = p
-while p do
-    p = string.find(texte, sep, p + 1)
-    if p then
-        DernierIndex = p
-    end
-end
-return(string.sub(texte, 1, DernierIndex))
-end
--- ======================================================================== 
--- Fin Fonctions
--- ========================================================================
+--------------------------------------------
+---------------- Fonctions -----------------
+--------------------------------------------
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[ function voir_les_logs (s, debugging) -- nécessite la variable local debugging
+    -- if (debugging) then 
+		-- if s ~= nil then
+        -- print (s)
+		-- else
+		-- print ("aucune valeur affichable")
+		-- end
+    -- end
+-- end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+-- --------------------------------------------
+-- function TronquerTexte(texte, nb)  --texte à tronquer, nb limite de caractère à afficher
+    -- local sep ="[!?.]"
+    -- local DernierIndex = nil
+    -- texte = string.sub(texte, 1, nb)
+    -- local p = string.find(texte, sep, 1)
+    -- DernierIndex = p
+    -- while p do
+        -- p = string.find(texte, sep, p + 1)
+        -- if p then
+            -- DernierIndex = p
+        -- end
+    -- end
+    -- return(string.sub(texte, 1, DernierIndex))
+-- end
+--]]
+--------------------------------------------
+-------------- Fin Fonctions ---------------
+--------------------------------------------
 
 commandArray = {}
 time = os.date("*t")
