@@ -1,8 +1,8 @@
 --[[
 name : script_time_my_ip_com.lua
 auteur : papoo
+Date de mise à jour : 28/04/2018
 date de création : 23/01/2018
-Date de mise à jour : 16/02/2018
 Principe : tester, via l'api du site myip.com votre adresse publique et être notifié de chaque changement.
 possibilité de tester une IP en V4 ou V6, d'être notifié seulement par mail en renseignant la variable EmailTo avec une plusieurs adresses mails, 
 mais aussi avec toutes autres notifications paramétrées dans domoticz avec le choix de celles-ci (variable notification pour activer celles-ci, variable subsystem pour ne sélectionner qu'une ou plusieurs notifications parmi celles disponible
@@ -24,16 +24,16 @@ la reconnaissance automatique du chemin d'exécution de ce script ne fonctionnan
 ------------ Variables à éditer ------------
 -------------------------------------------- 
 
-local debugging = true  			        -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = false  			        -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif = true                   -- active (true) ou désactive (false) ce script simplement
-local delai = 30                           -- délai d'exécution de ce script en minutes de 1 à 59 (délai entre deux appels à l'API)
+local delai = 30                            -- délai d'exécution de ce script en minutes de 1 à 59 (délai entre deux appels à l'API)
 local url_my_ip = "https://api.myip.com/"   -- Adresse de l'API permettant de connaitre l'IP publique
 local var_my_ip = "IP Publique"             -- nom de la variable contenant l'IP publique
 local type_ip = "v4"                        -- v4 pour les adresses en IPV4, v6 pour les adresses en IPV6
 local domoticzURL = "127.0.0.1:8080"
 local EmailTo = 'votre@mail.com'   -- adresses mail, séparées par ; si plusieurs (pour la notification par mail) nil si inutilisé
 local notification = true                   -- true si l'on  souhaite être notifié  via le système de notification domoticz, sinon false.
-local subsystem = "pushbullet"              -- les différentes valeurs de subsystem acceptées sont : gcm;http;kodi;lms;nma;prowl;pushalot;pushbullet;pushover;pushsafer
+local subsystem = "pushbullet"              -- les différentes valeurs de subsystem acceptées sont : gcm;http;kodi;lms;nma;prowl;pushalot;pushbullet;pushover;pushsafer;telegram
                                             -- pour plusieurs modes de notification séparez chaque mode par un point virgule (exemple : "pushalot;pushbullet"). si subsystem = nil toutes les notifications seront activées.
 --------------------------------------------
 ----------- Fin variables à éditer ---------
@@ -42,7 +42,7 @@ local subsystem = "pushbullet"              -- les différentes valeurs de subsy
 ------------- Autres Variables -------------
 --------------------------------------------
 local nom_script = 'Mon IP Publique'
-local version = '0.4'
+local version = '0.41'
 local ipv
 local objet
 local message
@@ -62,15 +62,19 @@ curl = '/usr/bin/curl -m 5 '		 	-- ne pas oublier l'espace à la fin
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
-function voir_les_logs (s, debugging)
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[function voir_les_logs (s, debugging) -- nécessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>")
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>")
+		print ("aucune valeur affichable")
 		end
     end
-end	
+end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
 --------------------------------------------
 function creaVar(vname,vvalue,vtype) -- pour créer une variable nommée toto comprenant la valeur 10, de type 2
     if vtype ~= nil then
@@ -89,6 +93,7 @@ function url_encode(str) -- encode la chaine str pour la passer dans une url
    end
    return str
 end 
+--]]
 --------------------------------------------
 -------------- Fin Fonctions ---------------
 --------------------------------------------
@@ -140,7 +145,7 @@ if script_actif == true then
                         voir_les_logs("--- --- --- Objet:"..objet,debugging)
                         voir_les_logs("--- --- --- Corps du message: "..message,debugging)
                         voir_les_logs("--- --- --- Destinataire: "..EmailTo,debugging)
-                        commandArray['SendEmail']= objet..'#'.. message  .. '#' .. EmailTo
+                        commandArray[#commandArray+1] = {['SendEmail'] =  objet..'#'.. message  .. '#' .. EmailTo}
                     else
                         voir_les_logs("--- --- --- Notification par mail désactivée",debugging)  
                     end -- if notif_mail
@@ -162,7 +167,7 @@ if script_actif == true then
         else
             voir_les_logs('--- --- --- aucun resultat a decoder',debugging)
         end --if jsonValeur
-    -- ====================================================================================================================	
+    --------------------------------------------============================================	
 
     voir_les_logs("======== Fin ".. nom_script .." (v".. version ..") ==========",debugging)        
     end        
