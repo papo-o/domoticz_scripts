@@ -1,7 +1,7 @@
 --[[
 name : script_time_rafraichissement_nocturne.lua
 auteur : papoo
-MAJ : 29/12/2017
+MAJ : 28/04/2018
 création : 24/06/2017
 
 http://pon.fr/rafraichissement-nocturne/
@@ -17,19 +17,17 @@ tableau des températures intérieures avec définition du nombre de pièces au 
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local nom_script = 'Rafraîchissement nocturne'
-local version = '1.2'
 local debugging = false   	                                    -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local url = '127.0.0.1:8080'                                    -- adresse ip domoticz
 local seuil_notification = 25 	        	                    -- seuil température intérieure au delà duquel les notifications d'alarme seront envoyées
 local deltaT = 2                                                -- Delta T entre T° interieure et T° extérieure avant alarme 
 local temp_ext = 'Temperature exterieure' 	                    -- nom de la sonde extérieure
-local les_temperatures = {"Temperature ch1", "Temperature ch2", "Temperature Entree", "Temperature Salon", "Temperature Parents", "Temperature Bureau", "Temperature Cuisine", "Temperature Douche"}; -- Liste de vos sondes intérieures séparées par une virgule
+local les_temperatures = {"Temperature 1", "Temperature 2", "Temperature Entree", "Temperature Salon", "Temperature Parents", "Temperature Bureau", "Temperature Cuisine", "Temperature Douche"}; -- Liste de vos sondes intérieures séparées par une virgule
 local notif_mail = true                                         -- true si l'on  souhaite être notifié  par mail, sinon false.
 local subsystem = nil                                           -- les différentes valeurs de subsystem acceptées sont : gcm;http;kodi;lms;nma;prowl;pushalot;pushbullet;pushover;pushsafer
                                                                 -- pour plusieurs modes de notification séparez chaque mode par un point virgule. si subsystem = nil toutes les notifications seront activées.
 local notif_all = true                                          -- true si l'on  souhaite être notifié  via le système de notification domoticz, sinon false.
-local EmailTo = 'votre@mail.com'                            -- adresse mail, séparées par ; si plusieurs (pour la notification par mail)
+local EmailTo = 'votrer@mail.com'                            -- adresse mail, séparées par ; si plusieurs (pour la notification par mail)
 local var_notif = 'Notification_ouverture_fenetres'             -- nom de la variable de limite de notification
 local Nb_pieces = 4                                             -- Définissez le nombre de pièces minimum dont la T° est supérieure à la température extérieure avant l'envoi des notifications
 local ResetHeure = 14                                           -- Heure à laquelle vous souhaitez réinitialiser les notifications
@@ -41,6 +39,8 @@ local sms_free_pass = nil                                       -- mot de passe 
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
+local nom_script = 'Rafraîchissement nocturne'
+local version = '1.21'
 local message = {}
 local alarme = 0
 local notification = '' 
@@ -48,21 +48,25 @@ commandArray = {}
 --------------------------------------------
 ---------------- Fonctions -----------------
 --------------------------------------------
---package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"
+
 --json = (loadfile "/home/pi/domoticz/scripts/lua/JSON.lua")()  -- For Linux
 --curl = '/usr/bin/curl -m 5 -u domoticzUSER:domoticzPSWD '		 	-- ne pas oublier l'espace à la fin
---require('fonctions_perso')
 
-function voir_les_logs (s, debugging) -- nécessite la variable local debugging
+
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[function voir_les_logs (s, debugging) -- nécessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>")
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>")
+		print ("aucune valeur affichable")
 		end
     end
 end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
---============================================================================================== 
+--------------------------------------------
 function url_encode(str) -- encode la chaine str pour la passer dans une url 
    if (str) then
    str = string.gsub (str, "\n", "\r\n")
@@ -72,7 +76,7 @@ function url_encode(str) -- encode la chaine str pour la passer dans une url
    end
    return str
 end 
-
+--]]
 --------------------------------------------
 -------------- Fin Fonctions ---------------
 --------------------------------------------
