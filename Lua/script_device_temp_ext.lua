@@ -10,27 +10,34 @@ création : 06/05/2016
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local debugging = false  					-- ttrue pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = false  					-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local url = '127.0.0.1:8080'   			-- user:pass@ip:port de domoticz
 local temp_ext  = 'Temperature exterieure' 	-- nom de la sonde extérieure
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
-
+local nom_script = 'Mesure temperature exterieure'
+local version = '1.01'
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
-function voir_les_logs (s, debugging)
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[function voir_les_logs (s, debugging) -- nécessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>")
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>")
+		print ("aucune valeur affichable")
 		end
     end
-end	
-
--------------------------------------------- 
+end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+--]]
+--------------------------------------------
+-------------- Fin Fonctions ---------------
+--------------------------------------------
 
 commandArray = {}
 if (devicechanged[temp_ext])then
