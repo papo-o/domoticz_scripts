@@ -1,7 +1,7 @@
 --[[
 name : script_time_fete_du_jour.lua
 auteur : papoo
-MAJ : 24/01/2018
+MAJ : 28/04/2018
 date : 28/05/2016
 Principe : Ce script a pour but d'afficher dans un device texte l'évenement (anniversaire, jour férié ou fête) du jour et du lendemain
 http://pon.fr/fete-du-jour-et-du-lendemain-en-lua/
@@ -10,8 +10,8 @@ https://easydomoticz.com/forum/viewtopic.php?f=10&t=1878
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local version = "1.5"							-- version du script
-local debugging = true  						-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+
+local debugging = false  						-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local fete_text_idx = nil --391   				-- idx du capteur texte saint du jour, nil si inutilisé
 local fete_demain_text_idx = nil --703 			-- idx du capteur texte saint du lendemain, nil si inutilisé
 local jour_ferie_switch = "Jour Ferie" 			-- nom du capteur switch jour férié, nil si inutilisé
@@ -22,10 +22,12 @@ local variable_jour_ferie = "Jour_ferie"		-- nom de la variable
 local Scene_Semaine_Paire = "Semaine Paire"     -- nom du scénario semaine paire, nil si inutilisé
 local Scene_Semaine_Impaire = "Semaine Impaire" -- nom du scénario semaine impaire, nil si inutilisé
 local Scene_Week_End = "Week-End"               -- nom du scénario Week-End, nil si inutilisé
-local date_mariage = 1999	                    -- année de votre date de mariage
+local date_mariage = 1996	                    -- année de votre date de mariage
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
+local nom_script = 'Fete du jour et du lendemain'
+local version = "1.51"							-- version du script
 local fete_jour = ''
 local fete_demain = ''
 local ferie =  ''
@@ -35,19 +37,24 @@ local jour_ferie = {}
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
-function voir_les_logs (s, debugging)
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[function voir_les_logs (s, debugging) -- nécessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>")
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>")
+		print ("aucune valeur affichable")
 		end
     end
-end	
-
+end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+--------------------------------------------
 function year_difference(s)
     return tostring(os.date("%Y")) - tostring(s)
 end
+--]]
 --------------------------------------------
 ------------- Fin Fonctions ----------------
 -------------------------------------------- 
@@ -81,17 +88,17 @@ else
 			voir_les_logs("--- --- --- Mise à jour scénario  ".. Scene_Week_End .." => Off",debugging)        
         end
 end
-anniversaire["28:05"]="l\'Anniversaire&nbsp;de&nbsp;Pierre"
-anniversaire["29:05"]="l\'Anniversaire&nbsp;de&nbsp;Paul"
-anniversaire["30:05"]="l\'Anniversaire&nbsp;de&nbsp;Jacques"
-anniversaire["30:06"]="nos&nbsp;".. annee_mariage .."&nbsp;ans&nbsp;de&nbsp;mariage"
+anniversaire["28:05"]="l\'anniversaire&nbsp;de&nbsp;Pierre"
+anniversaire["29:05"]="l\'anniversaire&nbsp;de&nbsp;Paul"
+anniversaire["30:05"]="l\'anniversaire&nbsp;de&nbsp;Jacques"
+anniversaire["27:07"]="nos&nbsp;".. annee_mariage .."&nbsp;ans&nbsp;de&nbsp;mariage"
 
---==========================================================================================================
+--------------------------------------------============
 saint_jour["01:01"]="le&nbsp;jour&nbsp;de&nbsp;l\'An"
 saint_jour["02:01"]="les&nbsp;Basile"
-saint_jour["03:01"]="les&nbsp;Genevieve"
+saint_jour["03:01"]="les&nbsp;Geneviève"
 saint_jour["04:01"]="les&nbsp;Odilon"
-saint_jour["05:01"]="les&nbsp;Edouard"
+saint_jour["05:01"]="les&nbsp;Édouard"
 saint_jour["06:01"]="les&nbsp;André"
 saint_jour["07:01"]="les&nbsp;Raymond"
 saint_jour["08:01"]="les&nbsp;Lucien"
@@ -101,19 +108,19 @@ saint_jour["11:01"]="les&nbsp;Paulin&nbsp;d&nbsp;Aquilee"
 saint_jour["12:01"]="les&nbsp;Tatiana"
 saint_jour["13:01"]="les&nbsp;Yvette"
 saint_jour["14:01"]="les&nbsp;Nina"
-saint_jour["15:01"]="les&nbsp;Remi"
+saint_jour["15:01"]="les&nbsp;Rémi"
 saint_jour["16:01"]="les&nbsp;Marcel"
 saint_jour["17:01"]="les&nbsp;Roseline"
 saint_jour["18:01"]="les&nbsp;Prisca"
 saint_jour["19:01"]="les&nbsp;Marius"
-saint_jour["20:01"]="les&nbsp;Sebastien"
-saint_jour["21:01"]="les&nbsp;Agnes"
+saint_jour["20:01"]="les&nbsp;Sébastien"
+saint_jour["21:01"]="les&nbsp;Agnès"
 saint_jour["22:01"]="les&nbsp;Vincent"
 saint_jour["23:01"]="les&nbsp;Barnard"
-saint_jour["24:01"]="les&nbsp;Francois"
+saint_jour["24:01"]="les&nbsp;François"
 saint_jour["25:01"]="la&nbsp;Conversion&nbsp;de&nbsp;Paul"
 saint_jour["26:01"]="les&nbsp;Paule"
-saint_jour["27:01"]="les&nbsp;Angele"
+saint_jour["27:01"]="les&nbsp;Angèle"
 saint_jour["28:01"]="les&nbsp;Thomas"
 saint_jour["29:01"]="les&nbsp;Gildas"
 saint_jour["30:01"]="les&nbsp;Martine"
@@ -121,10 +128,10 @@ saint_jour["31:01"]="les&nbsp;Marcelle"
 saint_jour["01:02"]="les&nbsp;Ella"
 saint_jour["02:02"]="les&nbsp;Theophane"
 saint_jour["03:02"]="les&nbsp;Blaise"
-saint_jour["04:02"]="les&nbsp;Veronique"
+saint_jour["04:02"]="les&nbsp;Véronique"
 saint_jour["05:02"]="les&nbsp;Agathe"
 saint_jour["06:02"]="les&nbsp;Gaston"
-saint_jour["07:02"]="les&nbsp;Eugenie"
+saint_jour["07:02"]="les&nbsp;Eugénie"
 saint_jour["08:02"]="les&nbsp;Jacqueline"
 saint_jour["09:02"]="les&nbsp;Apolline"
 saint_jour["10:02"]="les&nbsp;Arnaud"
@@ -153,9 +160,9 @@ saint_jour["03:03"]="les&nbsp;Gwenole"
 saint_jour["04:03"]="les&nbsp;Casimir"
 saint_jour["05:03"]="les&nbsp;Olive"
 saint_jour["06:03"]="les&nbsp;Colette"
-saint_jour["07:03"]="les&nbsp;Felicite"
+saint_jour["07:03"]="les&nbsp;Félicité"
 saint_jour["08:03"]="les&nbsp;Jean"
-saint_jour["09:03"]="les&nbsp;Francoise"
+saint_jour["09:03"]="les&nbsp;Françoise"
 saint_jour["10:03"]="les&nbsp;Vivien"
 saint_jour["11:03"]="les&nbsp;Rosine"
 saint_jour["12:03"]="les&nbsp;Justine"
@@ -184,7 +191,7 @@ saint_jour["03:04"]="les&nbsp;Richard"
 saint_jour["04:04"]="les&nbsp;Isidore"
 saint_jour["05:04"]="les&nbsp;Irene"
 saint_jour["06:04"]="les&nbsp;Marcellin"
-saint_jour["07:04"]="les&nbsp;Jean-Baptila"
+saint_jour["07:04"]="les&nbsp;Jean-Baptiste"
 saint_jour["08:04"]="les&nbsp;Julie"
 saint_jour["09:04"]="les&nbsp;Gautier"
 saint_jour["10:04"]="les&nbsp;Fulbert"
@@ -193,19 +200,19 @@ saint_jour["12:04"]="les&nbsp;Jules&nbsp;1er"
 saint_jour["13:04"]="les&nbsp;Ida"
 saint_jour["14:04"]="les&nbsp;Maxime"
 saint_jour["15:04"]="les&nbsp;Paterne"
-saint_jour["16:04"]="les&nbsp;BenoîLabre"
-saint_jour["17:04"]="les&nbsp;Etienne"
+saint_jour["16:04"]="les&nbsp;Benoît"
+saint_jour["17:04"]="les&nbsp;Étienne"
 saint_jour["18:04"]="les&nbsp;Parfait"
 saint_jour["19:04"]="les&nbsp;Emma"
 saint_jour["20:04"]="les&nbsp;Odette"
 saint_jour["21:04"]="les&nbsp;Anselme"
 saint_jour["22:04"]="les&nbsp;Alexandre"
 saint_jour["23:04"]="les&nbsp;Georges"
-saint_jour["24:04"]="les&nbsp;Fidele"
+saint_jour["24:04"]="les&nbsp;Fidèle"
 saint_jour["25:04"]="les&nbsp;Marc"
 saint_jour["26:04"]="les&nbsp;Alida"
 saint_jour["27:04"]="les&nbsp;Zita"
-saint_jour["28:04"]="les&nbsp;Valerie"
+saint_jour["28:04"]="les&nbsp;Valérie"
 saint_jour["29:04"]="les&nbsp;Catherine"
 saint_jour["30:04"]="les&nbsp;Robert"
 saint_jour["01:05"]="les&nbsp;Joseph"
@@ -214,9 +221,9 @@ saint_jour["03:05"]="les&nbsp;Philippe&nbsp;et&nbsp;Jacques"
 saint_jour["04:05"]="les&nbsp;Sylvain"
 saint_jour["05:05"]="les&nbsp;Judith"
 saint_jour["06:05"]="les&nbsp;Prudence"
-saint_jour["07:05"]="les&nbsp;Gisele"
+saint_jour["07:05"]="les&nbsp;Gisèle"
 saint_jour["08:05"]="les&nbsp;Desire"
-saint_jour["09:05"]="les&nbsp;Pacome"
+saint_jour["09:05"]="les&nbsp;Pacôme"
 saint_jour["10:05"]="les&nbsp;Solange"
 saint_jour["11:05"]="les&nbsp;Estelle"
 saint_jour["12:05"]="les&nbsp;Achille"
@@ -225,15 +232,15 @@ saint_jour["14:05"]="les&nbsp;Matthias"
 saint_jour["15:05"]="les&nbsp;Denise"
 saint_jour["16:05"]="les&nbsp;Honore"
 saint_jour["17:05"]="les&nbsp;Pascal"
-saint_jour["18:05"]="les&nbsp;Eric"
+saint_jour["18:05"]="les&nbsp;Éric"
 saint_jour["19:05"]="les&nbsp;Yves"
 saint_jour["20:05"]="les&nbsp;Bernardin"
 saint_jour["21:05"]="les&nbsp;Constantin"
-saint_jour["22:05"]="les&nbsp;Emile"
+saint_jour["22:05"]="les&nbsp;Émile"
 saint_jour["23:05"]="les&nbsp;Didier"
 saint_jour["24:05"]="les&nbsp;Donatien"
 saint_jour["25:05"]="les&nbsp;Sophie"
-saint_jour["26:05"]="les&nbsp;Berenger"
+saint_jour["26:05"]="les&nbsp;Bérenger"
 saint_jour["27:05"]="les&nbsp;Augula"
 saint_jour["28:05"]="les&nbsp;Germain"
 saint_jour["29:05"]="les&nbsp;Aymard"
@@ -246,19 +253,19 @@ saint_jour["04:06"]="les&nbsp;Clotilde"
 saint_jour["05:06"]="les&nbsp;Igor"
 saint_jour["06:06"]="les&nbsp;Norbert"
 saint_jour["07:06"]="les&nbsp;Gilbert"
-saint_jour["08:06"]="les&nbsp;Medard"
+saint_jour["08:06"]="les&nbsp;Médard"
 saint_jour["09:06"]="les&nbsp;Diane"
 saint_jour["10:06"]="les&nbsp;Landry"
-saint_jour["11:06"]="les&nbsp;Barnabe"
+saint_jour["11:06"]="les&nbsp;Barnabé"
 saint_jour["12:06"]="les&nbsp;Guy"
 saint_jour["13:06"]="les&nbsp;Antoine"
-saint_jour["14:06"]="les&nbsp;Elisee"
+saint_jour["14:06"]="les&nbsp;Élisée"
 saint_jour["15:06"]="les&nbsp;Germaine"
-saint_jour["16:06"]="les&nbsp;Jean-Francois"
-saint_jour["17:06"]="les&nbsp;Herve"
+saint_jour["16:06"]="les&nbsp;Jean-François"
+saint_jour["17:06"]="les&nbsp;Hervé"
 saint_jour["18:06"]="les&nbsp;Leonce"
 saint_jour["19:06"]="les&nbsp;Romuald"
-saint_jour["20:06"]="les&nbsp;Silvere"
+saint_jour["20:06"]="les&nbsp;Silvère"
 saint_jour["21:06"]="les&nbsp;Rodolphe"
 saint_jour["22:06"]="les&nbsp;Alban"
 saint_jour["23:06"]="les&nbsp;Audrey"
@@ -266,7 +273,7 @@ saint_jour["24:06"]="les&nbsp;Jean-Baptiste"
 saint_jour["25:06"]="les&nbsp;Prosper"
 saint_jour["26:06"]="les&nbsp;Anthelme"
 saint_jour["27:06"]="les&nbsp;Fernand"
-saint_jour["28:06"]="les&nbsp;Irenee"
+saint_jour["28:06"]="les&nbsp;Irénée"
 saint_jour["29:06"]="les&nbsp;Pierre&nbsp;et&nbsp;Paul"
 saint_jour["30:06"]="les&nbsp;Martial"
 saint_jour["01:07"]="les&nbsp;Thierry"
@@ -286,8 +293,8 @@ saint_jour["14:07"]="les&nbsp;Camille"
 saint_jour["15:07"]="les&nbsp;Donald"
 saint_jour["16:07"]="les&nbsp;Elvire"
 saint_jour["17:07"]="les&nbsp;Charlotte"
-saint_jour["18:07"]="les&nbsp;Frederic"
-saint_jour["19:07"]="les&nbsp;Arsene"
+saint_jour["18:07"]="les&nbsp;Frédéric"
+saint_jour["19:07"]="les&nbsp;Arsène"
 saint_jour["20:07"]="les&nbsp;Marina"
 saint_jour["21:07"]="les&nbsp;Victor"
 saint_jour["22:07"]="les&nbsp;Marie-Madeleine"
@@ -317,13 +324,13 @@ saint_jour["14:08"]="les&nbsp;Evrard"
 saint_jour["15:08"]="les&nbsp;Marie"
 saint_jour["16:08"]="les&nbsp;Armel"
 saint_jour["17:08"]="les&nbsp;Hyacinthe"
-saint_jour["18:08"]="les&nbsp;Helene"
+saint_jour["18:08"]="les&nbsp;Hélène"
 saint_jour["19:08"]="les&nbsp;Eudes"
 saint_jour["20:08"]="les&nbsp;Bernard"
 saint_jour["21:08"]="les&nbsp;Christophe"
 saint_jour["22:08"]="les&nbsp;Fabrice"
 saint_jour["23:08"]="les&nbsp;Rose"
-saint_jour["24:08"]="les&nbsp;Barthelemy"
+saint_jour["24:08"]="les&nbsp;Barthélemy"
 saint_jour["25:08"]="les&nbsp;Louis"
 saint_jour["26:08"]="les&nbsp;Natacha"
 saint_jour["27:08"]="les&nbsp;Monique"
@@ -333,23 +340,23 @@ saint_jour["30:08"]="les&nbsp;Fiacre"
 saint_jour["31:08"]="les&nbsp;Aristide"
 saint_jour["01:09"]="les&nbsp;Gilles"
 saint_jour["02:09"]="les&nbsp;Ingrid"
-saint_jour["03:09"]="les&nbsp;Gregoire"
+saint_jour["03:09"]="les&nbsp;Grégoire"
 saint_jour["04:09"]="les&nbsp;Rosalie"
-saint_jour["05:09"]="les&nbsp;Raissa"
+saint_jour["05:09"]="les&nbsp;Raïssa"
 saint_jour["06:09"]="les&nbsp;Bertrand"
 saint_jour["07:09"]="les&nbsp;Reine"
 saint_jour["08:09"]="les&nbsp;Adrien"
 saint_jour["09:09"]="les&nbsp;Alain"
-saint_jour["10:09"]="les&nbsp;Ines"
+saint_jour["10:09"]="les&nbsp;Inès"
 saint_jour["11:09"]="les&nbsp;Adelphe"
 saint_jour["12:09"]="les&nbsp;Apollinaire"
 saint_jour["13:09"]="les&nbsp;Aime"
 saint_jour["14:09"]="les&nbsp;Lubin"
 saint_jour["15:09"]="les&nbsp;Roland"
-saint_jour["16:09"]="les&nbsp;Edith"
+saint_jour["16:09"]="les&nbsp;Édith"
 saint_jour["17:09"]="les&nbsp;Renaud"
-saint_jour["18:09"]="les&nbsp;Nadege"
-saint_jour["19:09"]="les&nbsp;Emilie"
+saint_jour["18:09"]="les&nbsp;Nadège"
+saint_jour["19:09"]="les&nbsp;Émilie"
 saint_jour["20:09"]="les&nbsp;Davy"
 saint_jour["21:09"]="les&nbsp;Matthieu"
 saint_jour["22:09"]="les&nbsp;Maurice"
@@ -360,34 +367,34 @@ saint_jour["26:09"]="les&nbsp;Damien"
 saint_jour["27:09"]="les&nbsp;Vincent"
 saint_jour["28:09"]="les&nbsp;Venceslas"
 saint_jour["29:09"]="les&nbsp;Michel"
-saint_jour["30:09"]="les&nbsp;Jerome"
-saint_jour["01:10"]="les&nbsp;Therese"
-saint_jour["02:10"]="les&nbsp;Leger"
-saint_jour["03:10"]="les&nbsp;Gerard"
-saint_jour["04:10"]="les&nbsp;Francois"
+saint_jour["30:09"]="les&nbsp;Jérôme"
+saint_jour["01:10"]="les&nbsp;Thérèse"
+saint_jour["02:10"]="les&nbsp;Léger"
+saint_jour["03:10"]="les&nbsp;Gérard"
+saint_jour["04:10"]="les&nbsp;François"
 saint_jour["05:10"]="les&nbsp;Fleur"
 saint_jour["06:10"]="les&nbsp;Bruno"
 saint_jour["07:10"]="les&nbsp;Serge"
-saint_jour["08:10"]="les&nbsp;Pelagie"
+saint_jour["08:10"]="les&nbsp;Pélagie"
 saint_jour["09:10"]="les&nbsp;Denis"
 saint_jour["10:10"]="les&nbsp;Ghislain"
 saint_jour["11:10"]="les&nbsp;Firmin"
 saint_jour["12:10"]="les&nbsp;Wilfrid"
-saint_jour["13:10"]="les&nbsp;Geraud"
+saint_jour["13:10"]="les&nbsp;Géraud"
 saint_jour["14:10"]="les&nbsp;Juste"
-saint_jour["15:10"]="les&nbsp;Therese"
+saint_jour["15:10"]="les&nbsp;Thérèse"
 saint_jour["16:10"]="les&nbsp;Edwige"
 saint_jour["17:10"]="les&nbsp;Baudouin"
 saint_jour["18:10"]="les&nbsp;Luc"
-saint_jour["19:10"]="les&nbsp;Rene&nbsp;Goupil"
+saint_jour["19:10"]="les&nbsp;René&nbsp;Goupil"
 saint_jour["20:10"]="les&nbsp;Lina"
-saint_jour["21:10"]="les&nbsp;Celine"
+saint_jour["21:10"]="les&nbsp;Céline"
 saint_jour["22:10"]="les&nbsp;Elodie"
 saint_jour["23:10"]="les&nbsp;Jean"
 saint_jour["24:10"]="les&nbsp;Florentin"
-saint_jour["25:10"]="les&nbsp;Crepin"
+saint_jour["25:10"]="les&nbsp;Crépin"
 saint_jour["26:10"]="les&nbsp;Dimitri"
-saint_jour["27:10"]="les&nbsp;Emeline"
+saint_jour["27:10"]="les&nbsp;Émeline"
 saint_jour["28:10"]="les&nbsp;Simon"
 saint_jour["29:10"]="les&nbsp;Narcisse"
 saint_jour["30:10"]="les&nbsp;Bienvenue"
@@ -408,12 +415,12 @@ saint_jour["13:11"]="les&nbsp;Brice"
 saint_jour["14:11"]="les&nbsp;Sidoine"
 saint_jour["15:11"]="les&nbsp;Albert"
 saint_jour["16:11"]="les&nbsp;Marguerite"
-saint_jour["17:11"]="les&nbsp;Elisabeth"
+saint_jour["17:11"]="les&nbsp;Élisabeth"
 saint_jour["18:11"]="les&nbsp;Aude"
 saint_jour["19:11"]="les&nbsp;Tanguy"
 saint_jour["20:11"]="les&nbsp;Edmond"
 saint_jour["21:11"]="les&nbsp;Albert"
-saint_jour["22:11"]="les&nbsp;Cecile"
+saint_jour["22:11"]="les&nbsp;Cécile"
 saint_jour["23:11"]="les&nbsp;Clement"
 saint_jour["24:11"]="les&nbsp;Flora"
 saint_jour["25:11"]="les&nbsp;Catherine"
@@ -453,7 +460,7 @@ saint_jour["28:12"]="les&nbsp;Innocents"
 saint_jour["29:12"]="les&nbsp;David"
 saint_jour["30:12"]="les&nbsp;Roger"
 saint_jour["31:12"]="les&nbsp;Sylvestre"
---==========================================================================================================
+--------------------------------------------============
 jour_ferie["01:01"] = "Le&nbsp;1er&nbsp;janvier"
 jour_ferie["01:05"] = "La&nbsp;Fête&nbsp;du&nbsp;travail"
 jour_ferie["08:05"] = "La&nbsp;Victoire&nbsp;des&nbsp;alliés"
@@ -525,7 +532,7 @@ end
 
 
 
---==========================================================================================================
+--------------------------------------------============
 	if anniversaire[today] ~= nil then  -- on priorise l'affichage des anniversaires sur les jours feriés sur les saints du jour
 		 fete_jour = anniversaire[today]
 		 if jour_ferie[today] ~= nil then ferie = true end --passage de la variable à true si jour ferié fice
