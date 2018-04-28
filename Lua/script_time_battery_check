@@ -1,0 +1,102 @@
+--[[ =========================================
+-- Check battery level for all used devices
+-- =========================================
+-- https://www.domoticz.com/wiki/Battery_level_check
+MAJ : 28/04/2018 
+--]]
+--[[ /!\attention/!\
+si vous souhaitez utiliser ce script dans l'éditeur interne, pour indiquer le chemin complet vers le fichier JSON.lua, il vous faudra changer la ligne 
+json = assert(loadfile(luaDir..'JSON.lua'))()
+par 
+json = assert(loadfile('/le/chemin/vers/le/fichier/lua/JSON.lua'))()
+exemple :
+json = assert(loadfile('/home/pi/domoticz/scripts/lua/JSON.lua'))()
+la reconnaissance automatique du chemin d'exécution de ce script ne fonctionnant pas dans l'éditeur interne
+--]]
+--------------------------------------------
+------------ Variables à éditer ------------
+--------------------------------------------
+local debugging = false				-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local script_actif = false          -- active (true) ou désactive (false) ce script simplement
+BatteryThreshold = 10
+WeeklySummary = true
+SummaryDay = 6 -- Sunday is 1
+EmailTo = "votre@mail.com"
+ReportHour = 19
+ReportMinute = 20
+Domoticz = "127.0.0.1"
+DomoticzPort = "8080"
+--------------------------------------------
+----------- Fin variables à éditer ---------
+--------------------------------------------
+local nom_script = 'Niveaux batteries'
+local version = '0.4'
+Message = ''
+--------------------------------------------
+---------------- Fonctions -----------------
+-------------------------------------------- 
+function voir_les_logs (s, debugging) -- nécessite la variable local debugging
+    if (debugging) then 
+		if s ~= nil then
+        print (s)
+		else
+		print ("aucune valeur affichable")
+		end
+    end
+end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+--------------------------------------------
+-- chemin vers le dossier lua
+if (package.config:sub(1,1) == '/') then
+	luaDir = debug.getinfo(1).source:match("@?(.*/)")
+else
+	luaDir = string.gsub(debug.getinfo(1).source:match("@?(.*\\)"),'\\','\\\\')
+end
+curl = '/usr/bin/curl -m 5 '		 	-- ne pas oublier l'espace à la fin
+json = assert(loadfile(luaDir..'JSON.lua'))()						-- chargement du fichier JSON.lua
+--json = (loadfile "/home/pi/domoticz/scripts/lua/JSON.lua")() -- linux
+--json = (loadfile "C:\\Domoticz\\scripts\\lua\\json.lua")() -- windows
+
+--------------------------------------------
+-------------- Fin Fonctions ---------------
+--------------------------------------------
+commandArray = {}
+time = os.date("*t")
+ 
+-- Weekly Device Battery Summary
+if WeeklySummary == true and time.wday == SummaryDay and time.hour == ReportHour and time.min == ReportMinute and script_actif == true then
+    voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+    print("script_time_battery_check.lua") 
+    -- Get a list of all devices
+    handle = io.popen("curl 'http://" .. Domoticz .. ":" .. DomoticzPort .. "/json.htm?type=devices&order=name'")
+    devicesJson = handle:read('*all')
+    handle:close()
+    devices = json:decode(devicesJson)
+    BattToReplace = false
+    for i,device in ipairs(devices.result) do
+        if device.BatteryLevel <= 100 and device.Used == 1 then
+            Message = Message .. ' niveau batterie ' .. device.Name .. " : " .. device.BatteryLevel .. '%<br>'
+            print(' Niveau batterie ' .. device.Name .. " : " .. device.BatteryLevel .. '%')
+        end
+    end
+    commandArray['SendEmail']='Niveaux Batteries Domoticz#'.. Message .. '#' .. EmailTo
+    voir_les_logs("======== Fin ".. nom_script .." (v".. version ..") ==========",debugging)  
+-- Daily Low Battery Report
+elseif time.hour == ReportHour and time.min == ReportMinute and script_actif == true then
+    voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+    -- Get a list of all devices
+    handle = io.popen("curl 'http://" .. Domoticz .. ":" .. DomoticzPort .. "/json.htm?type=devices&order=name'")
+    devicesJson = handle:read('*all')
+    handle:close()
+    devices = json:decode(devicesJson)
+    BattToReplace = false
+    for i,device in ipairs(devices.result) do
+        if device.BatteryLevel < BatteryThreshold and device.Used == 1 then
+            Message = Message .. ' niveau batterie ' .. device.Name .. " : " .. device.BatteryLevel .. '%<br>'
+            print(' Niveau batterie ' .. device.Name .. " : " .. device.BatteryLevel .. '%')
+			commandArray['SendEmail']='Niveaux Batteries Domoticz#'.. Message .. '#' .. EmailTo		
+        end
+    end
+    voir_les_logs("======== Fin ".. nom_script .." (v".. version ..") ==========",debugging)
+end
+   
+return commandArray
