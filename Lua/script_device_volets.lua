@@ -1,17 +1,16 @@
----------------------------------------------------------------------------
+--------------------------------------------
 --[[ 
 Script : script_device_volets.lua
-
 auteur : papoo
-version : 1.03
-MAJ : 11/08/2016
+MAJ : 28/04/2018
 date : 22/05/2016
 
 Principe : permettre  la gestion des volets roulants 
-quels que soit leurs modeles et Groupe. ]]--
----------------------------------------------------------------------------
+quels que soit leurs modeles et Groupe.
+--]]
+--------------------------------------------
 -- Les différents états d'un volet Stopped Open Closed
----------------------------------------------------------------------------
+--------------------------------------------
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
@@ -23,10 +22,11 @@ local volets_haut = 'Volets_du_Haut' -- nom de l'interrupteur virtuel commandant
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
-
----------------------------------------------------------------------------
+local nom_script = 'gestion des volets roulants'
+local version = '1.04'
+--------------------------------------------
 -- Tableau des volets
----------------------------------------------------------------------------
+--------------------------------------------
 local les_volets = {};
 -- 1ere volet : nom du device volet 1
 les_volets[1] = {volet="Salon sur Rue", idx=361, Type="somfy", Groupe="bas"} -- Possibilité d'ajouter des équipements en relation, comme température piece, etat ouverture fenetre, etc (séparé par une  virgule)
@@ -46,18 +46,18 @@ les_volets[6] = {volet="Chambre Audrey", idx=473, Type="velux", Groupe="haut"}
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
-function voir_les_logs (s, debugging)
+function voir_les_logs (s, debugging) -- nécessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>");
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>");
+		print ("aucune valeur affichable")
 		end
     end
-end	
--------------------------------------------- 
+end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+--------------------------------------------
 commandArray = {}
-
+voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
 if ( devicechanged[volets_bas] == 'Open')	then
 voir_les_logs ('--- --- --- La scène  : "'..volets_bas..'" est Open',debugging)
 	for k,v in pairs(les_volets) do-- On parcourt chaque volet
@@ -116,4 +116,5 @@ voir_les_logs ('--- --- --- La scène  : "'..volets_haut..'" est Closed',debuggi
 
 	end
 end
+voir_les_logs("======== Fin ".. nom_script .." (v".. version ..") ==========",debugging)  
 return commandArray 
