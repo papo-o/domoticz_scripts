@@ -2,7 +2,7 @@
 script_time_alarme_temperature.lua
 auteur : papoo
 
-MAJ : 13/03/2018
+MAJ : 28/04/2018
 création : 15/08/2016
 
 Principe : ce script vérifie toutes les deux minutes (modifiable via la variable delai) si il n'y a pas une augmentation de température anormale
@@ -19,15 +19,15 @@ URL github : https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_t
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local debugging = true  	            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = false  	            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif    = true            -- active (true) ou désactive (false) ce script simplement
 local delai = 2                         -- délai d'exécution de ce script en minutes de 1 à 59
 local only_mail = false                 -- true si l'on ne souhaite être notifié que par mail, false si l'on souhaite toutes les notifications disponible.
-local EmailTo = 'votre@mail.com'        -- adresse mail, séparées par ; si plusieurs
+local EmailTo = 'votre.mail@gmail.com'        -- adresse mail, séparées par ; si plusieurs
 local defaut_seuil = "45"               -- seuil en °C par défaut avant notification pour tout les devices non personnalisés
 local seuil_ambiance = "40"             -- seuil en °C par défaut avant notification pour les devices du groupe ambiance
-local seuil_frigo = "12"                -- seuil en °C par défaut avant notification pour les devices du groupe réfrigérateur
-local seuil_congel = '-5'               -- seuil en °C par défaut avant notification pour les devices du groupe lumières
+local seuil_frigo = "25"                -- seuil en °C par défaut avant notification pour les devices du groupe réfrigérateur
+local seuil_congel = '25'               -- seuil en °C par défaut avant notification pour les devices du groupe lumières
 
 local les_devices = {};
 -- comment remplir le tableau les_devices ?  
@@ -47,12 +47,14 @@ les_devices[#les_devices+1] = {device="Temperature Cuisine",  type_device = "amb
 les_devices[#les_devices+1] = {device="Temperature Douche",  type_device = "ambiance", seuil = nil, subsystem = nil} -- 6eme device
 les_devices[#les_devices+1] = {device="Réfrigérateur",  type_device = "frigo", seuil = nil, subsystem = "telegram"} -- 7eme device
 les_devices[#les_devices+1] = {device="Congélateur",  type_device = "congel", seuil = nil, subsystem = "telegram"} -- 8eme device
-
+les_devices[#les_devices+1] = {device="Temperature 1", type_device ="ambiance", seuil = nil, subsystem = nil} -- 9eme device
+les_devices[#les_devices+1] = {device="Temperature 2",  type_device = "ambiance", seuil = nil, subsystem = nil} -- 10eme device
+les_devices[#les_devices+1] = {device="Temperature Entree",  type_device = "ambiance", seuil = nil, subsystem = nil} -- 11eme device
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = "Alarme température"
-local version = "2.0"
+local version = "2.01"
 local message = {}
 local alarmes = 0
 local seuil_notification = nil
@@ -60,15 +62,20 @@ commandArray = {}
 --------------------------------------------
 ---------------- Fonctions -----------------
 --------------------------------------------
-function voir_les_logs (s, debugging) -- nécessite la variable local debugging
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[ function voir_les_logs (s, debugging) -- nécessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>")
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>")
+		print ("aucune valeur affichable")
 		end
     end
 end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+--]]
 --------------------------------------------
 -------------- Fin Fonctions ---------------
 --------------------------------------------
