@@ -1,15 +1,13 @@
 --[[   
 script_time_meteofrance_pluie.lua
 Download JSON.lua : http://regex.info/blog/lua/json 
-  
 auteur : papoo
-
-maj : 22/02/2018
+maj : 28/04/2018
 date : 11/05/2016
 Principe :	V1 récupérer via l'API non documentée de météo France, les informations de précipitation 
 de votre commune sur un device text et/ou alert et/ou notifications. http://easydomoticz.com/forum/viewtopic.php?f=10&t=1991
 			V2 en plus des fonctions de la V1, Afficher via les variables utilisateurs, les prédictions de précipitations sur une heure par pas de 5 mn sur la custom page
-avec création automatiques des variables nécessaire à l'execution de ce script.	http://easydomoticz.com/forum/viewtopic.php?f=10&t=2788
+avec création automatiques des variables nécessaire à l'exécution de ce script.	http://easydomoticz.com/forum/viewtopic.php?f=10&t=2788
 Actualisation des données toutes les 5 minutes, couleurs et texte directement récupérés via l'api	
 pour trouver le code de votre commune => http://www.insee.fr/fr/methodes/nomenclatures/cog/
 									Dans le cas de l'utilisation de la variable ActivePage  il vous faut ajouter 
@@ -19,32 +17,30 @@ pour trouver le code de votre commune => http://www.insee.fr/fr/methodes/nomencl
 					  
 											  if (message.nvalue == 0){      // status On 
 											  
-												 memo = $("div").find("[data-index=4]").remove();   // memorisation page 5 et suppression
-												 mySwipe.setup();                           // reorganisation
-												 if (mySwipe.getPos() == 4)                     // si nous sommes sur la page supprimee
-													mySwipe.slide(3);                        // deplacement vers la page precedente ( la 4 )
+												 memo = $("div").find("[data-index=4]").remove();   // mémorisation page 5 et suppression
+												 mySwipe.setup();                           // réorganisation
+												 if (mySwipe.getPos() == 4)                     // si nous sommes sur la page supprimée
+													mySwipe.slide(3);                        // déplacement vers la page précédente ( la 4 )
 												 
 											  }   
 											  if (message.nvalue == 1){      // status Off
 																
 												 
 												 $("div").find("[data-index=3]").after( memo );      // rajout de la page 5 juste après la page 4
-												 mySwipe.setup();                           // reorganisation
-												 mySwipe.slide(4);                           // deplacement vers la page rajoutee
+												 mySwipe.setup();                           // réorganisation
+												 mySwipe.slide(4);                           // déplacement vers la page rajoutée
 												 
 											  }  
 									
-									Si votre device ne s'appelle pas "d4" pnsez à modifier la variable ActivePage dans ce script avec  le meme nom de device dans le fichier frontpage_settings.js
+									Si votre device ne s'appelle pas "d4" pnsez à modifier la variable ActivePage dans ce script avec  le même nom de device dans le fichier frontpage_settings.js
 --]]
 
-package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"
-require('fonctions_perso')
+
 
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local nom_script = "script_time_meteofrance_pluie"
-local version = "2.31"
+
 local debugging = false				-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local ip = "127.0.0.1:8080" 		-- <username:password@>domoticz-ip<:port>
 local CityCode = 870850 			-- Le code de votre ville est l'ID retourné par cette URL : http://www.meteofrance.com/mf3-rpc-portlet/rest/lieu/facet/pluie/search/nom_de_votre_ville
@@ -58,6 +54,8 @@ local ActivePage = "d4"				-- renseigner l'idx du device switch associé si souh
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
+local nom_script = "script_time_meteofrance_pluie"
+local version = "2.33"
 local VariablesPluie={}
 VariablesPluie[1]={nom = "Pluie à 5mn",idx = "1"} 
 VariablesPluie[2]={nom = "Pluie à 10mn",idx = "2"}
@@ -76,36 +74,43 @@ commandArray = {}
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
--- function voir_les_logs (s, debugging)
-    -- if (debugging) then 
-		-- if s ~= nil then
-        -- print ("<font color='#f3031d'>".. s .."</font>")
-		-- else
-		-- print ("<font color='#f3031d'>aucune valeur affichable</font>")
-		-- end
-    -- end
--- end	
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
 
--- function format(str)
-   -- if (str) then
-      -- str = string.gsub (str, "De", "De ")
-      -- str = string.gsub (str, " ", "&nbsp;")
-      -- str = string.gsub (str, "Pas&nbsp;de&nbsp;précipitations", "<font color='#999'>Pas&nbsp;de&nbsp;précipitation</font>")
-      -- str = string.gsub (str, "Précipitations&nbsp;faibles", "<font color='#fbda21'>Précipitations&nbsp;faibles</font>")
-      -- str = string.gsub (str, "Précipitations&nbsp;modérées", "<font color='#fb8a21'>Précipitations&nbsp;modérées</font>")
-      -- str = string.gsub (str, "Précipitations&nbsp;fortes", "<font color='#f3031d'>Précipitations&nbsp;fortes</font>")
-   -- end
-   -- return str   
--- end
--- function url_encode(str)
-   -- if (str) then
-   -- str = string.gsub (str, "\n", "\r\n")
-   -- str = string.gsub (str, "([^%w ])",
-   -- function (c) return string.format ("%%%02X", string.byte(c)) end)
-   -- str = string.gsub (str, " ", "+")
-   -- end
-   -- return str
--- end 
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[
+function voir_les_logs (s, debugging) -- nécessite la variable local debugging
+if (debugging) then 
+		if s ~= nil then
+        print (s)
+		else
+		print ("aucune valeur affichable")
+		end
+    end
+end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+------------------------------------------
+
+function format(str)
+   if (str) then
+      str = string.gsub (str, "De", "De ")
+      str = string.gsub (str, " ", "&nbsp;")
+      str = string.gsub (str, "Pas&nbsp;de&nbsp;précipitations", "<font color='#999'>Pas&nbsp;de&nbsp;précipitation</font>")
+      str = string.gsub (str, "Précipitations&nbsp;faibles", "<font color='#fbda21'>Précipitations&nbsp;faibles</font>")
+      str = string.gsub (str, "Précipitations&nbsp;modérées", "<font color='#fb8a21'>Précipitations&nbsp;modérées</font>")
+      str = string.gsub (str, "Précipitations&nbsp;fortes", "<font color='#f3031d'>Précipitations&nbsp;fortes</font>")
+   end
+   return str   
+end
+function url_encode(str)
+   if (str) then
+   str = string.gsub (str, "\n", "\r\n")
+   str = string.gsub (str, "([^%w ])",
+   function (c) return string.format ("%%%02X", string.byte(c)) end)
+   str = string.gsub (str, " ", "+")
+   end
+   return str
+end 
+--]]
 --------------------------------------------
 -------------- Fin Fonctions ---------------
 --------------------------------------------	
