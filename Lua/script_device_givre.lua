@@ -34,15 +34,21 @@ commandArray = {}
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
-function voir_les_logs (s, debugging)
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[function voir_les_logs (s, debugging) -- nécessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>");
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>");
+		print ("aucune valeur affichable")
 		end
     end
-end	
+end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+
+--------------------------------------------
 function round(value, digits)
 	if not value or not digits then
 		return nil
@@ -52,6 +58,7 @@ function round(value, digits)
 		  (math.floor(value * precision + 0.5) / precision) or
 		  (math.ceil(value * precision - 0.5) / precision)
 end
+--]]
 function dewPoint (T, RH)
 	local b,c = 17.67, 243.5
 	RH = math.max (RH or 0, 1e-3)
