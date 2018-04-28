@@ -1,7 +1,8 @@
---[[script_time_export_mysql.lua
+--[[
+script_time_export_mysql.lua
 auteur : papoo
 
-maj : 02/01/2018
+maj : 28/04/2018
 date : 01/01/2017
 Principe : 
 exporter les données de compteurs, Températures, etc.. sur une base de données de type MySql
@@ -16,11 +17,8 @@ https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_export_my
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local nom_script = "export mysql"
-local version = "0.12"
 local debugging = false  	-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local url = "http://192.168.1.25/mesgraphs/loggermulti.php"
-
 local les_devices = {}; 
 -- si vous souhaitez remonter les valeurs d'un device qui en comporte plusieurs (ex: température et hygrométrie extérieure) 
 -- renseigner le nom de la valeur à remonter (à partir de la deuxième valeur) ainsi que le numéro d'ordre dans canal (voir exemples ci dessous Puissance Lave Linge et Puissance Sèche Linge )
@@ -47,26 +45,30 @@ les_devices[#les_devices+1] = {device="Temperature Salon", nom="temp salon", can
 les_devices[#les_devices+1] = {device="DJU", nom="DJU Météo France", canal="1"}
 les_devices[#les_devices+1] = {device="DJU 2", nom="DJU Intégrales", canal="1"}
 les_devices[#les_devices+1] = {device="Energie consommée chauffage", nom="Energie", canal="1"}
+--les_devices[#les_devices+1] = {device="nrj inc", nom="Energie inc", canal="1"}
 local feeds =""
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
-
+local nom_script = "export mysql"
+local version = "0.14"
 --------------------------------------------
 ---------------- Fonctions -----------------
 --------------------------------------------
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
 
- function voir_les_logs (s, debugging) -- nécessite la variable local debugging
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[function voir_les_logs (s, debugging) -- nécessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>")
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>")
+		print ("aucune valeur affichable")
 		end
     end
 end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
---============================================================================================== 
-
+--------------------------------------------
 function sans_accent(str) -- supprime les accents de la chaîne str
     if (str) then
 	str = string.gsub (str,"Ç", "C")
@@ -86,7 +88,7 @@ function sans_accent(str) -- supprime les accents de la chaîne str
      end
     return (str)
 end
---============================================================================================== 
+-------------------------------------------- 
 function url_encode(str) -- encode la chaine str pour la passer dans une url 
     if (str) then
    str = string.gsub (str, "\n", "\r\n")
@@ -96,7 +98,7 @@ function url_encode(str) -- encode la chaine str pour la passer dans une url
    end
    return str
 end 
---============================================================================================== 
+-------------------------------------------- 
 function split(inputstr, sep)
         if sep == nil then
                 sep = "%s"
@@ -108,7 +110,8 @@ function split(inputstr, sep)
         end
         return t
 end -- usage : valeurs = split(variable,";")
---============================================================================================== 
+--]]
+-------------------------------------------- 
 --------------------------------------------
 -------------- Fin Fonctions ---------------
 --------------------------------------------
@@ -155,5 +158,5 @@ os.execute("curl -m5 " .. "'".. url .. feeds .."'")
 
 voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
 end -- if time
--- ============================================================================
+--------------------------------------------====
 return commandArray	
