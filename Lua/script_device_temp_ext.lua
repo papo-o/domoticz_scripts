@@ -1,8 +1,7 @@
 --[[   
 ~/domoticz/scripts/lua/script_device_temp_ext.lua
 auteur : papoo
-version : 1.01
-MAJ : 11/08/2016
+MAJ : 28/04/2018
 création : 06/05/2016
  tx = température maximale du jour J mesurée à 2 mètres du sol sous abri et relevée entre J à 6h et J+1 (le lendemain) à 6h UTC. 
  tn = température minimale du jour J mesurée à 2 mètres du sol sous abri et relevée entre J-1 (la veille) à 18h et J à 18h UTC. 
@@ -16,8 +15,8 @@ local temp_ext  = 'Temperature exterieure' 	-- nom de la sonde extérieure
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
-local nom_script = 'Mesure temperature exterieure'
-local version = '1.01'
+local nom_script = 'Mini/Maxi Température Extérieure'
+local version = '1.02'
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
@@ -41,21 +40,21 @@ end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ==
 
 commandArray = {}
 if (devicechanged[temp_ext])then
-voir_les_logs("=========== Mini/Maxi Température Extérieure (v1.0) ===========",debugging)
-		if(uservariables['Tx'] == nil) then
+    voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+	if(uservariables['Tx'] == nil) then
 		-- Création de la variable Tx si elle n'existe pas
          commandArray['OpenURL']=url..'/json.htm?type=command&param=saveuservariable&vname=Tx&vtype=2&vvalue=150'
             voir_les_logs("--- --- --- Création Variable Tx manquante --- --- --- ",debugging)
         print('script supendu')
-		end
-		if(uservariables['Tn'] == nil) then
+	end
+	if(uservariables['Tn'] == nil) then
          commandArray['OpenURL']=url..'/json.htm?type=command&param=saveuservariable&vname=Tn&vtype=2&vvalue=-150'
 		 -- Création de la variable Tn si elle n'existe pas
             voir_les_logs("--- --- --- Création Variable Manquante Tn --- --- --- ",debugging)
         print('script supendu')
-		end
-max_min = string.match(otherdevices_svalues[temp_ext], "%d+%.*%d*")
-t_max_min = tonumber(max_min)
+	end
+    max_min = string.match(otherdevices_svalues[temp_ext], "%d+%.*%d*")
+    t_max_min = tonumber(max_min)
 	voir_les_logs("--- --- --- Température Ext : "..t_max_min,debugging)
 	if (t_max_min < tonumber(uservariables['Tn'])) then
 		voir_les_logs("--- --- --- Température Extérieure inférieure à Variable Tn : "..uservariables['Tn'],debugging)
@@ -66,6 +65,7 @@ t_max_min = tonumber(max_min)
 		commandArray['Variable:Tx'] = tostring(t_max_min) -- mise à jour de la variable tx
 		voir_les_logs("--- --- --- mise à jour de la Variable Tx  --- --- --- ",debugging)	
 	end
+    voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
 end
 return commandArray
 
