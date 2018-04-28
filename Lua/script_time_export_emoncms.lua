@@ -1,7 +1,7 @@
 --[[script_time_export_emoncms.lua
 auteur : papoo
 
-maj : 11/03/2018
+maj : 28/04/2018
 date : 18/05/2016
 Principe : 
 exporter les données de compteurs, Températures, etc.. sur le site https://emoncms.org/
@@ -9,12 +9,12 @@ Le script est lu toutes les minutes mais n'exporte les données que toutes les 2
 https://easydomoticz.com/forum/viewtopic.php?f=17&t=2017
 https://pon.fr/exporter-des-donnees-vers-le-site-emoncms/
 https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_export_emoncms.lua
-]]--
+--]]
 
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local debugging = true  	-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = false  	-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif = true   -- true pour activer l'execution du script ou false pour le désactiver
 local url_emoncms = 'http://emoncms.org/api/' 
 local api_emoncms = 'api_emoncms' -- créer une variable de type chaine contenant votre code API Write KEY emoncms de 32 caractères
@@ -44,23 +44,24 @@ local fields =""
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = "export emoncms"
-local version = "2.1"
+local version = "2.11"
 --------------------------------------------
 ---------------- Fonctions -----------------
---------------------------------------------
--- package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"
--- require('fonctions_perso')
+------------------------------------------
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
 
-function voir_les_logs (s, debugging) -- nécessite la variable local debugging
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[ function voir_les_logs (s, debugging) -- nécessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>")
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>")
+		print ("aucune valeur affichable")
 		end
     end
 end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
---============================================================================================== 
+--------------------------------------------
 function url_encode(str) -- encode la chaine str pour la passer dans une url 
    if (str) then
    str = string.gsub (str, "\n", "\r\n")
@@ -70,7 +71,7 @@ function url_encode(str) -- encode la chaine str pour la passer dans une url
    end
    return str
 end 
---============================================================================================== 
+------------------------------------------
 function sans_accent(str) -- supprime les accents de la chaîne str
     if (str) then
 	str = string.gsub (str,"Ç", "C")
@@ -90,7 +91,7 @@ function sans_accent(str) -- supprime les accents de la chaîne str
      end
     return (str)
 end
---===========================================================================================
+--------------------------------------------
 function split(inputstr, sep)
         if sep == nil then
                 sep = "%s"
@@ -102,6 +103,7 @@ function split(inputstr, sep)
         end
         return t
 end -- usage : valeurs = split(variable,";")
+--]]
 --------------------------------------------
 -------------- Fin Fonctions ---------------
 --------------------------------------------
@@ -140,5 +142,5 @@ local API_key = uservariables[api_emoncms]
     voir_les_logs('curl -m5 "'..url_emoncms ..'post?apikey=' .. API_key .. '&json=' .. fields ..'"',debugging)
 		voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
 end -- if time
--- ============================================================================
+--------------------------------------------====
 return commandArray	
