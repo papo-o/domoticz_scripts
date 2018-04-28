@@ -2,7 +2,7 @@
 name : script_time_vigilance_meteofrance_V2.lua
 UTF8 sans BOM
 auteur : papoo
-date de création : 11/12/2017
+date de création : 28/04/2018
 Date de mise à  jour : 03/03/2018
 Principe : Ce script a pour but de remonter les informations de vigilance de météoFrance 3 fois par jour à  07H15 13H15 et 18H15 
 Les informations disponibles sont :
@@ -20,11 +20,11 @@ Ce script utilise Lua-Simple-XML-Parser https://github.com/Cluain/Lua-Simple-XML
 ------------ Variables à  éditer ------------
 -------------------------------------------- 
 
-local debugging                = true            	 -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging                = false            	 -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local departement              = 87				     -- renseigner votre numéro de département sur 2 chiffres exemples : 01 ou 07 ou 87 
 local dev_vigilance_alert      = 'Vigilance Météo'	 -- renseigner le nom de l'éventuel device alert vigilance météo associé (dummy - alert)
 local dev_alert_vague          = 'Vigilance Crue'    -- renseigner le nom de l'éventuel device alert vigilance vague submersion associé (dummy - alert)
-local dev_conseil_meteo        = 'Conseil Météo'    -- renseigner le nom de l'éventuel device texte Conseils Météo associé si souhaité, sinon nil 
+local dev_conseil_meteo        = 'Conseil Météo'     -- renseigner le nom de l'éventuel device texte Conseils Météo associé si souhaité, sinon nil 
 local dev_commentaire_meteo    = nil                 -- renseigner le nom de l'éventuel device texte Commentaire Météo associé si souhaité, sinon nil
 local send_notification        = 3 		             -- 0: aucune notification, 1: toutes (même verte), 2: vigilances jaune, orange et rouge, 3: vigilances orange et rouge 4: seulement vigilance rouge
 local send_notification_vague  = 3 	                 -- 0: aucune notification, 1: toutes (même verte), 2: vigilances jaune, orange et rouge, 3: vigilances orange et rouge 4: seulement vigilance rouge
@@ -36,7 +36,7 @@ local display_commentaire      = false 	             -- true pour voir les comme
 --------------------------------------------
 
 local nom_script = 'vigilance météofrance V2'
-local version = 1.1
+local version = 1.11
 local risques = {}
 local vigilances = ""
 local departementsub = tonumber(departement .. 10)
@@ -45,16 +45,37 @@ local CouleurVigilance = 0
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
-function voir_les_logs (s, debugging)
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[function voir_les_logs (s, debugging) -- nécessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>")
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>")
+		print ("aucune valeur affichable")
 		end
     end
-end	
+end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+--------------------------------------------
 
+function TronquerTexte(texte, nb)  --texte à  tronquer, nb limite de caractère à  afficher (240 max pour un device text)
+local sep ='[!?.]'
+local DernierIndex = nil
+texte = string.sub(texte, 1, nb)
+local p = string.find(texte, sep, 1)
+DernierIndex = p
+while p do
+    p = string.find(texte, sep, p + 1)
+    if p then
+        DernierIndex = p
+    end
+end
+return(string.sub(texte, 1, DernierIndex))
+end
+--------------------------------------------
+--]]
 function risqueTxt(nombre)
       if nombre == 1 then return "vent violent" 
       elseif nombre == 2 then return "pluie-inondation" 
@@ -68,10 +89,9 @@ function risqueTxt(nombre)
 	 -- else return "risque non défini" end
 	else return "Vigilance Météo" end
 end
-
----------------------------------------------------------------------------------
+--------------------------------------------
 -- Lua-Simple-XML-Parser
----------------------------------------------------------------------------------
+--------------------------------------------
     XmlParser = {};
 	self = {};
 
@@ -218,21 +238,7 @@ function newNode(name)
 
     return node
 end
---------------------------------------------
-function TronquerTexte(texte, nb)  --texte à  tronquer, nb limite de caractère à  afficher (240 max pour un device text)
-local sep ='[!?.]'
-local DernierIndex = nil
-texte = string.sub(texte, 1, nb)
-local p = string.find(texte, sep, 1)
-DernierIndex = p
-while p do
-    p = string.find(texte, sep, p + 1)
-    if p then
-        DernierIndex = p
-    end
-end
-return(string.sub(texte, 1, DernierIndex))
-end
+
 
 --------------------------------------------
 -------------- Fin Fonctions ---------------
@@ -241,22 +247,23 @@ commandArray = {}
 time=os.date("*t")
 if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 18))) then -- 3 exécutions du script par jour 7H15, 13h15 et 18H15
 --if (time.min-1) % 1 == 0 then -- exécution du script toutes les X minutes
+   
     voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
     if dev_vigilance_alert then
-    dz_vigilance_alert = otherdevices_idx[dev_vigilance_alert]
-    voir_les_logs("--- --- --- ".. dev_vigilance_alert .." idx : ".. dz_vigilance_alert,debugging)
+        dz_vigilance_alert = otherdevices_idx[dev_vigilance_alert]
+        if dz_vigilance_alert then voir_les_logs("--- --- --- ".. dev_vigilance_alert .." idx : ".. dz_vigilance_alert,debugging) end
     end
     if dev_alert_vague then
-    dz_alert_vague = otherdevices_idx[dev_alert_vague]
-    voir_les_logs("--- --- --- ".. dev_alert_vague .." idx : ".. dz_alert_vague,debugging)
+        dz_alert_vague = otherdevices_idx[dev_alert_vague]
+        if dz_alert_vague then voir_les_logs("--- --- --- ".. dev_alert_vague .." idx : ".. dz_alert_vague,debugging) end
     end
     if dev_conseil_meteo then
-    dz_conseil_meteo = otherdevices_idx[dev_conseil_meteo]
-    voir_les_logs("--- --- --- ".. dev_conseil_meteo .." idx : ".. dz_conseil_meteo,debugging)
+        dz_conseil_meteo = otherdevices_idx[dev_conseil_meteo]
+        if dz_conseil_meteo then voir_les_logs("--- --- --- ".. dev_conseil_meteo .." idx : ".. dz_conseil_meteo,debugging) end 
     end
     if dev_commentaire_meteo then
-    dz_commentaire_meteo = otherdevices_idx[dev_commentaire_meteo]
-    voir_les_logs("--- --- --- ".. dev_commentaire_meteo .." idx : ".. dz_commentaire_meteo,debugging)
+        dz_commentaire_meteo = otherdevices_idx[dev_commentaire_meteo]
+        if dz_commentaire_meteo then voir_les_logs("--- --- --- ".. dev_commentaire_meteo .." idx : ".. dz_commentaire_meteo,debugging) end
     end
      
     local rid = assert(io.popen("/usr/bin/curl -m5 http://vigilance.meteofrance.com/data/NXFR33_LFPW_.xml")) --merci jacklayster
@@ -396,9 +403,9 @@ if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 1
 		end
 	end
 	   
--- ====================================================================================================================	
+--------------------------------------------============================================	
 -- Conseil météo	  
--- ====================================================================================================================			
+--------------------------------------------============================================			
     if ( dz_conseil_meteo ~= nil and conseil ~= nil and CouleurVigilance > 1 ) or ( dz_conseil_meteo ~= nil and conseil ~= nil and display_conseils == true ) then -- Mise à our du devise texte conseil météo si il existe
         voir_les_logs("--- --- --- mise à  jour du device : ".. dev_conseil_meteo,debugging)
         commandArray[#commandArray+1] = {['UpdateDevice'] = dz_conseil_meteo..'|0|'.. TronquerTexte(conseil,240)}
@@ -408,9 +415,9 @@ if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 1
         commandArray[#commandArray+1] = {['UpdateDevice'] = dz_conseil_meteo..'|0|Aucun conseil disponible'}
           
     end
--- ====================================================================================================================	
+--------------------------------------------============================================	
 -- Commentaire météo	  
--- ====================================================================================================================		  
+--------------------------------------------============================================		  
 	  
     if ( dz_commentaire_meteo ~= nil and commentaire ~= nil and CouleurVigilance > 1 ) or ( dz_commentaire_meteo ~= nil and commentaire ~= nil and display_commentaire == true ) then -- Mise à jour du devise texte commentaire météo si il existe
         voir_les_logs("--- --- --- mise à  jour du device : ".. dev_commentaire_meteo,debugging)                
@@ -421,9 +428,9 @@ if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 1
         commandArray[#commandArray+1] = {['UpdateDevice'] = dz_commentaire_meteo..'|0|Aucun commentaire disponible'}
     end
  
--- ====================================================================================================================	
+--------------------------------------------============================================	
 -- vigilance vague submersion	  
--- ====================================================================================================================
+--------------------------------------------============================================
     if vague_sub == nil and dz_alert_vague ~= nil then -- pas de donnée
         voir_les_logs("--- --- --- mise à  jour du device : ".. dev_alert_vague,debugging)         
         commandArray[#commandArray+1] = {['UpdateDevice'] = dz_alert_vague..'|1|Aucune donn&eacute;e vague submersion'}
@@ -475,9 +482,9 @@ if (time.min == 15 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 1
                 commandArray[#commandArray+1] = {['UpdateDevice'] = dz_alert_vague..'|0|Pas d\'information vigilance vague submersion'}
             end
         end			
--- ====================================================================================================================	
+--------------------------------------------============================================	
 -- fin vigilance vague submersion	  
--- ====================================================================================================================	
+--------------------------------------------============================================	
     voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
 end -- if time
 return commandArray
