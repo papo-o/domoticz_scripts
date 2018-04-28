@@ -1,42 +1,42 @@
  
 --[[ ~/domoticz/scripts/lua/script_device_givre_auto.lua
  auteurs : papoo&deennoo
- MAJ : 17/04/2018
- création : 06/05/2016
- Principe : a une heure donnée, va chercher les prévisions de température pour dans 12h puis va calculer le point de givre
- en comparant ensuite le point de givre et la température reçue, création d'une alerte givre.
+ MAJ : 28/04/2018
+ crÃ©ation : 06/05/2016
+ Principe : a une heure donnÃ©e, va chercher les prÃ©visions de tempÃ©rature pour dans 12h puis va calculer le point de givre
+ en comparant ensuite le point de givre et la tempÃ©rature reÃ§ue, crÃ©ation d'une alerte givre.
  /!\attention/!\
-si vous souhaitez utiliser ce script dans l'éditeur interne, pour indiquer le chemin complet vers le fichier JSON.lua, il vous faudra changer la ligne 
+si vous souhaitez utiliser ce script dans l'Ã©diteur interne, pour indiquer le chemin complet vers le fichier JSON.lua, il vous faudra changer la ligne 
 json = assert(loadfile(luaDir..'JSON.lua'))()
 par 
 json = assert(loadfile('/le/chemin/vers/le/fichier/lua/JSON.lua'))()
 exemple :
 json = assert(loadfile('/home/pi/domoticz/scripts/lua/JSON.lua'))()
-la reconnaissance automatique du chemin d'exécution de ce script ne fonctionnant pas dans l'éditeur interne
+la reconnaissance automatique du chemin d'exÃ©cution de ce script ne fonctionnant pas dans l'Ã©diteur interne
 --]]
 --------------------------------------------
------------- Variables à éditer ------------
+------------ Variables Ã  Ã©diter ------------
 -------------------------------------------- 
 
 local debugging = false					    -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
-local dew_point_idx = nil				    -- idx de l'éventuel dummy température point de rosée si vous souhaitez le suivre
-local freeze_point_idx = nil				    -- idx du dummy température point de givre
+local dew_point_idx = nil				    -- idx de l'Ã©ventuel dummy tempÃ©rature point de rosÃ©e si vous souhaitez le suivre
+local freeze_point_idx = nil				    -- idx du dummy tempÃ©rature point de givre
 local freeze_alert_idx = nil				    -- idx du dummy alert point de givre
-local heure = 19						    -- heure de déclenchement
-local minute = 03						    -- minute de déclenchement
-local Longitude = "Longitude"			    -- nom de la variable utilisateur contenant les données de longitude
-local Latitude = "Latitude"				    -- nom de la variable utilisateur contenant les données de latitude
-local api_forecast_io = "api_forecast_io"	-- nom de la variable utilisateur contenant les données de l'API de forecast.io
+local heure = 19						    -- heure de dÃ©clenchement
+local minute = 03						    -- minute de dÃ©clenchement
+local Longitude = "Longitude"			    -- nom de la variable utilisateur contenant les donnÃ©es de longitude
+local Latitude = "Latitude"				    -- nom de la variable utilisateur contenant les donnÃ©es de latitude
+local api_forecast_io = "api_forecast_io"	-- nom de la variable utilisateur contenant les donnÃ©es de l'API de forecast.io
 
 --------------------------------------------
------------ Fin variables à éditer ---------
+----------- Fin variables Ã  Ã©diter ---------
 --------------------------------------------
-local nom_script = "prévision et alerte givre"
-local version = "1.23"
+local nom_script = "prÃ©vision et alerte givre"
+local version = "1.24"
 local api = ""
 local long = ""
 local lat = ""
-curl = '/usr/bin/curl -m 5 '		 	-- ne pas oublier l'espace à la fin
+curl = '/usr/bin/curl -m 5 '		 	-- ne pas oublier l'espace Ã  la fin
 
 -- chemin vers le dossier lua
 	if (package.config:sub(1,1) == '/') then
@@ -49,19 +49,24 @@ curl = '/usr/bin/curl -m 5 '		 	-- ne pas oublier l'espace à la fin
 commandArray = {}
 time=os.date("*t")
 if (time.min == minute and time.hour == heure) then
---if ((time.min-1) % 2) == 0 then  -- export des données toutes les 2 minutes    
+--if ((time.min-1) % 2) == 0 then  -- export des donnÃ©es toutes les 2 minutes    
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
-function voir_les_logs (s, debugging)
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne Ã  commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne Ã  commenter en cas d'utilisation des fonctions directement dans ce script
+
+-- ci-dessous les lignes Ã  dÃ©commenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[ function voir_les_logs (s, debugging) -- nÃ©cessite la variable local debugging
     if (debugging) then 
-      if s ~= nil then
-		print ("<font color='blue'>".. s .."</font>");
-      else
-		print ("<font color='red'>aucune valeur affichable</font>");
-      end
+		if s ~= nil then
+        print (s)
+		else
+		print ("aucune valeur affichable")
+		end
     end
-end   
+end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+------------------------------------------ 
 function round(value, digits)
 	if not value or not digits  then
 		return nil
@@ -71,16 +76,19 @@ function round(value, digits)
       (math.floor(value * precision + 0.5) / precision) or
       (math.ceil(value * precision - 0.5) / precision)
 end
+--]]
+------------------------------------------ 
 function freezing_point(d, t) 
  if not d or not t or (d > t  and t > 0) then
-    return nil, " La temperature du point de rosee est superieure à la temperature. Puisque la temperature du point de rosee ne peut être superieure à la temperature de l'air , l\'humidite relative a ete fixee à nil."
+    return nil, " La temperature du point de rosee est superieure Ã  la temperature. Puisque la temperature du point de rosee ne peut Ãªtre superieure Ã  la temperature de l'air , l\'humidite relative a ete fixee Ã  nil."
 	end
 
 T = t + 273.15
 Td = d + 273.15
 return (Td + (2671.02 /((2954.61/T) + 2.193665 * math.log(T) - 13.3448))-T)-273.15
   
-end 
+end
+
 --------------------------------------------
 -------------- Fin Fonctions ---------------
 -------------------------------------------- 
@@ -104,7 +112,7 @@ if lat ~= nil then voir_les_logs("--- --- --- Latitude : ".. lat,debugging) end
     
     if dew ~= nil and temp ~= nil then
         if dew_point_idx ~= nil then
-            commandArray[1] = {['UpdateDevice'] = dew_point_idx .. "|0|" .. dew} -- Mise à jour point de rosee
+            commandArray[1] = {['UpdateDevice'] = dew_point_idx .. "|0|" .. dew} -- Mise Ã  jour point de rosee
         end   
    
         FreezingPoint = freezing_point(dew, tonumber(temp))
@@ -113,7 +121,7 @@ if lat ~= nil then voir_les_logs("--- --- --- Latitude : ".. lat,debugging) end
 				FreezingPoint = round(tonumber(FreezingPoint),2)
                 voir_les_logs("--- --- --- Point de Givrage : ".. FreezingPoint,debugging)
             if freeze_point_idx ~= nil then
-				commandArray[2] = {['UpdateDevice'] = freeze_point_idx .. "|0|" .. FreezingPoint} -- Mise à jour point de givrage
+				commandArray[2] = {['UpdateDevice'] = freeze_point_idx .. "|0|" .. FreezingPoint} -- Mise Ã  jour point de givrage
 			end
 
            if(tonumber(temp)<=1 and tonumber(FreezingPoint)<=0)then
@@ -133,7 +141,7 @@ if lat ~= nil then voir_les_logs("--- --- --- Latitude : ".. lat,debugging) end
                 if freeze_alert_idx ~= nil then commandArray[3]={['UpdateDevice'] = freeze_alert_idx..'|1|'..'Pas de givre'} end
             end 
         else
-            voir_les_logs("=========== La temperature du point de rosee est superieure a la temperature. Puisque la temperature du point de rosee ne peut etre superieure a la temperature de l'air , l\'humidite relative a ete fixee à nil ===========",debugging)
+            voir_les_logs("=========== La temperature du point de rosee est superieure a la temperature. Puisque la temperature du point de rosee ne peut etre superieure a la temperature de l'air , l\'humidite relative a ete fixee Ã  nil ===========",debugging)
             if tonumber(dew)<= -4 then
                 voir_les_logs("--- Risque de Givre Demain Matin ---",debugging)
                 if freeze_alert_idx ~= nil then commandArray[3]={['UpdateDevice'] = freeze_alert_idx..'|2|'..FreezingPoint} end
