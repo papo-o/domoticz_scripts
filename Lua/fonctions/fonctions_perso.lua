@@ -32,9 +32,9 @@ curl = '/usr/bin/curl -m 15 -u domoticzUSER:domoticzPSWD '		 	-- ne pas oublier 
 function voir_les_logs (s, debugging) -- nécessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>")
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>")
+		print ("aucune valeur affichable")
 		end
     end
 end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
