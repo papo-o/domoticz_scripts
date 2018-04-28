@@ -1,20 +1,21 @@
---[[ script_device_CMD2boutons.lua
+--[[ 
+script_device_CMD2boutons.lua
 auteur : papoo
-version : 1.11
-MAJ : 11/08/2016
-Création : 31/07/2016
+
+MAJ : 28/04/2018
+CrÃ©ation : 31/07/2016
 Principe :
- ce script permet de simuler un troisième bouton "STOP" sur une télécommande 2 boutons,
- si un deuxième appui sur le même bouton est effectué en moins d'une minute.
- Associé à un boitier VRT pour la commande de deux volets roulants, ce script permettra l'arrêt du volet concerné
+ ce script permet de simuler un troisiÃ¨me bouton "STOP" sur une tÃ©lÃ©commande 2 boutons,
+ si un deuxiÃ¨me appui sur le mÃªme bouton est effectuÃ© en moins d'une minute.
+ AssociÃ© Ã  un boitier VRT pour la commande de deux volets roulants, ce script permettra l'arrÃªt du volet concernÃ©
  ]]--
 
 --------------------------------------------
------------- Variables à éditer ------------
+------------ Variables Ã  Ã©diter ------------
 -------------------------------------------- 
 local debugging = true  -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir 
-local ip = '192.168.1.24:8080'   -- user:pass@ip:port de domoticz
-local vrt = '192.168.1.27' -- Adresse IP du VRT
+local ip = '127.0.0.1:8080'   -- user:pass@ip:port de domoticz
+local vrt = '192.168.1.127' -- Adresse IP du VRT
 local tempo = 30
 local switchs={} ;   
 	switchs[0] = {nom="Volet Douche", canal="1"}
@@ -23,22 +24,28 @@ local switchs={} ;
 
      
 --------------------------------------------
------------ Fin variables à éditer ---------
+----------- Fin variables Ã  Ã©diter ---------
 -------------------------------------------- 
-	
+local nom_script = 'Simuler un bouton STOP'
+local version = '1.13'	
 time = os.date("*t")  
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
-function voir_les_logs (s,debugging)
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne Ã  commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne Ã  commenter en cas d'utilisation des fonctions directement dans ce script
+
+-- ci-dessous les lignes Ã  dÃ©commenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[function voir_les_logs (s, debugging) -- nÃ©cessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>");
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>");
+		print ("aucune valeur affichable")
 		end
     end
-end	
+end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+--------------------------------------------
 function timedifference(s)
    year = string.sub(s, 1, 4)
    month = string.sub(s, 6, 7)
@@ -61,12 +68,13 @@ function url_encode(str)
    end
    return str
 end 
+--]]
 --------------------------------------------
 -------------- Fin Fonctions ---------------
 -------------------------------------------- 
 commandArray = {}
 
-
+    voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
    for key, valeur in pairs(switchs) do
 		--if(uservariables['CMD_'.. valeur.nom ..'_'.. otherdevices[valeur.nom]] == nil) then
         --  commandArray[#commandArray+1]={['OpenURL']=ip..'/json.htm?type=command&param=saveuservariable&vname=CMD_'..url_encode(valeur.nom)..'_'.. otherdevices[valeur.nom] ..'&vtype=2&vvalue='..url_encode(otherdevices_lastupdate[valeur.nom])
@@ -80,7 +88,7 @@ commandArray = {}
 			voir_les_logs("--- --- --- mise a jour variable CMD_".. valeur.nom .."_"..otherdevices[valeur.nom].."  --- --- --- ",debugging)	
         end
     end
-
+    voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
 
 
 return commandArray 
