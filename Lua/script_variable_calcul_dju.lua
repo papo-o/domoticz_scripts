@@ -1,8 +1,8 @@
 --[[     Calcul DJU du jour
 name : script_variable_calcul_dju.lua
 auteur : papoo
-version : 1.15
-mise à jour : 17/08/2016
+
+mise à jour : 28/04/2018
 création : 08/05/2016
 
 Principe :
@@ -31,20 +31,25 @@ local name_dju = "DJU" 						-- Nomp du compteur virtuel DJU à créer avant de 
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
-
+local nom_script = 'Calcul DJU du jour'
+local version = '1.16'
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
-function voir_les_logs (s, debugging)
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[function voir_les_logs (s, debugging) -- nécessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>")
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>")
+		print ("aucune valeur affichable")
 		end
     end
-end	
-
+end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+--------------------------------------------
 function url_encode(str)
   if (str) then
     str = string.gsub (str, "\n", "\r\n")
@@ -54,10 +59,11 @@ function url_encode(str)
   end
   return str   
 end 
-
+--------------------------------------------
 function round(n)
     return n % 1 >= 0.5 and math.ceil(n) or math.floor(n)
 end
+--]]
 --------------------------------------------
 -------------- Fin Fonctions ---------------
 --------------------------------------------
