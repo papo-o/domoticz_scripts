@@ -1,4 +1,5 @@
---[[script_time_detec_fuite_eau.lua
+--[[
+script_time_detec_fuite_eau.lua
 auteur : papoo
 MAJ : 13/03/2018
 Création : 25/04/2016
@@ -23,7 +24,7 @@ https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_detec_fui
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local debugging       = true                    -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging       = false                    -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif    = true                    -- active (true) ou désactive (false) ce script simplement
 local url             = '127.0.0.1:8080'        -- user:pass@ip:port de domoticz
 local heure           = 0			    	    -- (0-24) heure de début de la période zéro consommation
@@ -47,16 +48,20 @@ local version = "2.2"
 --------------------------------------------
 ---------------- Fonctions -----------------
 --------------------------------------------
-function voir_les_logs (s, debugging)
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[function voir_les_logs (s, debugging) -- nécessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>");
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>");
+		print ("aucune valeur affichable")
 		end
     end
-end	
---============================================================================================== 
+end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+--------------------------------------------
 function url_encode(str) -- encode la chaine str pour la passer dans une url 
    if (str) then
    str = string.gsub (str, "\n", "\r\n")
@@ -66,8 +71,7 @@ function url_encode(str) -- encode la chaine str pour la passer dans une url
    end
    return str
 end
--- package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"
--- require('fonctions_perso')
+--]]
 --------------------------------------------
 -------------- Fin Fonctions ---------------
 --------------------------------------------
