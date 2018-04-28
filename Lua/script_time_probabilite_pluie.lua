@@ -1,13 +1,13 @@
 --[[
 name : script_time_probabilite_pluie.lua
 auteur : papoo
-Date de mise à jour : 09/04/2018
-date de création : 09/08/2016
+Date de mise Ã  jour : 28/04/2018
+date de crÃ©ation : 09/08/2016
 Principe : Ce script a pour but d'interroger l'API du site https://www.wunderground.com/ toutes les heures afin de 
-récuperer les calculs de probabilités de pluie et de neige sur 36 heures pour une ville donnée. Cette API utilise une clé gratuite pour 500 requêtes par heure
-Il faut donc s'inscrire sur weatherunderground pour avoir accès à cette API 
-avant l'utilisation de ce script, pensez à créer une variable utilisateur de type chaine pour y stocker votre clé API
-pour créer/modifier une variable utilisateur : domoticz => Réglages => Plus d'options => Variables utilisateur
+rÃ©cupÃ©rer les calculs de probabilitÃ©s de pluie et de neige sur 36 heures pour une ville donnÃ©e. Cette API utilise une clÃ© gratuite pour 500 requÃªtes par heure
+Il faut donc s'inscrire sur weatherunderground pour avoir accÃ¨s Ã  cette API 
+avant l'utilisation de ce script, pensez Ã  crÃ©er une variable utilisateur de type chaine pour y stocker votre clÃ© API
+pour crÃ©er/modifier une variable utilisateur : domoticz => RÃ©glages => Plus d'options => Variables utilisateur
 http://pon.fr/probabilite-de-pluie-et-de-neige-en-lua/
 http://easydomoticz.com/forum/viewtopic.php?f=17&t=2301#p20893
 https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_probabilite_pluie.lua
@@ -15,42 +15,42 @@ https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_probabili
 Ce script utilise Lua-Simple-XML-Parser https://github.com/Cluain/Lua-Simple-XML-Parser
 --]]
 --------------------------------------------
------------- Variables à éditer ------------
+------------ Variables Ã  Ã©diter ------------
 -------------------------------------------- 
 
-local debugging = true  			            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
-local script_actif = true                       -- active (true) ou désactive (false) ce script simplement
-local delai = 60                                -- délai d'exécution de ce script en minutes de 1 à 59
-local pays='FRANCE'					            -- Votre pays, nécessaire pour l'API
-local api_wu = 'api_weather_underground' 	    -- Nom de la variable utilisateur contenant l'API Weather Underground de 16 caractères préalablement créé (variable de type chaine)
+local debugging = false  			            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local script_actif = true                       -- active (true) ou dÃ©sactive (false) ce script simplement
+local delai = 60                                -- dÃ©lai d'exÃ©cution de ce script en minutes de 1 Ã  59
+local pays='FRANCE'					            -- Votre pays, nÃ©cessaire pour l'API
+local api_wu = 'api_weather_underground' 	    -- Nom de la variable utilisateur contenant l'API Weather Underground de 16 caractÃ¨res prÃ©alablement crÃ©Ã© (variable de type chaine)
 local ville='Limoges'    			            -- Votre ville ou commune 
-                                                -- L'api fournie 36 probabilités de pluie, 1 par heure.  
+                                                -- L'api fournie 36 probabilitÃ©s de pluie, 1 par heure.  
 local proba_pluie_h = {}			            -- Ajoutez, modifiez ou supprimez les variables proba_pluie_h[] 
-                                                -- en changeant le N° entre [] correspondant à l'heure souhaitée pour l'associer au device concerné dans dz
-proba_pluie_h[1]=504    			            -- renseigner l'idx du device % probabilité pluie à 1 heure associé, nil si non utilisé 
-proba_pluie_h[2]=505    			            -- renseigner l'idx du device % probabilité pluie à 2 heures associé, nil si non utilisé
-proba_pluie_h[4]=639   				            -- renseigner l'idx du device % probabilité pluie à 4 heures associé, nil si non utilisé
-proba_pluie_h[6]=506    			            -- renseigner l'idx du device % probabilité pluie à 6 heures associé, nil si non utilisé
-proba_pluie_h[12]=507   			            -- renseigner l'idx du device % probabilité pluie à 12 heures associé, nil si non utilisé
-proba_pluie_h[24]=508   			            -- renseigner l'idx du device % probabilité pluie à 24 heures associé, nil si non utilisé
+                                                -- en changeant le NÂ° entre [] correspondant Ã  l'heure souhaitÃ©e pour l'associer au device concernÃ© dans dz
+proba_pluie_h[1]=504    			            -- renseigner l'idx du device % probabilitÃ© pluie Ã  1 heure associÃ©, nil si non utilisÃ© 
+proba_pluie_h[2]=505    			            -- renseigner l'idx du device % probabilitÃ© pluie Ã  2 heures associÃ©, nil si non utilisÃ©
+proba_pluie_h[4]=639   				            -- renseigner l'idx du device % probabilitÃ© pluie Ã  4 heures associÃ©, nil si non utilisÃ©
+proba_pluie_h[6]=506    			            -- renseigner l'idx du device % probabilitÃ© pluie Ã  6 heures associÃ©, nil si non utilisÃ©
+proba_pluie_h[12]=507   			            -- renseigner l'idx du device % probabilitÃ© pluie Ã  12 heures associÃ©, nil si non utilisÃ©
+proba_pluie_h[24]=508   			            -- renseigner l'idx du device % probabilitÃ© pluie Ã  24 heures associÃ©, nil si non utilisÃ©
 
-                                                -- L'api fournie 36 probabilités de neige, 1 par heure.
+                                                -- L'api fournie 36 probabilitÃ©s de neige, 1 par heure.
 local proba_neige_h={}				            -- comme pour la pluie Ajoutez, modifiez ou supprimez les variables proba_neige_h[] 
-                                                -- en changeant le N° entre [] correspondant à l'heure souhaitée pour l'associer au device concerné dans dz	
-proba_neige_h[1]=771    			            -- renseigner l'idx du device % probabilité neige à 1 heure associé, nil si non utilisé 
-proba_neige_h[3]=772    		                -- renseigner l'idx du device % probabilité neige à 2 heures associé, nil si non utilisé
-proba_neige_h[6]=773   				            -- renseigner l'idx du device % probabilité neige à 4 heures associé, nil si non utilisé
-proba_neige_h[12]=774    			            -- renseigner l'idx du device % probabilité neige à 6 heures associé, nil si non utilisé
-proba_neige_h[24]=738   			            -- renseigner l'idx du device % probabilité neige à 12 heures associé, nil si non utilisé
-proba_neige_h[36]=775  				            -- renseigner l'idx du device % probabilité neige à 24 heures associé, nil si non utilisé
+                                                -- en changeant le NÂ° entre [] correspondant Ã  l'heure souhaitÃ©e pour l'associer au device concernÃ© dans dz	
+proba_neige_h[1]=771    			            -- renseigner l'idx du device % probabilitÃ© neige Ã  1 heure associÃ©, nil si non utilisÃ© 
+proba_neige_h[3]=772    		                -- renseigner l'idx du device % probabilitÃ© neige Ã  2 heures associÃ©, nil si non utilisÃ©
+proba_neige_h[6]=773   				            -- renseigner l'idx du device % probabilitÃ© neige Ã  4 heures associÃ©, nil si non utilisÃ©
+proba_neige_h[12]=774    			            -- renseigner l'idx du device % probabilitÃ© neige Ã  6 heures associÃ©, nil si non utilisÃ©
+proba_neige_h[24]=738   			            -- renseigner l'idx du device % probabilitÃ© neige Ã  12 heures associÃ©, nil si non utilisÃ©
+proba_neige_h[36]=775  				            -- renseigner l'idx du device % probabilitÃ© neige Ã  24 heures associÃ©, nil si non utilisÃ©
 
-local seuil_notification= nil	                -- pourcentage au delà duquel vous souhaitez être notifié, nil si non utilisé
+local seuil_notification= nil	                -- pourcentage au delÃ  duquel vous souhaitez Ãªtre notifiÃ©, nil si non utilisÃ©
 
 --------------------------------------------
------------ Fin variables à éditer ---------
+----------- Fin variables Ã  Ã©diter ---------
 -------------------------------------------- 
 local nom_script = 'Probabilite Pluie'
-local version = '1.20'
+local version = '1.21'
 local pluie
 local neige
 
@@ -58,28 +58,33 @@ local neige
 if (package.config:sub(1,1) == '/') then
 	-- system linux
 	luaDir = debug.getinfo(1).source:match("@?(.*/)")
-	curl = '/usr/bin/curl -m 8 '		 							-- ne pas oublier l'espace à la fin
+	curl = '/usr/bin/curl -m 8 '		 							-- ne pas oublier l'espace Ã  la fin
 else
 	-- system windows
 	luaDir = string.gsub(debug.getinfo(1).source:match("@?(.*\\)"),'\\','\\\\')
 	-- download curl : https://bintray.com/vszakats/generic/download_file?file_path=curl-7.54.0-win32-mingw.7z
-	curl = 'c:\\Programs\\Curl\\curl.exe '		 					-- ne pas oublier l'espace à la fin
+	curl = 'c:\\Programs\\Curl\\curl.exe '		 					-- ne pas oublier l'espace Ã  la fin
 end
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
-function voir_les_logs (s,debugging)
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne Ã  commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne Ã  commenter en cas d'utilisation des fonctions directement dans ce script
+
+-- ci-dessous les lignes Ã  dÃ©commenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[function voir_les_logs (s, debugging) -- nÃ©cessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'> ".. s .." </font>")
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>")
+		print ("aucune valeur affichable")
 		end
     end
-end	
----------------------------------------------------------------------------------
+end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+--]]
+--------------------------------------------
 -- Lua-Simple-XML-Parser
----------------------------------------------------------------------------------
+--------------------------------------------
     XmlParser = {};
 	self = {};
 
@@ -233,7 +238,7 @@ commandArray = {}
 if script_actif == true then
     time=os.date("*t")
 
-    if ((time.min-1) % delai) == 0 then -- toutes les xx minutes en commençant par xx:01.  xx définissable via la variable delai
+    if ((time.min-1) % delai) == 0 then -- toutes les xx minutes en commenÃ§ant par xx:01.  xx dÃ©finissable via la variable delai
         voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
     local APIKEY = uservariables[api_wu]
 
@@ -251,7 +256,7 @@ if script_actif == true then
                         voir_les_logs("--- --- --- Probabilite de pluie a ".. i .."h => " .. pluie,debugging)
                         commandArray[#commandArray+1] = {['UpdateDevice'] = proba_pluie_h[i]..'|0|'.. pluie}
                         if seuil_notification ~= nil and pluie > seuil_notification then
-                        commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte : '.. pluie ..' % de probabilité de pluie dans '.. i ..'heure(s)'}
+                        commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte : '.. pluie ..' % de probabilitÃ© de pluie dans '.. i ..'heure(s)'}
                         
                         end
                     end
@@ -260,7 +265,7 @@ if script_actif == true then
                         voir_les_logs("--- --- --- probabilite de neige a ".. i .."h => " .. neige,debugging)
                         commandArray[#commandArray+1] = {['UpdateDevice'] = proba_neige_h[i]..'|0|'.. neige}
                         if seuil_notification ~= nil and neige > seuil_notification then
-                        commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte : '.. neige ..' % de probabilité de neige dans '.. i ..'heure(s)'}
+                        commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte : '.. neige ..' % de probabilitÃ© de neige dans '.. i ..'heure(s)'}
                         end
                         --print(abr:children()[i]:children()[4]:value())
                     end
