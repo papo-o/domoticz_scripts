@@ -1,7 +1,7 @@
 --[[   
 ~/domoticz/scripts/lua/script_time_dju.lua
 auteur : papoo
-MAJ : 06/04/2018
+MAJ : 28/04/2018
 création : 26/12/2017
 Principe :
 Calculer, via l'information température d'une sonde extérieure, les Degrés jour Chauffage et Froid "intégrales"
@@ -13,7 +13,7 @@ trouvez le coefficient moyen de conversion Gaz/kwh pour votre commune sur https:
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local debugging = false  			                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = true  			                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif = true                           -- active (true) ou désactive (false) ce script simplement
 local temp_ext  = 'Temperature exterieure' 	        -- nom de la sonde de température extérieure
 local domoticzURL = '127.0.0.1:8080'                -- user:pass@ip:port de domoticz
@@ -25,9 +25,9 @@ local minute_raz_var = 59                           -- Minute de l'incrémentati
 local var_user_djf = nil                            -- nom de la variable utilisateur de type 2 (chaine) pour le stockage temporaire des données journalières DJF, nil si inutilisé
 local cpt_djf = nil   				            -- nom du  dummy compteur DJF en degré, nil si vous ne souhaitez pas calculer les Degrés Jour Climatisation
 
-local coef_gaz = 10.83                              -- coefficient moyen gaz pour votre commune
+local coef_gaz = 10.86                              -- coefficient moyen gaz pour votre commune
 local cpt_gaz = 'Compteur Gaz'                      -- nom de votre compteur gaz, nil si vous ne souhaitez pas calculer l'énergie consommée             
-local cpt_nrj = 'Energie consommée chauffage'       -- nom du dummy compteur nrj, nil si vous ne souhaitez pas totaliser l'énergie consommée en Wh
+local cpt_nrj = 'Energie consommée chauffage'       -- nom du dummy compteur nrj, nil si vous ne souhaitez pas totaliser l'énergie consommée en kWh
 local var_user_gaz = 'conso_gaz'
 local div = 100                                     -- conversion impulsion gaz en m3 (si impulsions compteur en : hectolitre = 10; décalitres = 100; litres = 1000)
 
@@ -36,7 +36,7 @@ local div = 100                                     -- conversion impulsion gaz 
 -------------------------------------------- 
 commandArray = {}
 local nom_script = 'Calcul Degrés jour Chauffage et Froid'
-local version = '1.32'
+local version = '1.33'
 
 local djc
 local somme_djc
@@ -55,18 +55,21 @@ time=os.date("*t")
 ---------------- Fonctions -----------------
 -------------------------------------------- 
 curl = '/usr/bin/curl -m 15 -u domoticzUSER:domoticzPSWD '
---==============================================================================================
-function voir_les_logs (s, debugging)
+--------------------------------------------
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[function voir_les_logs (s, debugging) -- nécessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>");
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>");
+		print ("aucune valeur affichable")
 		end
     end
-end	
-
---==============================================================================================
+end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+----------------------------------------------
 function round(value, digits)
 	if not value or not digits then
 		return nil
@@ -76,18 +79,8 @@ function round(value, digits)
 		  (math.floor(value * precision + 0.5) / precision) or
 		  (math.ceil(value * precision - 0.5) / precision)
 end
+--------------------------------------------
 
---==============================================================================================
-function calc_djc(temperature) -- calcul des degrés jour mode chauffage
-djc  = tonumber((18 - temperature)*1/1440)
-return djc
-end
---==============================================================================================
-function calc_djf(temperature)-- calcul des degrés jour mode réfrigération proposé par thuglife
-djf  = tonumber((temperature - 18)*1/1440)
-return djf
-end
---============================================================================================== 
 function url_encode(str) -- encode la chaine str pour la passer dans une url 
    if (str) then
    str = string.gsub (str, "\n", "\r\n")
@@ -97,25 +90,11 @@ function url_encode(str) -- encode la chaine str pour la passer dans une url
    end
    return str
 end
-
---============================================================================================== 
+-------------------------------------------- 
 function creaVar(vname,vtype,vvalue) -- pour créer une variable de type 2 nommée toto comprenant la valeur 10
 	os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=command&param=saveuservariable&vname='..url_encode(vname)..'&vtype='..vtype..'&vvalue='..url_encode(vvalue)..'" &')
 end -- usage :  creaVar('toto','2','10') 
-
---==============================================================================================
--- Obtenir le nom d'un device via son idx
-function GetDeviceNameByIDX(deviceIDX) -- https://www.domoticz.com/forum/viewtopic.php?t=18736#p144720
-    deviceIDX = tonumber(deviceIDX)
-   for i, v in pairs(otherdevices_idx) do
-      if v == deviceIDX then
-         return i
-      end
-   end
-   return 0
-end -- exemple usage = commandArray[GetDeviceNameByIDX(383)] = 'On'
-  
---==============================================================================================
+--------------------------------------------
 -- Obtenir l'idx d'un device via son nom
 function GetDeviceIdxByName(deviceName) 
    for i, v in pairs(otherdevices_idx) do
@@ -125,8 +104,7 @@ function GetDeviceIdxByName(deviceName)
    end
    return 0
 end -- exemple usage = commandArray['UpdateDevice'] = GetDeviceIdxByName('Compteur Gaz') .. '|0|' .. variable
-
---============================================================================================== 
+-------------------------------------------- 
 function timeDiff(dName,dType) -- retourne le temps en secondes depuis la dernière maj du périphérique (Variable 'v' ou Device 'd' 
         if dType == 'v' then 
             updTime = uservariables_lastupdate[dName]
@@ -138,7 +116,18 @@ function timeDiff(dName,dType) -- retourne le temps en secondes depuis la derni�
     t2 = os.time{year=y, month=m, day=d, hour=H, min=M, sec=S}
         tDiff = os.difftime(t1,t2)
         return tDiff
-    end -- usage: timeDiff(name,'v|d')	
+    end -- usage: timeDiff(name,'v|d')
+--]]
+-------------------------------------------- 
+function calc_djc(temperature) -- calcul des degrés jour mode chauffage
+djc  = tonumber((18 - temperature)*1/1440)
+return djc
+end
+--------------------------------------------
+function calc_djf(temperature)-- calcul des degrés jour mode réfrigération proposé par thuglife
+djf  = tonumber((temperature - 18)*1/1440)
+return djf
+end
 --------------------------------------------
 -------------- Fin Fonctions ---------------
 -------------------------------------------- 
@@ -184,7 +173,7 @@ if script_actif == true then
                 voir_les_logs("--- --- reste DJC : ".. tonumber(uservariables[var_user_djc]) .." --- ---",debugging)
             else  -- si le compteur n'as pas été rafraichi depuis moins de 2 minutes on l'incrémente de 1
                 cpt_djc_index = tonumber(cpt_djc_index) + 1
-                commandArray[#commandArray+1] = {['UpdateDevice'] = GetDeviceIdxByName(cpt_djc) .. '|0|'..tostring(cpt_djc_index)}
+            commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[cpt_djc] .. '|0|'..tostring(cpt_djc_index)}
             end
         end
         if var_user_djf ~= nil then 
@@ -198,7 +187,7 @@ if script_actif == true then
                     voir_les_logs("--- --- reste DJF : ".. tonumber(uservariables[var_user_djf]) .." --- ---",debugging)
                 else  -- si le compteur n'as pas été rafraichi depuis moins de 2 minutes on l'incrémente de 1
                     cpt_djf_index = tonumber(cpt_djf_index) + 1
-                    commandArray[#commandArray+1] = {['UpdateDevice'] = GetDeviceIdxByName(cpt_djf) .. '|0|'..tostring(cpt_djf_index)}
+                commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[cpt_djf] .. '|0|'..tostring(cpt_djf_index)}
                 end
             end 
         end    
@@ -206,7 +195,7 @@ if script_actif == true then
         voir_les_logs("--- --- le device : ".. temp_ext .." n\'existe pas --- ---",debugging)
     end -- fin si otherdevices_svalues[temp_ext] ~= nil 
     -- fin calcul DJC et DJF
-    --==============================================================================================
+    --------------------------------------------
 
     -- calcul nrj consommée
     if otherdevices_svalues[cpt_gaz] ~= nil then
@@ -226,7 +215,7 @@ if script_actif == true then
                   voir_les_logs("--- --- Index Compteur nrj : ".. index_nrj .." kWh --- ---",debugging)
                   conso_nrj = tonumber(index_nrj) + tonumber(conso_nrj) --index précédent + conso 
                   voir_les_logs("--- --- Nouvel index Compteur nrj : ".. conso_nrj .." kWh --- ---",debugging)
-                  commandArray[#commandArray+1] = {['UpdateDevice'] = GetDeviceIdxByName(cpt_nrj) .. '|0|' .. conso_nrj}
+                commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[cpt_nrj] .. '|0|' .. conso_nrj}
                 end
             end
         commandArray[#commandArray+1] = {['Variable:'.. var_user_gaz] = tostring(otherdevices_svalues[cpt_gaz])}
