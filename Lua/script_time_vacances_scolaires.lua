@@ -1,44 +1,47 @@
 --[[
 name : script_time_vacances_scolaires.lua
 auteur : papoo
-Mise à jour : 04/01/2018
+Mise à jour : 28/04/2018
 date : 05/08/2017
 Principe :
  Ce script a pour but de remonter les informations du site http://telechargement.index-education.com/vacances.xml
 ]]--
--- ========================================================================
+--------------------------------------------
 -- Variables à éditer
--- ========================================================================
-local nom_script = "Vacances Scolaires"
-local version = "1.04"
-local zoneSelect = "A"  --Indiquer ici la zone 
-local dzVacancesScolaires = "Vacances Scolaires"  -- Renseigner ici le nom du switch à mettre a jour dans domoticz, nil si inutilisé 
-local Scene_Vacances_Scolaires = "Vacances" -- Renseigner ici le nom du scénario à mettre a jour dans domoticz, nil si inutilisé
+--------------------------------------------
+local debugging = false                             -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local script_actif = true                           -- active (true) ou désactive (false) ce script simplement
+local zoneSelect = "A"                              --Indiquer ici la zone 
+local dzVacancesScolaires = "Vacances Scolaires"    -- Renseigner ici le nom du switch à mettre a jour dans domoticz, nil si inutilisé 
+local Scene_Vacances_Scolaires = "Vacances"         -- Renseigner ici le nom du scénario à mettre a jour dans domoticz, nil si inutilisé
 local checkHour = 1
 local checkMinute = 12
-local debugging = true  	-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
--- ========================================================================
+
+--------------------------------------------
 -- Fin Variables à éditer
--- ========================================================================
+--------------------------------------------
+local nom_script = "Vacances Scolaires"
+local version = "1.05"
 local DateDuJour = os.date("%Y/%m/%d")
 local abr
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
 
---package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"
---require('fonctions_perso')
-
-function voir_les_logs (s,debugging)
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[function voir_les_logs (s, debugging) -- nécessite la variable local debugging
     if (debugging) then 
 		if s ~= nil then
-        print ("<font color='#f3031d'>--- --- --- ".. s .." --- --- ---</font>")
+        print (s)
 		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>")
+		print ("aucune valeur affichable")
 		end
     end
-end	
---============================================================================================== 
+end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+--]]
+---------------------------------------------
 function libelleVacances(P_idLibelle)
    for i in pairs(abr:children()[2]:children() ) do
      id = abr:children()[2]:children()[i]["@id"]
@@ -47,10 +50,9 @@ function libelleVacances(P_idLibelle)
      end
   end
 end
-
---==============================================================================================
+--------------------------------------------
 -- Lua-Simple-XML-Parser
---==============================================================================================
+--------------------------------------------
     XmlParser = {};
 	self = {};
 
@@ -206,36 +208,23 @@ time=os.date("*t")
 
 --if time.min % 1 == 0 then -- éxécution du script toutes les X minute(s) 
 --if ((time.min-1) % 60) == 0 then -- éxécution du script toutes les heures à xx:01
-if time.hour == checkHour and time.min == checkMinute then
-		voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
-		voir_les_logs("=========== la date du jour : " .. DateDuJour .." ===========",debugging)
-
-            
-            
+if time.hour == checkHour and time.min == checkMinute and script_actif == true then
+    voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+    voir_les_logs("=========== la date du jour : " .. DateDuJour .." ===========",debugging)
     local rid = assert(io.popen("/usr/bin/curl -m5 http://telechargement.index-education.com/vacances.xml"))
     local testXml = rid:read('*all')
             rid:close()
     local parsedXml = XmlParser:ParseXmlText(testXml)
-
-
-   
-   if (parsedXml) then abr = parsedXml.root 
-   
-   --La fonction est défini ici sinon erreur  parsedXml non défini
-
-       
-
-       for i in pairs(abr.calendrier:children()) do
-
-        voir_les_logs("=========== Zones disponibles : " .. abr.calendrier:children()[i]["@libelle"] .." ===========",debugging)
-
-          if (abr.calendrier:children()[i]["@libelle"] == zoneSelect ) then
-        voir_les_logs("=========== Zone : " .. zoneSelect .." ===========",debugging)     
-        voir_les_logs("=========== Listes des périodes de vacances ===========",debugging)          
-
-             for j in pairs(abr.calendrier:children()[i]:children() ) do
-                --Verifie si la date est dans la période de vacances
-                voir_les_logs("=========== date dans la période : du " .. abr.calendrier:children()[i]:children()[j]["@debut"].." au "..abr.calendrier:children()[i]:children()[j]["@fin"].." id "..abr.calendrier:children()[i]:children()[j]["@libelle"] .." ===========",debugging)          
+    if (parsedXml) then abr = parsedXml.root 
+    --La fonction est défini ici sinon erreur  parsedXml non défini
+        for i in pairs(abr.calendrier:children()) do
+            voir_les_logs("=========== Zones disponibles : " .. abr.calendrier:children()[i]["@libelle"] .." ===========",debugging)
+            if (abr.calendrier:children()[i]["@libelle"] == zoneSelect ) then
+                voir_les_logs("=========== Zone : " .. zoneSelect .." ===========",debugging)     
+                voir_les_logs("=========== Listes des périodes de vacances ===========",debugging)          
+                for j in pairs(abr.calendrier:children()[i]:children() ) do
+                    --Verifie si la date est dans la période de vacances
+                    voir_les_logs("=========== date dans la période : du " .. abr.calendrier:children()[i]:children()[j]["@debut"].." au "..abr.calendrier:children()[i]:children()[j]["@fin"].." id "..abr.calendrier:children()[i]:children()[j]["@libelle"] .." ===========",debugging)          
                     if (tostring(DateDuJour) >= tostring(abr.calendrier:children()[i]:children()[j]["@debut"]) and 
                     tostring(DateDuJour) < tostring(abr.calendrier:children()[i]:children()[j]["@fin"]) ) then
                         tmpIdLibelle = abr.calendrier:children()[i]:children()[j]["@libelle"]
@@ -251,9 +240,9 @@ if time.hour == checkHour and time.min == checkMinute then
                         
                         vacancesScolaires = false
                     end
-              end
-           end
-       end
+                end
+            end
+        end
         if vacancesScolaires == true then
             if dzVacancesScolaires ~= nil then
                 commandArray[dzVacancesScolaires] = 'On'
@@ -274,7 +263,7 @@ if time.hour == checkHour and time.min == checkMinute then
             end            
         end
 
-   end
+    end
 voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)	
 end -- if time
 return commandArray
