@@ -1,5 +1,5 @@
 --[[ 
-version 1.52
+version 1.53
 appel de ces fonctions :
 package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"
 ou
@@ -8,9 +8,9 @@ package.path = package.path..";"..debug.getinfo(1).source:match("@?(.*/)").."?.l
 require('fonctions_perso')
 ou 
 dofile('home/pi/domoticz/scripts/lua/fonctions/fonctions_perso.lua')
-]]--  
--- Certaines fonctions proviennent du forums officiel https://www.domoticz.com/forum/viewtopic.php?f=23&t=7642&p=87659 
--- d'autres de vil1driver https://raw.githubusercontent.com/vil1driver/lua/master/modules.lua
+]]-- Certaines fonctions sont les miennes 
+-- d'autres proviennent du forums officiel https://www.domoticz.com/forum/viewtopic.php?f=23&t=7642&p=87659 
+-- d'autres encore de vil1driver https://raw.githubusercontent.com/vil1driver/lua/master/modules.lua
 
 domoticzIP = '127.0.0.1'
 domoticzPORT = '8080'
@@ -19,13 +19,13 @@ domoticzPSWD = ''		-- mot de pass
 domoticzPASSCODE = ''	-- pour interrupteur protégés
 domoticzURL = 'http://'..domoticzIP..':'..domoticzPORT
 -- chemin vers le dossier lua
--- if (package.config:sub(1,1) == '/') then
-	-- luaDir = debug.getinfo(1).source:match("@?(.*/)")
--- else
-    -- luaDir = string.gsub(debug.getinfo(1).source:match("@?(.*\\)"),'\\','\\\\')
--- end
-curl = '/usr/bin/curl -m 15 -u domoticzUSER:domoticzPSWD '		 	-- ne pas oublier l'espace à la fin
---json = assert(loadfile(luaDir..'JSON.lua'))()						-- chargement du fichier JSON.lua
+if (package.config:sub(1,1) == '/') then
+	luaDir = debug.getinfo(1).source:match("@?(.*/)")
+else
+    luaDir = string.gsub(debug.getinfo(1).source:match("@?(.*\\)"),'\\','\\\\')
+end
+curl = '/usr/bin/curl -m 8 -u domoticzUSER:domoticzPSWD '		 	-- ne pas oublier l'espace à la fin
+json = assert(loadfile(luaDir..'JSON.lua'))()						-- chargement du fichier JSON.lua
 
 --------------------------------------------
 -------------Fonctions----------------------
@@ -163,12 +163,14 @@ When you use this function for all the variables users who copy your script gets
 	--   if not File_exists(LogFile) then
    end
 -------------------------------------------- 
-function round(value, digits) -- arrondi
-	
-  local precision = 10^digits
-  return (value >= 0) and
-      (math.floor(value * precision + 0.5) / precision) or
-      (math.ceil(value * precision - 0.5) / precision)
+function round(value, digits)
+	if not value or not digits then
+		return nil
+	end
+		local precision = 10^digits
+        return (value >= 0) and
+		  (math.floor(value * precision + 0.5) / precision) or
+		  (math.ceil(value * precision - 0.5) / precision)
 end
 -------------------------------------------- 
 function fahrenheit_to_celsius(fahrenheit, digits) 
@@ -349,9 +351,9 @@ end
 -------------------------------------------- 
 function timeDiff(dName,dType) -- retourne le temps en seconde depuis la dernière maj du périphérique (Variable 'v' ou Device 'd' 
         if dType == 'v' then 
-           local updTime = uservariables_lastupdate[dName]
+           updTime = uservariables_lastupdate[dName]
         elseif dType == 'd' then
-           local updTime = otherdevices_lastupdate[dName]
+           updTime = otherdevices_lastupdate[dName]
         end 
         t1 = os.time()
 	y, m, d, H, M, S = updTime:match("(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)")	
@@ -370,8 +372,12 @@ function timedifference(s)
    t1 = os.time()
    t2 = os.time{year=year, month=month, day=day, hour=hour, min=minutes, sec=seconds}
    difference = os.difftime (t1, t2)
-   return difference
+   return difference  --le résultat retourné est en secondes
 end
+--[[ usage : 
+        DATE = "2018-04-29 16:57:18"
+        print(timedifference(DATE)) 
+--]]
 --------------------------------------------
 function year_difference(s)
     return tostring(os.date("%Y")) - tostring(s)
@@ -504,10 +510,10 @@ function DeviceInfos(device)
     -- Protected; ShowNotifications; SignalLevel; Status; StrParam1; StrParam2; SubType; SwitchType; 
     -- SwitchTypeVal; Timers; Type; TypeImg; Unit; Used; UsedByCamera; XOffset; YOffset; idx
     
-    local config = assert(io.popen(curl..'"'.. domoticzURL ..'/json.htm?type=devices&rid='..otherdevices_idx[device]..'"'))
-    local blocjson = config:read('*all')
+    config = assert(io.popen(curl..'"'.. domoticzURL ..'/json.htm?type=devices&rid='..otherdevices_idx[device]..'"'))
+    blocjson = config:read('*all')
     config:close()
-    local jsonValeur = json:decode(blocjson)
+    jsonValeur = json:decode(blocjson)
     if jsonValeur ~= nil then
         return json:decode(blocjson).result[1]    
     end       
@@ -563,7 +569,12 @@ local attribut = DeviceInfos(devicename)
     else
         voir_les_logs("--- --- --- impossible d\'extraire les caractéristiques du compteur ".. devicename .."  --- --- ---",debugging)
     end
-end         
+end 
+--------------------------------------------
+function validMACaddress(s)
+    mac = s:match("(%w+:%w+:%w+:%w+:%w+:%w+)")
+    if mac ~= nil then return mac end
+end
 -------------------------------------------
 -------------Fin Fonctions-----------------
 -------------------------------------------
