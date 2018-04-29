@@ -1,5 +1,5 @@
 --[[ 
-version 1.51
+version 1.52
 appel de ces fonctions :
 package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"
 ou
@@ -493,7 +493,77 @@ function hhmm(minute)
     --print(result)
     return heures, minutes
 end
+--------------------------------------------
+function DeviceInfos(device)  
+    
+    -- inspiré de  http://www.domoticz.com/forum/viewtopic.php?f=61&t=15556&p=115795&hilit=otherdevices_SwitchTypeVal&sid=dda0949f5f3d71cb296b865a14827a34#p115795
+    -- Attributs disponibles :
+    -- AddjMulti; AddjMulti2; AddjValue; AddjValue2; BatteryLevel; CustomImage; Data; Description; Favorite; 
+    -- HardwareID; HardwareName; HardwareType; HardwareTypeVal; HaveDimmer; HaveGroupCmd; HaveTimeout; ID; 
+    -- Image; IsSubDevice; LastUpdate; Level; LevelInt; MaxDimLevel; Name; Notifications; PlanID; PlanIDs; 
+    -- Protected; ShowNotifications; SignalLevel; Status; StrParam1; StrParam2; SubType; SwitchType; 
+    -- SwitchTypeVal; Timers; Type; TypeImg; Unit; Used; UsedByCamera; XOffset; YOffset; idx
+    
+    local config = assert(io.popen(curl..'"'.. domoticzURL ..'/json.htm?type=devices&rid='..otherdevices_idx[device]..'"'))
+    local blocjson = config:read('*all')
+    config:close()
+    local jsonValeur = json:decode(blocjson)
+    if jsonValeur ~= nil then
+        return json:decode(blocjson).result[1]    
+    end       
+end 
+    -- usage : 
+        -- local attribut = DeviceInfos(cpt_djc)
+        -- if attribut.SwitchTypeVal == 0 then    end
+--------------------------------------------
+function CreateVirtualSensor(dname, sensortype)
+    -- recherche d'un hardware dummy pour l'associer au futur device
+    local config = assert(io.popen(curl..'"'.. domoticzURL ..'/json.htm?type=hardware" &'))
+    local blocjson = config:read('*all')
+    config:close()
+    local jsonValeur = json:decode(blocjson)
+    if jsonValeur ~= nil then
+       for Index, Value in pairs( jsonValeur.result ) do
+           if Value.Type == 15 then -- hardware dummy = 15
+              voir_les_logs("--- --- --- idx hardware dummy  : ".. Value.idx .." --- --- ---",debugging)
+              voir_les_logs("--- --- --- Nom hardware dummy  : ".. Value.Name .." --- --- ---",debugging)                  
+              id = Value.idx
+           end  
+       end
+    end
 
+    if id ~= nil then -- si un hardware dummy existe on peut créer le device
+        voir_les_logs("--- --- --- creation du device   : ".. dname .. " --- --- ---",debugging)
+        voir_les_logs(curl..'"'.. domoticzURL ..'/json.htm?type=createvirtualsensor&idx='..id..'&sensorname='..url_encode(dname)..'&sensortype='..sensortype..'"',debugging)
+        os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=createvirtualsensor&idx='..id..'&sensorname='..url_encode(dname)..'&sensortype='..sensortype..'"')
+
+        voir_les_logs("--- --- --- device   : ".. dname .. " créé --- --- ---",debugging)         
+    end
+    -- else     
+        -- local attribut = DeviceInfos(dname)
+        -- if attribut then
+            -- if attribut.SwitchTypeVal == 0 then
+                -- voir_les_logs("--- --- --- modification du device RFXMeter  : ".. dname .. " en compteur de type 3  --- --- ---",debugging) 
+                -- os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=setused&idx='..otherdevices_idx[dname]..'&name='..url_encode(dname)..'&switchtype=3&used=true"')
+            -- end
+        -- else
+            -- voir_les_logs("--- --- --- impossible d\'extraire les caractéristiques du compteur ".. dname .."  --- --- ---",debugging)
+        -- end
+--https://github.com/domoticz/domoticz/blob/development/hardware/hardwaretypes.h
+
+end        
+--------------------------------------------
+function ConvertCounter(devicename)
+local attribut = DeviceInfos(devicename)
+    if attribut then
+        if attribut.SwitchTypeVal == 0 then
+            voir_les_logs("--- --- --- modification du device RFXMeter  : ".. devicename .. " en compteur de type 3  --- --- ---",debugging) 
+            os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=setused&idx='..otherdevices_idx[devicename]..'&name='..url_encode(devicename)..'&switchtype=3&used=true"')
+        end
+    else
+        voir_les_logs("--- --- --- impossible d\'extraire les caractéristiques du compteur ".. devicename .."  --- --- ---",debugging)
+    end
+end         
 -------------------------------------------
 -------------Fin Fonctions-----------------
 -------------------------------------------
