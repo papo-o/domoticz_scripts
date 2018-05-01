@@ -1,18 +1,18 @@
 --[[
-    
+script_time_livebox_network_status.lua   
 source : https://github.com/vzwingma/domotique/blob/master/domoticz/scripts/lua/script_time_network_status.lua
 https://blog.tetsumaki.net/articles/2015/10/recuperation-dinformations-livebox-play.html
 https://easydomoticz.com/forum/viewtopic.php?f=10&t=3825&start=10#p35974
 https://easydomoticz.com/forum/viewtopic.php?f=17&t=5762&p=50983
 http://pon.fr/network-status-via-Livebox-en-lua/
 
-MAJ : 28/04/2018
+MAJ : 01/05/2018
 --]]
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
 local nom_script = "Livebox Network Status"
-local version = "1.51"
+local version = "1.52"
 local debugging = false  	    -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif = true       -- active (true) ou désactive (false) ce script simplement
 local delai = 5                         -- délai d'exécution de ce script en minutes de 1 à 59
@@ -73,36 +73,40 @@ function getPeripheriquesConnectes() -- liste les périphériques utilisés pour
 
 	local json_peripheriques = JSON:decode(readAll(TMP_PERIPHERIQUES))
 	local etatSmartphone = false
-	-- Liste des périphériques
-	for index, peripherique in pairs(json_peripheriques.status) do
-        --voir_les_logs("--- --- --- [Livebox] Statut du peripherique surveillance " .. index .. " :: " .. peripherique.Key,debugging)
-		for mac in string.gmatch(livebox_mac_adress_smartphones, patternMacAdresses) do
-			if(mac == peripherique.Key) then
-			    if(peripherique.Active) then
-					-- local lastChanged = os.time() - convertStringUTCTimeToSeconds(peripherique.LastChanged)
-					-- local lastConnect = os.time() - convertStringUTCTimeToSeconds(peripherique.LastConnection)
-					-- if(lastChanged < 0) then
-						-- lastChanged = 0
-                    -- end                
-				voir_les_logs("Statut du peripherique en surveillance ".. peripherique.Name.." [" .. mac .. "]  =>  actif:" .. tostring((peripherique.Active)),debugging)
-                --voir_les_logs("--- --- --- [" .. peripherique.Name .. "] actif; Dernière activite = " .. peripherique.LastChanged .. " :: " .. lastChanged .. "s / Dernière connexion = " .. peripherique.LastConnection .. " :: " .. lastConnect .. "s",debugging)
-                    
-					etatSmartphone = true
-                        if otherdevices[peripherique.Name] == 'Off' then
-							commandArray [peripherique.Name]='On'
-                            voir_les_logs("--- --- --- [Livebox] Activation de : " .. peripherique.Name .."  --- --- --- ",debugging)
-						
-                        end
-							else
-                        if otherdevices[peripherique.Name] == 'On' then    
-							commandArray [peripherique.Name]='Off'
-                            voir_les_logs("--- --- --- [Livebox] DesActivation de : " .. peripherique.Name .."  --- --- --- ",debugging)
-						
-                        end   
-				end		
-			end
-		end
-	end
+	if json_peripheriques ~= nil then
+        -- Liste des périphériques
+        for index, peripherique in pairs(json_peripheriques.status) do
+            --voir_les_logs("--- --- --- [Livebox] Statut du peripherique surveillance " .. index .. " :: " .. peripherique.Key,debugging)
+            for mac in string.gmatch(livebox_mac_adress_smartphones, patternMacAdresses) do
+                if(mac == peripherique.Key) then
+                    if(peripherique.Active) then
+                        -- local lastChanged = os.time() - convertStringUTCTimeToSeconds(peripherique.LastChanged)
+                        -- local lastConnect = os.time() - convertStringUTCTimeToSeconds(peripherique.LastConnection)
+                        -- if(lastChanged < 0) then
+                            -- lastChanged = 0
+                        -- end                
+                    voir_les_logs("Statut du peripherique en surveillance ".. peripherique.Name.." [" .. mac .. "]  =>  actif:" .. tostring((peripherique.Active)),debugging)
+                    --voir_les_logs("--- --- --- [" .. peripherique.Name .. "] actif; Dernière activite = " .. peripherique.LastChanged .. " :: " .. lastChanged .. "s / Dernière connexion = " .. peripherique.LastConnection .. " :: " .. lastConnect .. "s",debugging)
+                        
+                        etatSmartphone = true
+                            if otherdevices[peripherique.Name] == 'Off' then
+                                commandArray [peripherique.Name]='On'
+                                voir_les_logs("--- --- --- [Livebox] Activation de : " .. peripherique.Name .."  --- --- --- ",debugging)
+                            
+                            end
+                                else
+                            if otherdevices[peripherique.Name] == 'On' then    
+                                commandArray [peripherique.Name]='Off'
+                                voir_les_logs("--- --- --- [Livebox] DesActivation de : " .. peripherique.Name .."  --- --- --- ",debugging)
+                            
+                            end   
+                    end		
+                end
+            end
+        end
+    else
+    print("impossible de récupérer la liste des périphériques connectés")
+    end
 return etatSmartphone
 end
 --------------------------------------------	
