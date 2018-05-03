@@ -27,7 +27,7 @@ local date_mariage = 1996	                    -- année de votre date de mariage
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = 'Fete du jour et du lendemain'
-local version = "1.51"							-- version du script
+local version = "1.53"							-- version du script
 local fete_jour = ''
 local fete_demain = ''
 local ferie =  ''
@@ -217,7 +217,7 @@ saint_jour["29:04"]="les&nbsp;Catherine"
 saint_jour["30:04"]="les&nbsp;Robert"
 saint_jour["01:05"]="les&nbsp;Joseph"
 saint_jour["02:05"]="les&nbsp;Boris"
-saint_jour["03:05"]="les&nbsp;Philippe&nbsp;et&nbsp;Jacques"
+saint_jour["03:05"]="les&nbsp;Philippe"
 saint_jour["04:05"]="les&nbsp;Sylvain"
 saint_jour["05:05"]="les&nbsp;Judith"
 saint_jour["06:05"]="les&nbsp;Prudence"
