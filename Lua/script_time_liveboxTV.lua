@@ -29,6 +29,7 @@ local domoticzURL = "127.0.0.1:8080"
 local nom_script = 'Chaine liveboxTV'
 local version = '0.4'
 local les_chaines = {}
+les_chaines[#les_chaines+1] = {canal="0", nom="Mosaic", id="4294967295"}
 les_chaines[#les_chaines+1] = {canal="1", nom="TF1", id="192"}
 les_chaines[#les_chaines+1] = {canal="10", nom="TMC", id="195"}
 les_chaines[#les_chaines+1] = {canal="11", nom="NT1", id="446"}
@@ -101,6 +102,21 @@ les_chaines[#les_chaines+1] = {canal="9", nom="W9", id="119"}
 --------------------------------------------
 ---------------- Fonctions -----------------
 -------------------------------------------- 
+
+	-- chemin vers le dossier lua
+	if (package.config:sub(1,1) == '/') then
+		 luaDir = debug.getinfo(1).source:match("@?(.*/)")
+	else
+		 luaDir = string.gsub(debug.getinfo(1).source:match("@?(.*\\)"),'\\','\\\\')
+	end
+	 curl = '/usr/bin/curl -m 5 -u domoticzUSER:domoticzPSWD '		 	-- ne pas oublier l'espace à la fin
+	 json = assert(loadfile(luaDir..'JSON.lua'))()						-- chargement du fichier JSON.lua
+--------------------------------------------
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
+
+-- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
+--[[
 function voir_les_logs (s, debugging)
     if (debugging) then 
 		if s ~= nil then
@@ -111,16 +127,7 @@ function voir_les_logs (s, debugging)
     end
 end	
 -------------------------------------------- 
-	-- chemin vers le dossier lua
-	if (package.config:sub(1,1) == '/') then
-		 luaDir = debug.getinfo(1).source:match("@?(.*/)")
-	else
-		 luaDir = string.gsub(debug.getinfo(1).source:match("@?(.*\\)"),'\\','\\\\')
-	end
-	 curl = '/usr/bin/curl -m 5 -u domoticzUSER:domoticzPSWD '		 	-- ne pas oublier l'espace à la fin
-	 json = assert(loadfile(luaDir..'JSON.lua'))()						-- chargement du fichier JSON.lua
---------------------------------------------
-
+--]]
 --------------------------------------------
 -------------- Fin Fonctions ---------------
 --------------------------------------------
