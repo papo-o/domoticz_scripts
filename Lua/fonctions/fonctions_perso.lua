@@ -1,5 +1,5 @@
 --[[ 
-version 1.53
+version 1.54
 appel de ces fonctions :
 package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"
 ou
@@ -116,9 +116,9 @@ function sans_accent(str) -- supprime les accents de la chaîne str
     return (str)
 end
 -------------------------------------------- 
-function accent_html(str)
+function accent_html(str) --remplace les caractères accentués par le code html 
     if (str) then
-	str = string.gsub(str, "'", "&apos;");
+	str = string.gsub(str, "'", "&apos;")
 	str = string.gsub(str, "â",	"&acirc;")
 	str = string.gsub(str, "à",	"&agrave;")
 	str = string.gsub(str, "é",	"&eacute;")
@@ -127,7 +127,8 @@ function accent_html(str)
 	str = string.gsub(str, "ë",	"&euml;")
 	str = string.gsub(str, "î",	"&icirc;")
 	str = string.gsub(str, "ï",	"&iuml;")
-	str = string.gsub(str, "ô",	"&ocirc;")
+    str = string.gsub(str, "ô",	"&ocirc;")
+	str = string.gsub(str, "ö",	"&ouml;")
 	str = string.gsub(str, "œ",	"&oelig;")
 	str = string.gsub(str, "û",	"&ucirc;")
 	str = string.gsub(str, "ù",	"&ugrave;")
@@ -142,7 +143,113 @@ function accent_html(str)
      end
     return (str)
 end
--------------------------------------------- 
+--------------------------------------------
+function unescape(str)--remplace le code html 
+    if (str) then    
+    str = string.gsub( str, '&nbsp;', ' ')
+    str = string.gsub( str, '&iexcl;', '¡')
+    str = string.gsub( str, '&cent;', '¢')
+    str = string.gsub( str, '&pound;', '£')
+    str = string.gsub( str, '&curren;', '¤')
+    str = string.gsub( str, '&yen;', '¥')
+    str = string.gsub( str, '&brvbar;', '¦')
+    str = string.gsub( str, '&sect;', '§')
+    str = string.gsub( str, '&uml;', '¨')
+    str = string.gsub( str, '&copy;', '©')
+    str = string.gsub( str, '&ordf;', 'ª')
+    str = string.gsub( str, '&laquo;', '«')
+    str = string.gsub( str, '&not;', '¬')
+    str = string.gsub( str, '&shy;', '­')
+    str = string.gsub( str, '&reg;', '®')
+    str = string.gsub( str, '&macr;', '¯')
+    str = string.gsub( str, '&deg;', '°')
+    str = string.gsub( str, '&plusmn;', '±')
+    str = string.gsub( str, '&sup2;', '²')
+    str = string.gsub( str, '&sup3;', '³')
+    str = string.gsub( str, '&acute;', '´')
+    str = string.gsub( str, '&micro;', 'µ')
+    str = string.gsub( str, '&para;', '¶')
+    str = string.gsub( str, '&middot;', '·')
+    str = string.gsub( str, '&cedil;', '¸')
+    str = string.gsub( str, '&sup1;', '¹')
+    str = string.gsub( str, '&ordm;', 'º')
+    str = string.gsub( str, '&raquo;', '»')
+    str = string.gsub( str, '&frac14;', '¼')
+    str = string.gsub( str, '&frac12;', '½')
+    str = string.gsub( str, '&frac34;', '¾')
+    str = string.gsub( str, '&iquest;', '¿')
+    str = string.gsub( str, '&Agrave;', 'À')
+    str = string.gsub( str, '&Aacute;', 'Á')
+    str = string.gsub( str, '&Acirc;', 'Â')
+    str = string.gsub( str, '&Atilde;', 'Ã')
+    str = string.gsub( str, '&Auml;', 'Ä')
+    str = string.gsub( str, '&Aring;', 'Å')
+    str = string.gsub( str, '&AElig;', 'Æ')
+    str = string.gsub( str, '&Ccedil;', 'Ç')
+    str = string.gsub( str, '&Egrave;', 'È')
+    str = string.gsub( str, '&Eacute;', 'É')
+    str = string.gsub( str, '&Ecirc;', 'Ê')
+    str = string.gsub( str, '&Euml;', 'Ë')
+    str = string.gsub( str, '&Igrave;', 'Ì')
+    str = string.gsub( str, '&Iacute;', 'Í')
+    str = string.gsub( str, '&Icirc;', 'Î')
+    str = string.gsub( str, '&Iuml;', 'Ï')
+    str = string.gsub( str, '&ETH;', 'Ð')
+    str = string.gsub( str, '&Ntilde;', 'Ñ')
+    str = string.gsub( str, '&Ograve;', 'Ò')
+    str = string.gsub( str, '&Oacute;', 'Ó')
+    str = string.gsub( str, '&Ocirc;', 'Ô')
+    str = string.gsub( str, '&Otilde;', 'Õ')
+    str = string.gsub( str, '&Ouml;', 'Ö')
+    str = string.gsub( str, '&times;', '×')
+    str = string.gsub( str, '&Oslash;', 'Ø')
+    str = string.gsub( str, '&Ugrave;', 'Ù')
+    str = string.gsub( str, '&Uacute;', 'Ú')
+    str = string.gsub( str, '&Ucirc;', 'Û')
+    str = string.gsub( str, '&Uuml;', 'Ü')
+    str = string.gsub( str, '&Yacute;', 'Ý')
+    str = string.gsub( str, '&THORN;', 'Þ')
+    str = string.gsub( str, '&szlig;', 'ß')
+    str = string.gsub( str, '&agrave;', 'à')
+    str = string.gsub( str, '&aacute;', 'á')
+    str = string.gsub( str, '&acirc;', 'â')
+    str = string.gsub( str, '&atilde;', 'ã')
+    str = string.gsub( str, '&auml;', 'ä')
+    str = string.gsub( str, '&aring;', 'å')
+    str = string.gsub( str, '&aelig;', 'æ')
+    str = string.gsub( str, '&ccedil;', 'ç')
+    str = string.gsub( str, '&egrave;', 'è')
+    str = string.gsub( str, '&eacute;', 'é')
+    str = string.gsub( str, '&ecirc;', 'ê')
+    str = string.gsub( str, '&euml;', 'ë')
+    str = string.gsub( str, '&igrave;', 'ì')
+    str = string.gsub( str, '&iacute;', 'í')
+    str = string.gsub( str, '&icirc;', 'î')
+    str = string.gsub( str, '&iuml;', 'ï')
+    str = string.gsub( str, '&eth;', 'ð')
+    str = string.gsub( str, '&ntilde;', 'ñ')
+    str = string.gsub( str, '&ograve;', 'ò')
+    str = string.gsub( str, '&oacute;', 'ó')
+    str = string.gsub( str, '&ocirc;', 'ô')
+    str = string.gsub( str, '&otilde;', 'õ')
+    str = string.gsub( str, '&ouml;', 'ö')
+    str = string.gsub( str, '&divide;', '÷')
+    str = string.gsub( str, '&oslash;', 'ø')
+    str = string.gsub( str, '&ugrave;', 'ù')
+    str = string.gsub( str, '&uacute;', 'ú')
+    str = string.gsub( str, '&ucirc;', 'û')
+    str = string.gsub( str, '&uuml;', 'ü')
+    str = string.gsub( str, '&yacute;', 'ý')
+    str = string.gsub( str, '&thorn;', 'þ')
+    str = string.gsub( str, '&yuml;', 'ÿ')
+    str = string.gsub( str, '&euro;', '€')
+    str = string.gsub( str, '&#(%d+);', function(n) return string.char(n) end )
+    str = string.gsub( str, '&#x(%d+);', function(n) return string.char(tonumber(n,16)) end )
+    str = string.gsub( str, '&amp;', '&' ) -- Be sure to do this after all others
+     end
+    return (str)
+end
+--------------------------------------------
    function GetUserVar(UserVar) -- Get UserVar and Print when missing
       variable=uservariables[UserVar]
       if variable==nil then
@@ -213,31 +320,7 @@ my Wind meter gives: 207.00;SSW;9;18;16.4;16.4 so I need fift value for temperat
    end
    return s
 end  
--------------------------------------------- 
-	function unescape(str)
-	   	if string.match (str, "&") ~= nil then
-	   		str = string.gsub( str, '&lt;', '<' )
-	   		str = string.gsub( str, '&gt;', '>' )
-	   		str = string.gsub( str, '&quot;', '"' )
-	   		str = string.gsub( str, '&apos;', "'" )
-	   		str = string.gsub( str, '&rsquo;', "'" )
-	   		str = string.gsub( str, '&laquo;', "«" )
-	   		str = string.gsub( str, '&raquo;', "»" )
-	   		str = string.gsub( str, '&nbsp;', " " )
-	   		str = string.gsub( str, '&Ccedil;', "Ç" )
-	   		str = string.gsub( str, '&ccedil;', "ç" )
-	   		str = string.gsub( str, '&Acirc;', "Â" )
-	   		str = string.gsub( str, '&Ecirc;', "Ê" )
-	   		str = string.gsub( str, '&Icirc;', "Î" )
-	   		str = string.gsub( str, '&Ocirc;', "Ô" )
-	   		str = string.gsub( str, '&Ucirc;', "Û" )
-	   		str = string.gsub( str, '&#(%d+);', function(n) if tonumber(n) < 256 then return string.char(tonumber(n)) else return "" end end )
-	   		str = string.gsub( str, '&#x(%d+);', function(n) if tonumber(n) < 256 then return string.char(tonumber(n,16)) else return "" end end )
-	   		str = string.gsub( str, '&amp;', '&' ) -- Be sure to do this after all others
-	   	end
-	   	return str
-	end
--------------------------------------------- 
+
 --notification pushbullet
 function pushbullet(title,body)
 --	local settings = assert(io.popen(curl..'-u '..domoticzUSER..':'..domoticzPSWD..' "'..domoticzURL..'/json.htm?type=settings"'))
@@ -392,7 +475,7 @@ function TimeDiff2(Time1,Time2)  --gave to difference between now and the time t
    end
 -------------------------------------------- 
 function TronquerTexte(texte, nb)  -- texte à tronquer, Nb maximum de caractère 
-local sep ="[;!?.]"
+local sep ="[?;!.]"
 local DernierIndex = nil
 texte = string.sub(texte, 1, nb)
 local p = string.find(texte, sep, 1)
