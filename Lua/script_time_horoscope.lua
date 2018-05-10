@@ -22,15 +22,15 @@ les_horoscopes[#les_horoscopes+1] = {device = 'Horoscope 2', signe = 'verseau'}
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = 'Horoscope'
-local version = '1.24'
+local version = '1.25'
 local horoscope = ''
 local device = ''
 local signe = ''
 --------------------------------------------
 ---------------- Fonctions -----------------
 --------------------------------------------
-package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   
-require('fonctions_perso')                                                      
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"
+require('fonctions_perso')
 --https://github.com/papo-o/domoticz_scripts/blob/master/Lua/fonctions/fonctions_perso.lua
 
 --------------------------------------------
@@ -41,7 +41,7 @@ commandArray = {}
 time = os.date("*t")
 if script_actif == true then
     --if (time.hour == 00 and time.min == 20) then -- tout les matins à 00h20
-     if (time.min == 20 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 18))) then -- 3 exécutions du script par jour à 7H20, 13h20 et 18H20
+    if (time.min == 20 and ((time.hour == 7) or (time.hour == 13) or (time.hour == 18))) then -- 3 exécutions du script par jour à 7H20, 13h20 et 18H20
     -- if time.hour % 2 == 0 then -- toutes les deux heures
     -- if (time.hour%1 == 0 and time.min == 10)  then -- Toutes les heures et 10 minutes
     -- if time.min% 2 == 0 then 
@@ -49,27 +49,30 @@ if script_actif == true then
         voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
         for k,v in pairs(les_horoscopes) do-- On parcourt chaque horoscope
             device = v.device
-            if device ~= nil and device ~= '' then voir_les_logs('--- --- --- traitement '..device..'  --- --- --',debugging) end
-            signe = v.signe
-            if signe ~= '' then voir_les_logs('--- --- --- signe astrologique : '..signe..'  --- --- --',debugging) end            
-            local rid = assert(io.popen("/usr/bin/curl -m5 https://astro.rtl.fr/horoscope-jour-gratuit/".. signe))
-            local testhtml = rid:read('*all')
-            rid:close()
-            for instance in testhtml:gmatch("<body>(.-)</body>") do
-                div, horoscope=instance:match('<h2>En résumé</h2>(.-)<p class="text">(.-)</p>')
-            end	
-            horoscope = TronquerTexte(unescape(horoscope), 240)
-            if horoscope ~= nil  and signe ~= nil then
-                voir_les_logs("--- --- --- ".. signe .." : ".. horoscope,debugging)
-                if device ~= nil and device ~= '' then
-                    commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[device]..'|0|'.. horoscope}
+            if device ~= nil and device ~= '' and otherdevices_idx[device] ~= nil then voir_les_logs('--- --- --- traitement '..device..'  --- --- --',debugging) 
+                signe = v.signe
+                if signe ~= '' then voir_les_logs('--- --- --- signe astrologique : '..signe..'  --- --- --',debugging) end            
+                local rid = assert(io.popen("/usr/bin/curl -m5 https://astro.rtl.fr/horoscope-jour-gratuit/".. signe))
+                local testhtml = rid:read('*all')
+                rid:close()
+                for instance in testhtml:gmatch("<body>(.-)</body>") do
+                    div, horoscope=instance:match('<h2>En résumé</h2>(.-)<p class="text">(.-)</p>')
+                end	
+                horoscope = TronquerTexte(unescape(horoscope), 240)
+                if horoscope ~= nil  and signe ~= nil then
+                    voir_les_logs("--- --- --- ".. signe .." : ".. horoscope,debugging)
+                    if device ~= nil and device ~= '' then
+                        commandArray[#commandArray+1] = {['UpdateDevice'] = otherdevices_idx[device]..'|0|'.. horoscope}
+                    end
+                    if send_notification > 0 then
+                        commandArray[#commandArray+1] = {['SendNotification'] = 'horoscope pour le signe du '.. signe ..'#'.. horoscope}
+                    end
                 end
-                if send_notification > 0 then
-                    commandArray[#commandArray+1] = {['SendNotification'] = 'horoscope pour le signe du '.. signe ..'#'.. horoscope}
-                end
+            else
+                voir_les_logs('--- --- --- Le device '.. device ..' n\'existe pas dans domoticz  --- --- --',debugging)
             end
-            voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
-        end    
+        end
+        voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
     end -- if time
 end
 return commandArray
