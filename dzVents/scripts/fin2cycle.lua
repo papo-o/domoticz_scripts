@@ -46,8 +46,8 @@ local DEVICES = { -- [device consommation] = switch associé,
 --les subsystem disponible sont (précédé de domoticz.) : NSS_GOOGLE_CLOUD_MESSAGING, NSS_HTTP, NSS_KODI, NSS_LOGITECH_MEDIASERVER, NSS_NMA,NSS_PROWL, NSS_PUSHALOT, NSS_PUSHBULLET, NSS_PUSHOVER, NSS_PUSHSAFER, NSS_TELEGRAM
 
 local parametres = {
-['Lave Linge'] = {['TimeOut'] = 4, ['MinWatt'] = 4, ['MaxWatt'] = 15, ['Notify'] = 'Yes', ['Notify_On'] = 'No', ['MidValue'] = 1, ['SubSystem'] = 'domoticz.NSS_HTTP'},-- 'NSS_PUSBULLET'}},
-['Sèche Linge'] = {['TimeOut'] = 8, ['MinWatt'] = 3, ['MaxWatt'] = 100, ['Notify'] = 'Yes', ['Notify_On'] = 'No', ['MidValue'] = 2, ['SubSystem'] = 'domoticz.NSS_HTTP'}--, 'domoticz.NSS_PUSBULLET'}},
+['Lave Linge'] = {['TimeOut'] = 4, ['MinWatt'] = 4, ['MaxWatt'] = 15, ['Notify'] = 'Yes', ['Notify_On'] = 'No', ['MidValue'] = 1, ['SubSystem'] = domoticz.NSS_HTTP},-- 'NSS_PUSBULLET'}},
+['Sèche Linge'] = {['TimeOut'] = 8, ['MinWatt'] = 3, ['MaxWatt'] = 100, ['Notify'] = 'Yes', ['Notify_On'] = 'No', ['MidValue'] = 2, ['SubSystem'] = domoticz.NSS_HTTP}--, 'domoticz.NSS_PUSBULLET'}},
 }
 
 local SelectorMid = 'Mid Value' --nom du Selector Switch correspondant à la gateway Xiaomi
@@ -108,7 +108,7 @@ return {
 					domoticz.PRIORITY_EMERGENCY, 
                     '',--Sound
                     '',--Extra
-                    SubSystem--domoticz.NSS_HTTP
+                    SubSystem --domoticz.NSS_HTTP
 				)
 			elseif (Notify == 'Yes') and (device.lastUpdate.minutesAgo >= TimeOut) then
                 domoticz.log("MidValue = " .. MidValue, domoticz.LOG_DEBUG)
@@ -121,7 +121,7 @@ return {
                     domoticz.PRIORITY_EMERGENCY, --Priority
                     '',--Sound
                     '',--Extra
-                    SubSystem--domoticz.NSS_HTTP
+                    SubSystem --domoticz.NSS_HTTP
 				)
                 if (MidValue ~= nil) then 
                     domoticz.devices(SelectorMid).switchSelector(MidValue)
