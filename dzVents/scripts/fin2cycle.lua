@@ -31,7 +31,7 @@ end
 -- create a lookup table that matches a usage
 -- device to the accompanying switch
 
-local DEVICES = { -- [device puissance] = switch associé,
+local DEVICES = { -- [device consommation] = switch associé,
 	['Lave Linge (Consommation)'] = 'Lave Linge',		-- You need to have a inline wall plug that measures energy,
 	['Sèche Linge (Consommation)'] = 'Sèche Linge'--,	-- here you make the link between the energy device and the wall plug.
                                                         -- Adjust to your needs. Between every line you need to add a ",".
