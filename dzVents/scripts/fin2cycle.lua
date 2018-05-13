@@ -108,7 +108,7 @@ return {
 					domoticz.PRIORITY_EMERGENCY, 
                     '',--Sound
                     '',--Extra
-                    domoticz.NSS_HTTP--SubSystem
+                    SubSystem--domoticz.NSS_HTTP
 				)
 			elseif (Notify == 'Yes') and (device.lastUpdate.minutesAgo >= TimeOut) then
                 domoticz.log("MidValue = " .. MidValue, domoticz.LOG_DEBUG)
@@ -121,7 +121,7 @@ return {
                     domoticz.PRIORITY_EMERGENCY, --Priority
                     '',--Sound
                     '',--Extra
-                    domoticz.NSS_HTTP--SubSystem
+                    SubSystem--domoticz.NSS_HTTP
 				)
                 if (MidValue ~= nil) then 
                     domoticz.devices(SelectorMid).switchSelector(MidValue)
