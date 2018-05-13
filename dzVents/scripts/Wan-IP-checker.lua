@@ -28,9 +28,14 @@ return {
         
         logging = { -- La section de journalisation facultative vous permet de remplacer le paramètre de journalisation globale de dzVents 
                     -- comme défini dans Configuration> Paramètres> Autre> Système d'événements> Niveau de journalisation dzVents. 
-                    -- Cela peut être pratique lorsque vous voulez que ce script ait une journalisation de débogage étendue pendant que le reste de votre script s'exécute en mode silencieux. 
-            level = domoticz.LOG_ERROR, -- domoticz.LOG_INFO, domoticz.LOG_MODULE_EXEC_INFO, domoticz.LOG_DEBUG or domoticz.LOG_ERROR, domoticz.LOG_FORCE,
-            marker = '[WAN IP]'
+                    -- Cela peut être pratique lorsque vous voulez que ce script ait une journalisation de débogage étendue
+                    -- pendant que le reste de votre script s'exécute en mode silencieux. 
+                    -- Max. one level can be active; comment the others
+            -- level = domoticz.LOG_INFO,                                             
+            level = domoticz.LOG_ERROR,
+            -- level = domoticz.LOG_DEBUG,
+            -- level = domoticz.LOG_MODULE_EXEC_INFO,
+            marker = '[WAN IP v1.5]'
     },
         
 		httpResponses = {
@@ -50,7 +55,7 @@ return {
 --------------------------------------------         
         
         local script        = 'Wan-IP-checker'
-        local version       = '1.4'
+        local version       = '1.5'
         local devIP         = domoticz.devices(devName)    
         --local getIP         = 'https://4.ifcfg.me/'
         local getIP         = 'http://whatismyip.akamai.com/'        
@@ -62,7 +67,7 @@ return {
         
 		if (item.isTimer) and devIP then -- si le device existe on exécute normalement le script
 
-            domoticz.log(script..' Version : '..version)
+        domoticz.log(script..' Version : '..version, domoticz.LOG_INFO)
             local currIP        = devIP.text
             info = assert(io.popen(curl..getIP))
             actIP = info:read('*all')
@@ -77,10 +82,10 @@ return {
                             testIP = false
                         end
                     end
-                    domoticz.log('Adresse IP résultante valide')
+                    domoticz.log('Adresse IP résultante valide', domoticz.LOG_INFO)
                     testIP = true
                 else
-                    domoticz.log('Adresse IP résultante invalide')
+                    domoticz.log('Adresse IP résultante invalide', domoticz.LOG_INFO)
                     testIP = false
                 end
                 -- fin test validité adresse IP
@@ -89,7 +94,7 @@ return {
                            
                 elseif actIP ~= currIP  and testIP == true then
                     msgTxt = 'L\'IP publique a changé : '..currIP..' ==> '..actIP
-                    domoticz.log(msgTxt)
+                    domoticz.log(msgTxt, domoticz.LOG_INFO)
                     --[[ pour une notification sur un seul système, les différents systèmes disponibles sont :
                         NSS_GOOGLE_CLOUD_MESSAGING NSS_HTTP NSS_KODI NSS_LOGITECH_MEDIASERVER NSS_NMA NSS_PROWL NSS_PUSHALOT NSS_PUSHBULLET NSS_PUSHOVER NSS_PUSHSAFER
                         la syntaxe diverge de la notification standard il faut ajouter deux champs supplémentaires
@@ -100,8 +105,8 @@ return {
                     devIP.updateText(actIP)
 
                 else 
-                    domoticz.log('Adresse précédente : '..currIP)
-                    domoticz.log('Pas de changement d\'adresse IP publique')
+                    domoticz.log('Adresse précédente : '..currIP, domoticz.LOG_DEBUG)
+                    domoticz.log('Pas de changement d\'adresse IP publique', domoticz.LOG_DEBUG)
                 end 
             
         elseif (item.isTimer) and devIP == nil then-- si le device n'existe pas tente de trouver l'IDX du Hardware dummy
@@ -111,7 +116,7 @@ return {
                     method = 'GET',
                     callback = 'trigger', -- voir httpResponses ci-dessus.
                 })
-                domoticz.log('Timer event')
+                domoticz.log('Timer event', domoticz.LOG_DEBUG)
 
         end
 
@@ -125,12 +130,12 @@ return {
                         for Index, Value in pairs( jsonValeur.result ) do
                             if Value.Type == 15 then -- hardware dummy = 15
                                 id = Value.idx
-                                domoticz.log('L\'ID du hardware Dummy est : '..id)
+                                domoticz.log('L\'ID du hardware Dummy est : '..id, domoticz.LOG_DEBUG)
                             end
                         end
                             if id ~= nil then 
                                 os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=createdevice&idx='..id..'&sensorname='..domoticz.utils.urlEncode(devName)..'&sensormappedtype=0xF313"')
-                                domoticz.log('création du nouveau device text')                            
+                                domoticz.log('création du nouveau device text', domoticz.LOG_DEBUG)                            
                             end 
 
                     end
