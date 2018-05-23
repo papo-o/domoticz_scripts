@@ -1,6 +1,4 @@
 
-
-
 -- v1.00 Auteur Remb0  https://gadget-freakz.com/2018/04/make-you-sunscreen-smart-with-dzvents-scripting/
 -- v1.1 papoo traduction, suppression log csv, ajout notifications subsystem... 
 
@@ -10,7 +8,7 @@ local sensors = {
         active = true,
         device = 'Temperature exterieure',
         closeRule = function(device)
-        return device.temperature <= 20
+        return device.temperature <= 22
         end
         },
     wind = {
@@ -38,7 +36,7 @@ local sensors = {
         active = true,
         device = 'UV Index',
         closeRule = function(device)
-        return device.uv <= 0
+        return device.uv <= 2
         end
         },
     lux = {
@@ -52,10 +50,10 @@ local sensors = {
 
 local sunscreenDevice = 'Store' -- Définissez le nom de votre périphérique d'écran solaire (type on/off ou blind)
 local dryRun = 'N'              -- Activer ce mode de fonctionnement (Y) pour tester le script de protection solaire sans activer réellement le store
-                                -- Définissez le nom d'un commutateur virtuel que vous pouvez utiliser pour désactiver le script d'automatisation du store.
+                                
+local manualOverrideSwitch = 'presences'-- Définissez le nom d'un commutateur virtuel que vous pouvez utiliser pour désactiver le script d'automatisation du store.
                                 -- Définir sur false pour désactiver cette fonctionnalité
-local manualOverrideSwitch = 'presences'
-local timeBetweenOpens = 10     -- Minutes à attendre après la fermeture du store avant de l'ouvrir à nouveau.
+local timeBetweenOpens = 30     -- Minutes à attendre après la fermeture du store avant de l'ouvrir à nouveau.
 local notification = "Y"  -- (Y) Active les notifications, (N) les désactive 
 local SubSystem =   domoticz.NSS_TELEGRAM--[[ Systèmes de notification disponibles :
                         NSS_GOOGLE_CLOUD_MESSAGING NSS_HTTP NSS_KODI NSS_LOGITECH_MEDIASERVER NSS_NMA NSS_PROWL NSS_PUSHALOT NSS_PUSHBULLET NSS_PUSHOVER NSS_PUSHSAFER
@@ -74,7 +72,7 @@ return {
         -- level = domoticz.LOG_ERROR,
         level = domoticz.LOG_DEBUG,
         -- level = domoticz.LOG_MODULE_EXEC_INFO,
-    marker = 'STORE v1.1 '
+    marker = 'STORE v1.2 '
     },
     execute = function(domoticz)
 
@@ -85,10 +83,10 @@ return {
             if dryRun == 'N' then
                 sunscreen.switchOn()
                 if notification == "Y" then
-                    if SubSystem ~= nil then 
-                        domoticz.notify('Store', message, '', '', '', SubSystem)
-                        else
+                    if SubSystem == nil then 
                         domoticz.notify('Store', message)
+                    else
+                        domoticz.notify('Store', message, '', '', '', SubSystem)
                     end 
                 end
             end
@@ -103,10 +101,10 @@ return {
             if dryRun == 'N' then
                 sunscreen.switchOff()
                 if notification == "Y" then
-                    if SubSystem ~= nil then 
-                        domoticz.notify('Store', message, '', '', '', SubSystem)
-                        else
+                    if SubSystem == nil then 
                         domoticz.notify('Store', message)
+                    else
+                        domoticz.notify('Store', message, '', '', '', SubSystem)
                     end 
                 end
             end
