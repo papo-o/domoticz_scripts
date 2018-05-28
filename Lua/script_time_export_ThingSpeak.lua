@@ -34,8 +34,8 @@ les_devices[#les_devices+1] = {device="Temperature exterieure", field=7, nom="Hu
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
-+local nom_script = "export ThingSpeak"
-+local version = "1.2"
+local nom_script = "export ThingSpeak"
+local version = "1.2"
 local fields =""
 --------------------------------------------
 ---------------- Fonctions -----------------
