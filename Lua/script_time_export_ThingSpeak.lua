@@ -1,6 +1,6 @@
---[[script_time_export_ThingSpeak.lua
+	--[[script_time_export_ThingSpeak.lua
 auteur : papoo
-MAJ: 26/11/2017
+MAJ: 28/05/2018
 date : 18/05/2016
 Principe : 
 exporter les données de compteurs, Températures, etc.. sur le site thingspeak.com
@@ -14,8 +14,6 @@ http://pon.fr/exporter-des-donnees-vers-le-site-thingspeak/
 ------------ Variables à éditer ------------
 -------------------------------------------- 
 
-local nom_script = "export ThingSpeak"
-local version = "1.2"
 local debugging = true  	-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local url_thingspeak = 'https://api.thingspeak.com/' 
 local api_thingspeak = 'api_thingspeak' -- creer une variable de type chaine contenant votre code API Write KEY ThingSpeak
@@ -36,6 +34,8 @@ les_devices[#les_devices+1] = {device="Temperature exterieure", field=7, nom="Hu
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
++local nom_script = "export ThingSpeak"
++local version = "1.2"
 local fields =""
 --------------------------------------------
 ---------------- Fonctions -----------------
