@@ -1,5 +1,5 @@
 -- v1.00 Auteur papoo 
-
+--https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/fenetres_ouvertes.lua
 -- Définir tous les capteurs et les seuils qui doivent être pris en compte pour la notification des fenêtres restées ouvertes 
 local sensors = {
 
@@ -40,7 +40,7 @@ local sensors = {
         }
  
 }
-local FENETRES = { 'fenetre douche', 'fenetre audrey'} 
+local FENETRES = { 'fenetre douche', 'fenetre 2'} 
 --local FENETRES = { 'fenetre*'} 
 local SubSystem =   nil --domoticz.NSS_TELEGRAM --domoticz.NSS_PUSHBULLET 
                     --[[ Systèmes de notification disponibles :
