@@ -1,7 +1,7 @@
 -- v1.00 Auteur papoo 
 -- https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/fenetres_ouvertes.lua
 -- https://pon.fr/dzvents-notification-fenetres-ouvertes-sur-risques-meteorologiques/
--- http://easydomoticz.com/forum/viewtopic.php?f=17&t=6649
+-- https://easydomoticz.com/forum/viewtopic.php?f=17&t=6649
 -- Définir tous les capteurs et les seuils qui doivent être pris en compte pour la notification des fenêtres restées ouvertes 
 local sensors = {
 
@@ -28,16 +28,16 @@ local sensors = {
         },
     alerte_meteo = {
         active = false,
-        device = 'Vigilance Météo',
+        device = 'Vigilance Météo', -- Ce doit être un capteur virtuel de type "Alerte"
         closeRule = function(device)
         return device.color > 2  -- vert = 0, jaune = 1, orange = 2, rouge = 3
         end
         },
     alerte_pluie = {
         active = true,
-        device = 'Alerte Pluie',
+        device = 'Alerte Pluie', -- Ce doit être un capteur virtuel de type "Alerte"
         closeRule = function(device)
-        return device.color > 1
+        return device.color > 1  -- vert = 0, jaune = 1, orange = 2, rouge = 3
         end
         }
  
