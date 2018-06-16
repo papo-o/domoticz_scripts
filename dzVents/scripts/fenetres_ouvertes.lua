@@ -1,5 +1,7 @@
 -- v1.00 Auteur papoo 
---https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/fenetres_ouvertes.lua
+-- https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/fenetres_ouvertes.lua
+-- https://pon.fr/dzvents-notification-fenetres-ouvertes-sur-risques-meteorologiques/
+-- http://easydomoticz.com/forum/viewtopic.php?f=17&t=6649
 -- Définir tous les capteurs et les seuils qui doivent être pris en compte pour la notification des fenêtres restées ouvertes 
 local sensors = {
 
