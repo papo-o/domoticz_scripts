@@ -1,5 +1,4 @@
---[[
-script_time_detec_fuite_eau.lua
+--[[script_time_detec_fuite_eau.lua
 auteur : papoo
 MAJ : 13/03/2018
 Création : 25/04/2016
@@ -36,7 +35,7 @@ local subsystem       = 'telegram'              -- les différentes valeurs de s
                                                 -- pour plusieurs modes de notification séparez chaque mode par un point virgule (exemple : "pushalot;pushbullet"). si subsystem = nil toutes les notifications seront activées.
 local les_compteurs = {};
 -- 1er compteur : name ="nom du device compteur 1", nom (dummy) du capteur pourcentage probabilité surconsommation associé, seuil_notification = seuil pour l'envoie des notifications
-les_compteurs[#les_compteurs+1] = {name="Compteur Eau Froide", dummy="Probabilité Fuite Eau Froide", seuil_notification=50}
+les_compteurs[#les_compteurs+1] = {name="Compteur Eau Froide", dummy="Probabilité Fuite Eau Froide", seuil_notification=85}
 -- 2eme compteur : name ="nom du device compteur 2", nom (dummy) du capteur pourcentage probabilité surconsommation associé, seuil_notification= seuil pour l'envoie des notifications
 les_compteurs[#les_compteurs+1] = {name="Compteur Eau Chaude", dummy="Probabilité Fuite Eau Chaude", seuil_notification=85}
 
@@ -44,7 +43,7 @@ les_compteurs[#les_compteurs+1] = {name="Compteur Eau Chaude", dummy="Probabilit
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = "détection fuite d\'eau"
-local version = "2.2"
+local version = "2.3"
 --------------------------------------------
 ---------------- Fonctions -----------------
 --------------------------------------------
@@ -184,7 +183,7 @@ if script_actif == true then
                 local message = ' Une consommation d\'eau de ' .. conso ..' Litre(s) a été détectée sur le ' .. d.name .. ' entre '..heure..'h'..minute..' et '..heure + delai ..'h'..minute                    
                 voir_les_logs("--- --- --- ".. message .." --- --- --- ",debugging)
                 if EmailTo ~= nil then commandArray[#commandArray+1] = {['SendEmail'] =  objet..'#'.. message  .. '#' .. EmailTo} end
-                    if notification == 1 then
+                    if notification > 0 then
                         if subsystem ~= nil then
                             voir_les_logs("--- --- --- Notification système activée pour le(s) service(s) "..subsystem,debugging)
                             commandArray[#commandArray+1] = {['SendNotification'] = objet..'#Une consommation d\'eau de ' .. conso ..' Litre(s) a été détectée sur le ' .. d.name .. ' entre '..heure..'h'..minute..' et '..heure + delai ..'h'..minute..'#0###'.. subsystem ..''}
@@ -204,7 +203,7 @@ if script_actif == true then
                 voir_les_logs("--- --- --- ".. message .." --- --- --- ",debugging)
                 if EmailTo ~= nil then commandArray[#commandArray+1] = {['SendEmail'] =  objet..'#'.. message  .. '#' .. EmailTo} end
                 voir_les_logs("--- --- --- Aucune consommation sur le "..d.name.." --- --- --- ",debugging)
-                if notification > 0 then
+                if notification == 2 then
                     if subsystem ~= nil then
                         voir_les_logs("--- --- --- Notification système activée pour le(s) service(s) "..subsystem,debugging)
                         commandArray[#commandArray+1] = {['SendNotification'] = objet..'#Aucune consommation d\'eau détectée sur le ' .. d.name .. ' entre '.. heure ..'h'.. minute ..' et '.. heure + delai ..'h'.. minute ..'#0###'.. subsystem ..''}
