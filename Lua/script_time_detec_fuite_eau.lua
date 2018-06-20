@@ -1,6 +1,6 @@
 --[[script_time_detec_fuite_eau.lua
 auteur : papoo
-MAJ : 13/03/2018
+MAJ : 20/06/2018
 Création : 25/04/2016
 Script LUA pour Domoticz permettant la vérification périodique de la consommation d'eau (toutes les 5 minutes) par comparaison avec l'index précédent, présent dans une variable utilisateur créée automatiquement lors de la première exécution du script.
 - Si l'index compteur et l'index -5mn sont identique, le device probabilité est remis à zéro => pas de fuite.
@@ -43,7 +43,7 @@ les_compteurs[#les_compteurs+1] = {name="Compteur Eau Chaude", dummy="Probabilit
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = "détection fuite d\'eau"
-local version = "2.3"
+local version = "2.31"
 --------------------------------------------
 ---------------- Fonctions -----------------
 --------------------------------------------
@@ -203,7 +203,7 @@ if script_actif == true then
                 voir_les_logs("--- --- --- ".. message .." --- --- --- ",debugging)
                 if EmailTo ~= nil then commandArray[#commandArray+1] = {['SendEmail'] =  objet..'#'.. message  .. '#' .. EmailTo} end
                 voir_les_logs("--- --- --- Aucune consommation sur le "..d.name.." --- --- --- ",debugging)
-                if notification == 2 then
+                if notification == 1 then
                     if subsystem ~= nil then
                         voir_les_logs("--- --- --- Notification système activée pour le(s) service(s) "..subsystem,debugging)
                         commandArray[#commandArray+1] = {['SendNotification'] = objet..'#Aucune consommation d\'eau détectée sur le ' .. d.name .. ' entre '.. heure ..'h'.. minute ..' et '.. heure + delai ..'h'.. minute ..'#0###'.. subsystem ..''}
