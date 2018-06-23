@@ -1,6 +1,6 @@
 --[[script_time_detec_fuite_eau.lua
 auteur : papoo
-MAJ : 20/06/2018
+MAJ : 23/06/2018
 Création : 25/04/2016
 Script LUA pour Domoticz permettant la vérification périodique de la consommation d'eau (toutes les 5 minutes) par comparaison avec l'index précédent, présent dans une variable utilisateur créée automatiquement lors de la première exécution du script.
 - Si l'index compteur et l'index -5mn sont identique, le device probabilité est remis à zéro => pas de fuite.
@@ -43,7 +43,7 @@ les_compteurs[#les_compteurs+1] = {name="Compteur Eau Chaude", dummy="Probabilit
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = "détection fuite d\'eau"
-local version = "2.31"
+local version = "2.32"
 --------------------------------------------
 ---------------- Fonctions -----------------
 --------------------------------------------
@@ -133,8 +133,14 @@ if script_actif == true then
             end
             voir_les_logs("--- --- --- Probabilité à  ".. 	otherdevices[d.dummy] .."% sur le "..d.name.." --- --- --- ",debugging) 
             if tonumber(otherdevices[d.dummy]) ~= nil and tonumber(otherdevices[d.dummy]) > d.seuil_notification then
-            commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte surconsommation#surconsommation sur le ' ..d.name.. '! Probabilité à ' ..tonumber(otherdevices[d.dummy]).. '%'}
-            end
+                if subsystem ~= nil then
+                    voir_les_logs("--- --- --- Notification système activée pour le(s) service(s) "..subsystem,debugging)
+                    commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte surconsommation#surconsommation sur le ' ..d.name.. '! Probabilité à ' ..tonumber(otherdevices[d.dummy]).. '%#0###'.. subsystem ..''}
+                else
+                    voir_les_logs("--- --- --- toutes les Notifications système sont activées",debugging)
+                    commandArray[#commandArray+1] = {['SendNotification'] = 'Alerte surconsommation#surconsommation sur le ' ..d.name.. '! Probabilité à ' ..tonumber(otherdevices[d.dummy]).. '%'}
+                end
+            end    
         end  -- end for                                          
 
         voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
