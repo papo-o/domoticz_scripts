@@ -1,5 +1,5 @@
 --[[ 
-version 1.54
+version 1.55
 appel de ces fonctions :
 package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"
 ou
@@ -657,6 +657,32 @@ end
 function validMACaddress(s)
     mac = s:match("(%w+:%w+:%w+:%w+:%w+:%w+)")
     if mac ~= nil then return mac end
+end
+--------------------------------------------
+function date_en_francais(str)
+    if (str) then
+	str = string.gsub(str, "January", "Janvier;");
+	str = string.gsub(str, "February",	"Février")
+	str = string.gsub(str, "March",	"Mars")
+	str = string.gsub(str, "April",	"Avril")
+	str = string.gsub(str, "May",	"Mai")
+	str = string.gsub(str, "June",	"Juin")
+	str = string.gsub(str, "July",	"Juillet")
+	str = string.gsub(str, "August",	"Août")
+	str = string.gsub(str, "september",	"Septembre")
+	str = string.gsub(str, "October",	"Octobre")
+	str = string.gsub(str, "November",	"Novembre")
+	str = string.gsub(str, "December",	"Décembre")
+	str = string.gsub(str, "Monday",	"Lundi")
+	str = string.gsub(str, "Tuesday",	"Mardi")
+	str = string.gsub(str, "Wednesday",	"Mercredi")
+	str = string.gsub(str, "Thursday", "Jeudi")
+    str = string.gsub(str, "Friday", "Vendredi")
+    str = string.gsub(str, "Saturday", "Samedi")
+    str = string.gsub(str, "Sunday", "Dimanche")
+
+     end
+    return (str)
 end
 -------------------------------------------
 -------------Fin Fonctions-----------------
