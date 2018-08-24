@@ -4,6 +4,8 @@ auteur : papoo
 creation : 24/08/2018
 mise à  jour : 24/08/2018
 
+https://pon.fr/dzvents-supervision-dun-nas-synology-avec-snmp/
+
 For this script to work you need to enable SNMP on your synology NAS and install SNMP on your Raspberry Pi
 
 Enable SNMP on your synology NAS
