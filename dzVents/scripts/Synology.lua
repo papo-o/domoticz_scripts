@@ -2,15 +2,18 @@
 name : synology.lua
 auteur : papoo
 creation : 24/08/2018
-mise à  jour : 24/08/2018
+mise à  jour : 26/08/2018
 
 https://pon.fr/dzvents-supervision-dun-nas-synology-avec-snmp/
+https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/Synology.lua
+https://easydomoticz.com/forum/viewtopic.php?f=17&t=7022
+http://www.domoticz.com/forum/viewtopic.php?f=59&t=24618
 
 For this script to work you need to enable SNMP on your synology NAS and install SNMP on your Raspberry Pi
 
 Enable SNMP on your synology NAS
  
-Go toMain Menu>Control Panel >SNMPto enable SNMP service, which allows users to monitor
+Go toMain Menu>Control Panel >SNMP to enable SNMP service, which allows users to monitor
 Synology DiskStation network flow with the network management software.
 
 You can use V1/V2
@@ -27,8 +30,16 @@ sudo reboot
 
 Check if SNMP is up and running, issue:
 snmpget -v 2c -c PASSWORD -O qv NASIPADDRESS 1.3.6.1.4.1.24681.1.2.11.1.3.1
+
+Replace PASSWORD with the Community name you entered while setting up your NAS
+Replace NASIPADDRESS with the ip address of your NAS
 You should get something like this:
-"37 C/98 F"    
+"37" which corresponds to the temperature of disc # 1
+Then create:
+1 device Switch
+1 temperature device
+3 percent devices
+1 meter device   
 --]]
 --------------------------------------------
 -------------Fonctions----------------------
@@ -46,8 +57,8 @@ end
 -------------Fin Fonctions-----------------
 -------------------------------------------
 
-    local NasIp = "192.168.100.250"                             -- NAS IP Address
-    local CommunityPassword = "Community"                       -- SNMP Password
+    local NasIp = "192.168.1.25"                                -- NAS IP Address
+    local CommunityPassword = "synology"                        -- SNMP Password
     local NAS = "Synology"                                      -- NAS Switch
     local NAS_HD1_TEMP = "Synology Temp"                        -- NAS HD1 Temp => 
     local NAS_CPU = "Synology Utilisation CPU"                  -- NAS CPU 
@@ -71,10 +82,10 @@ return {
    -- on = { devices = { "your trigger device" }},
         
   logging =   { -- level    =   domoticz.LOG_INFO,                                             -- Seulement un niveau peut être actif; commenter les autres
-                -- level    =   domoticz.LOG_ERROR,                                            -- Only one level can be active; comment others
-                level    =   domoticz.LOG_DEBUG,
+                level    =   domoticz.LOG_ERROR,                                            -- Only one level can be active; comment others
+                -- level    =   domoticz.LOG_DEBUG,
                 -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
-                marker    =   "Synology Monitor v1.0 "      },
+                marker    =   "Synology Monitor v1.01 "      },
     
     execute = function(dz)
         local i = 0
