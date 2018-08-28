@@ -2,7 +2,7 @@
 name : damocles.lua
 auteur : papoo
 creation : 26/08/2018
-mise à  jour : 26/08/2018
+mise à  jour : 28/08/2018
 
 Install SNMP on Raspberry Pi
 Log in to you Raspberry Pi and issue:
@@ -25,7 +25,7 @@ Then create:
 x meter device   
 --]]
 
-    local DAMOCLESIp = "192.168.100.200"                              -- DAMOCLES IP Address
+    local DAMOCLESIp = "192.168.100.200"                                 -- DAMOCLES IP Address
     local CommunityPassword = "private"                               -- SNMP Password
     local DAMOCLES = "Damocles"                                       -- DAMOCLES Switch
     local DOMOTICZ_CPT_1 = "Compteur Eau Froide"                      -- DOMOTICZ CPT 1 Eau Froide
@@ -53,7 +53,7 @@ return {
                 level    =   domoticz.LOG_ERROR,                                            -- Only one level can be active; comment others
                 -- level    =   domoticz.LOG_DEBUG,
                 -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
-                marker    =   "Damoclès Monitor v1.0 "      },
+                marker    =   "Damoclès Monitor v1.01 "      },
     
     execute = function(dz)
         local i = 0
@@ -136,10 +136,10 @@ return {
 
         if results[0] and results[1] and results[2] and results[3] and results[4]then
                 dz.log("Requete SNMP correcte ",dz.LOG_DEBUG)
-                if dz.devices(DAMOCLES).state == 'Off' then dz.devices(DAMOCLES).switchOn() end
+                dz.devices(DAMOCLES).switchOn().checkFirst()
             else
                 dz.log("Requete SNMP incorrecte ",dz.LOG_DEBUG)
-                if dz.devices(DAMOCLES).state == 'On' then dz.devices(DAMOCLES).switchOff() end
+                dz.devices(DAMOCLES).switchOff().checkFirst()
             end
             
     end
