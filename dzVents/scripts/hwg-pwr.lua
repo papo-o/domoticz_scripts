@@ -2,7 +2,7 @@
 name : hwg_pwr.lua
 auteur : papoo
 creation : 26/08/2018
-mise à  jour : 26/08/2018
+mise à  jour : 28/08/2018
 
 Install SNMP on Raspberry Pi
 Log in to you Raspberry Pi and issue:
@@ -43,7 +43,7 @@ return {
                 level    =   domoticz.LOG_ERROR,                                            -- Only one level can be active; comment others
                 -- level    =   domoticz.LOG_DEBUG,
                 -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
-                marker    =   "Damoclès Monitor v1.0 "      },
+                marker    =   "Damoclès Monitor v1.01 "      },
     
     execute = function(dz)
         local i = 0
@@ -69,10 +69,10 @@ return {
      
         if results[0] then
                 dz.log("Requete SNMP correcte ",dz.LOG_DEBUG)
-                if dz.devices(hwg_pwr).state == 'Off' then dz.devices(hwg_pwr).switchOn() end
+                dz.devices(hwg_pwr).switchOn().checkFirst()
             else
                 dz.log("Requete SNMP incorrecte ",dz.LOG_DEBUG)
-                if dz.devices(hwg_pwr).state == 'On' then dz.devices(hwg_pwr).switchOff() end
+                dz.devices(hwg_pwr).switchOff().checkFirst()
             end
             
     end
