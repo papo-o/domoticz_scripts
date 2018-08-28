@@ -14,7 +14,7 @@ Reboot your Pi:
 sudo reboot
 
 Check if SNMP is up and running, issue:
-snmpget -c private -v1 -O qv DAMOCLESIPADDRESS 1.3.6.1.2.1.1.5.0
+snmpget -c PASSWORD -v1 -O qv DAMOCLESIPADDRESS 1.3.6.1.2.1.1.5.0
 
 Replace PASSWORD with the Community name you entered while setting up your DAMOCLES
 Replace DAMOCLESIPADDRESS with the ip address of your DAMOCLES
