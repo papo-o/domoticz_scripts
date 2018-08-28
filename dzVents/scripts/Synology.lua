@@ -2,7 +2,7 @@
 name : synology.lua
 auteur : papoo
 creation : 24/08/2018
-mise à  jour : 26/08/2018
+mise à  jour : 28/08/2018
 
 https://pon.fr/dzvents-supervision-dun-nas-synology-avec-snmp/
 https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/Synology.lua
@@ -57,7 +57,7 @@ end
 -------------Fin Fonctions-----------------
 -------------------------------------------
 
-    local NasIp = "192.168.1.25"                                -- NAS IP Address
+    local NasIp = "192.168.100.250"                             -- NAS IP Address
     local CommunityPassword = "synology"                        -- SNMP Password
     local NAS = "Synology"                                      -- NAS Switch
     local NAS_HD1_TEMP = "Synology Temp"                        -- NAS HD1 Temp => 
@@ -85,7 +85,7 @@ return {
                 level    =   domoticz.LOG_ERROR,                                            -- Only one level can be active; comment others
                 -- level    =   domoticz.LOG_DEBUG,
                 -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
-                marker    =   "Synology Monitor v1.01 "      },
+                marker    =   "Synology Monitor v1.02 "      },
     
     execute = function(dz)
         local i = 0
@@ -133,10 +133,10 @@ return {
             end
         if results[0] and results[5] and results[6] then
                 dz.log("Requete SNMP correcte ",dz.LOG_DEBUG)
-                if dz.devices(NAS).state == 'Off' then dz.devices(NAS).switchOn() end
+                dz.devices(NAS).switchOn().checkFirst()
             else
                 dz.log("Requete SNMP incorrecte ",dz.LOG_DEBUG)
-                if dz.devices(NAS).state == 'On' then dz.devices(NAS).switchOff() end
+                dz.devices(NAS).switchOff().checkFirst()
             end
             
     end
