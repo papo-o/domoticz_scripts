@@ -1,11 +1,12 @@
 --[[ getDarkskyForcast.lua for [ domoticzVents >= 2.4 ]
 author/auteur = papoo
-update/mise à jour = 15/09/2018
+update/mise Ã  jour = 15/09/2018
 creation = 15/09/2018
+https://pon.fr/dzvents-darksky-et-probabilite-de-pluie/
 This script requires prior registration to the DarkSky API
-Ce script nécessite l'inscription préalable à l'API DarkSky
+Ce script nÃ©cessite l'inscription prÃ©alable Ã  l'API DarkSky
 Enter the URL and request a free API key
-Entrez l'URL et demandez une clé API gratuite
+Entrez l'URL et demandez une clÃ© API gratuite
 https://darksky.net/dev
 ]]--               
 local proba_pluie_h = {}
@@ -16,26 +17,26 @@ local proba_pluie_h = {}
     for my part, I only get the forecasts at 1 hour, 2 hours, 4 hours, 6 hours, 12 hours and 24 hours.
     Only 48 possible forecasts
     Ajoutez, modifiez ou supprimez les variables proba_pluie_h[] en changeant le nombre (heure) entre []
-    renseigner ensuite le nom "entre guillemets" ou l'idx sans guillemets (évitez les accents) du device pourcentage probabilité pluie à [x] heure associé, nil si non utilisé
-    Ce script peut potentiellement récupérer les 48 prévisions horaires disponible. Créez autant de capteurs virtuels pourcentage correspondant aux prévisions horaires que vous souhaitez.
-    pour ma part, je ne récupère que les prévisions à 1 heure, 2 heures, 4 heures, 6 heures, 12 heures et 24 heures.
-    Seulement 48 prévisions possible
+    renseigner ensuite le nom "entre guillemets" ou l'idx sans guillemets (Ã©vitez les accents) du device pourcentage probabilitÃ© pluie Ã  [x] heure associÃ©, nil si non utilisÃ©
+    Ce script peut potentiellement rÃ©cupÃ©rer les 48 prÃ©visions horaires disponible. CrÃ©ez autant de capteurs virtuels pourcentage correspondant aux prÃ©visions horaires que vous souhaitez.
+    pour ma part, je ne rÃ©cupÃ¨re que les prÃ©visions Ã  1 heure, 2 heures, 4 heures, 6 heures, 12 heures et 24 heures.
+    Seulement 48 prÃ©visions possible
     My DarkSky secret key, the latitude and longitude of my home are contained in 3 user variables
-    Ma clé secrète DarkSky, la latitude et la longitude de mon domicile sont contenus dans 3 variables utilisateurs
+    Ma clÃ© secrÃ¨te DarkSky, la latitude et la longitude de mon domicile sont contenus dans 3 variables utilisateurs
     
     local DarkSkyAPIkey = domoticz.variables('api_forecast_io').value
     local geolocalisation = domoticz.variables('Latitude').value..","..domoticz.variables('Longitude').value
 
     If you want to enter this information directly into the script, comment on the two lines above, uncomment the following two lines
-    Si vous souhaitez inscrire ces informations dans le script, commentez les deux lignes ci-dessus, décommentez les deux lignes suivantes
+    Si vous souhaitez inscrire ces informations dans le script, commentez les deux lignes ci-dessus, dÃ©commentez les deux lignes suivantes
     
     --local DarkSkyAPIkey = "1a2bf34bf56c78901f2345f6d7890f12"
     --local geolocalisation = "45.87,1.30" -- latitude,longitude 
     
     by personalizing them with your personal data
     finally, you can choose the level of logs, only one level can be active; comment on others in the section
-    en les personnalisant avec vos données personnelles. 
-    enfin vous pouvez choisir le niveau de "verbiage" des logs, seulement un niveau peut être actif; commenter les autres dans la section logging
+    en les personnalisant avec vos donnÃ©es personnelles. 
+    enfin vous pouvez choisir le niveau de "verbiage" des logs, seulement un niveau peut Ãªtre actif; commenter les autres dans la section logging
 ]]--
 proba_pluie_h[1]= "Proba Pluie 1h"     			
 proba_pluie_h[2]= "Proba Pluie 2h"     			 
@@ -54,7 +55,7 @@ return {
                     httpResponses   =   { "trigger" }    -- Trigger the handle Json part
                 },
 
-  logging =   { -- level    =   domoticz.LOG_INFO,                                             -- Seulement un niveau peut être actif; commenter les autres
+  logging =   { -- level    =   domoticz.LOG_INFO,                                             -- Seulement un niveau peut Ãªtre actif; commenter les autres
                 -- level    =   domoticz.LOG_ERROR,                                            -- Only one level can be active; comment others
                 level    =   domoticz.LOG_DEBUG,
                 -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
