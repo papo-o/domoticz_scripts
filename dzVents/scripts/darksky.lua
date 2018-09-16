@@ -63,9 +63,6 @@ return {
 
    data    =   {   rainForecast     = {initial = {} },             -- Keep a copy of last json just in case
    },
-
-
-
     execute = function(domoticz, item)
         local DarkSkyAPIkey = domoticz.variables('api_forecast_io').value
         local geolocalisation = domoticz.variables('Latitude').value..","..domoticz.variables('Longitude').value 
@@ -74,12 +71,11 @@ return {
 
         local Forecast_url  = "https://api.darksky.net/forecast/"  -- url
         local extraData = "?units=ca&exclude=currently,minutely,daily,alerts,flags" 
-        
-        end
-                local function debugMessage(message)
-            domoticz.log(message,domoticz.LOG_DEBUG)
 
+        local function debugMessage(message)
+            domoticz.log(message,domoticz.LOG_DEBUG)
         end
+        
         if (item.isTimer) then
             domoticz.openURL({
                 url = Forecast_url..DarkSkyAPIkey.."/"..geolocalisation..extraData,
@@ -129,8 +125,5 @@ return {
                 
             end    
         end
-    end
-    
-    
-    
+    end   
 }
