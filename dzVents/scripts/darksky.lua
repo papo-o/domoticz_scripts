@@ -1,4 +1,4 @@
---[[ getDarkskyForcast.lua for [ domoticzVents >= 2.4 ]
+--[[ darksky.lua for [ domoticzVents >= 2.4 ]
 author/auteur = papoo
 update/mise à jour = 15/09/2018
 creation = 15/09/2018
