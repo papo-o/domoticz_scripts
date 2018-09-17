@@ -3,12 +3,15 @@ author/auteur = papoo
 update/mise à jour = 15/09/2018
 creation = 15/09/2018
 https://pon.fr/dzvents-darksky-et-probabilite-de-pluie/
+https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/darksky.lua
+https://www.domoticz.com/forum/viewtopic.php?f=59&t=24928
+https://easydomoticz.com/forum/viewtopic.php?f=17&t=7136&p=58822#p58822
 This script requires prior registration to the DarkSky API
 Ce script nécessite l'inscription préalable à l'API DarkSky
 Enter the URL and request a free API key
 Entrez l'URL et demandez une clé API gratuite
 https://darksky.net/dev
-]]--               
+--]]               
 local proba_pluie_h = {}
 --[[
     Add, modify or delete variables proba_pluie_h [] by changing the number (hour) between []
@@ -27,7 +30,7 @@ local proba_pluie_h = {}
     local DarkSkyAPIkey = domoticz.variables('api_forecast_io').value
     local geolocalisation = domoticz.variables('Latitude').value..","..domoticz.variables('Longitude').value
 
-    If you want to enter this information directly into the script, comment on the two lines above, uncomment the following two lines
+    If you want to enter this information directly into the script, comment the two lines above, uncomment the following two lines
     Si vous souhaitez inscrire ces informations dans le script, commentez les deux lignes ci-dessus, décommentez les deux lignes suivantes
     
     --local DarkSkyAPIkey = "1a2bf34bf56c78901f2345f6d7890f12"
@@ -37,7 +40,7 @@ local proba_pluie_h = {}
     finally, you can choose the level of logs, only one level can be active; comment on others in the section
     en les personnalisant avec vos données personnelles. 
     enfin vous pouvez choisir le niveau de "verbiage" des logs, seulement un niveau peut être actif; commenter les autres dans la section logging
-]]--
+--]]
 proba_pluie_h[1]= "Proba Pluie 1h"     			
 proba_pluie_h[2]= "Proba Pluie 2h"     			 
 proba_pluie_h[3]= nil    			            
