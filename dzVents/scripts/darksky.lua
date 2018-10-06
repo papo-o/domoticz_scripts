@@ -33,8 +33,6 @@ local proba_pluie_h = {}
     If you want to enter this information directly into the script, comment the two lines above, uncomment the following two lines
     Si vous souhaitez inscrire ces informations dans le script, commentez les deux lignes ci-dessus, décommentez les deux lignes suivantes
     
-    --local DarkSkyAPIkey = "1a2bf34bf56c78901f2345f6d7890f12"
-    --local geolocalisation = "45.87,1.30" -- latitude,longitude 
     
     by personalizing them with your personal data
     finally, you can choose the level of logs, only one level can be active; comment on others in the section
@@ -62,7 +60,7 @@ return {
                 -- level    =   domoticz.LOG_ERROR,                                            -- Only one level can be active; comment others
                 level    =   domoticz.LOG_DEBUG,
                 -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
-                marker    =   "Darksky Rain Probability v1.0 "      },
+                marker    =   "Darksky Rain Probability v1.01 "      },
 
    data    =   {   rainForecast     = {initial = {} },             -- Keep a copy of last json just in case
    },
