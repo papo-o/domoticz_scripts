@@ -1,6 +1,6 @@
 --[[ darksky.lua for [ domoticzVents >= 2.4 ]
 author/auteur = papoo
-update/mise à jour = 15/09/2018
+update/mise à jour = 06/10/2018
 creation = 15/09/2018
 https://pon.fr/dzvents-darksky-et-probabilite-de-pluie/
 https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/darksky.lua
@@ -67,8 +67,6 @@ return {
     execute = function(domoticz, item)
         local DarkSkyAPIkey = domoticz.variables('api_forecast_io').value
         local geolocalisation = domoticz.variables('Latitude').value..","..domoticz.variables('Longitude').value 
-        --local DarkSkyAPIkey = "1a2bf34bf56c78901f2345f6d7890f12"
-        --local geolocalisation = "45.87,1.30" -- latitude,longitude
 
         local Forecast_url  = "https://api.darksky.net/forecast/"  -- url
         local extraData = "?units=ca&exclude=currently,minutely,daily,alerts,flags" 
