@@ -1,4 +1,5 @@
 --[[ darksky.lua for [ domoticzVents >= 2.4 ]
+    
 author/auteur = papoo
 update/mise à jour = 06/10/2018
 creation = 15/09/2018
@@ -11,6 +12,8 @@ Ce script nécessite l'inscription préalable à l'API DarkSky
 Enter the URL and request a free API key
 Entrez l'URL et demandez une clé API gratuite
 https://darksky.net/dev
+place this DZvents script in /domoticz/scripts/dzVents/scripts/ directory
+script dzvents à placer dans le répertoire /domoticz/scripts/dzVents/scripts/
 --]]               
 local proba_pluie_h = {}
 --[[
@@ -24,8 +27,8 @@ local proba_pluie_h = {}
     Ce script peut potentiellement récupérer les 48 prévisions horaires disponible. Créez autant de capteurs virtuels pourcentage correspondant aux prévisions horaires que vous souhaitez.
     pour ma part, je ne récupère que les prévisions à 1 heure, 2 heures, 4 heures, 6 heures, 12 heures et 24 heures.
     Seulement 48 prévisions possible
-    My DarkSky secret key, the latitude and longitude of my home are contained in 3 user variables
-    Ma clé secrète DarkSky, la latitude et la longitude de mon domicile sont contenus dans 3 variables utilisateurs
+    My DarkSky secret key, the latitude and longitude of my home are contained in 3 user variables (type string)
+    Ma clé secrète DarkSky, la latitude et la longitude de mon domicile sont contenus dans 3 variables utilisateurs (type chaine)
     
     local DarkSkyAPIkey = domoticz.variables('api_forecast_io').value
     local geolocalisation = domoticz.variables('Latitude').value..","..domoticz.variables('Longitude').value
@@ -33,6 +36,8 @@ local proba_pluie_h = {}
     If you want to enter this information directly into the script, comment the two lines above, uncomment the following two lines
     Si vous souhaitez inscrire ces informations dans le script, commentez les deux lignes ci-dessus, décommentez les deux lignes suivantes
     
+    --local DarkSkyAPIkey = "1a2bf34bf56c78901f2345f6d7890f12" --fake API number
+    --local geolocalisation = "45.87,1.30" -- latitude,longitude 
     
     by personalizing them with your personal data
     finally, you can choose the level of logs, only one level can be active; comment on others in the section
@@ -48,25 +53,28 @@ proba_pluie_h[6]= "Proba Pluie 6h"
 proba_pluie_h[12]= "Proba Pluie 12h"    		
 proba_pluie_h[24]= 508   			
 proba_pluie_h[36]= nil   			            
-proba_pluie_h[48]= nil   			            
-                                                     
+proba_pluie_h[48]= nil
+
 return {
     active = true,
     on      =   {   timer           =   { 'every 30 minutes' },  -- remember only 1000 requests by day, 30mn = 48 requests
-                    httpResponses   =   { "trigger" }    -- Trigger the handle Json part
+                    httpResponses   =   { "DarkSky_Trigger" }    -- Trigger the handle Json part
                 },
 
   logging =   { -- level    =   domoticz.LOG_INFO,                                             -- Seulement un niveau peut être actif; commenter les autres
                 -- level    =   domoticz.LOG_ERROR,                                            -- Only one level can be active; comment others
                 level    =   domoticz.LOG_DEBUG,
                 -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
-                marker    =   "Darksky Rain Probability v1.01 "      },
+                marker    =   "Darksky Rain Probability v1.03 "      },
 
    data    =   {   rainForecast     = {initial = {} },             -- Keep a copy of last json just in case
    },
     execute = function(domoticz, item)
         local DarkSkyAPIkey = domoticz.variables('api_forecast_io').value
-        local geolocalisation = domoticz.variables('Latitude').value..","..domoticz.variables('Longitude').value 
+        local geolocalisation = domoticz.variables('Latitude').value..","..domoticz.variables('Longitude').value
+        --local DarkSkyAPIkey = "1a2bf34bf56c78901f2345f6d7890f12" --fake API number
+        --local geolocalisation = "45.87,1.30" -- latitude,longitude 
+        
 
         local Forecast_url  = "https://api.darksky.net/forecast/"  -- url
         local extraData = "?units=ca&exclude=currently,minutely,daily,alerts,flags" 
@@ -78,7 +86,7 @@ return {
         if (item.isTimer) then
             domoticz.openURL({
                 url = Forecast_url..DarkSkyAPIkey.."/"..geolocalisation..extraData,
-                callback = 'trigger'
+                callback = 'DarkSky_Trigger'
             })
 
         end
