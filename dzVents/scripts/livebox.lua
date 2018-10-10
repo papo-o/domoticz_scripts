@@ -7,18 +7,19 @@
 				https://github.com/NextDom/plugin-livebox/
 
 	Livebox 4 stats
-  
-        https://github.com/papo-o/domoticz_scripts/new/master/dzVents/scripts/livebox.lua
+    
+                https://github.com/papo-o/domoticz_scripts/new/master/dzVents/scripts/livebox.lua
 	
 	-- Authors  ----------------------------------------------------------------
 	V1.0 - Neutrino - Domoticz
 	V1.1 - Neutrino - Activation/désactivation du WiFi
-	V1.2 - papoo - Liste des n derniers appels manqués, sans réponse, réussis et surveillance périphériques connectés/déconnectés
-	
+    	V1.2 - papoo - Liste des n derniers appels manqués, sans réponse, réussis et surveillance périphériques des connectés/déconnectés
+	V1.3 - Neutrino - Possibilité de purger le journal d'appels
+    	V1.4 - papoo - Possibilité de rebooter la Livebox
 ]]--
 -- Variables à modifier ------------------------------------------------
 
-local fetchIntervalMins = 10 --  intervalle de mise à jour. 
+local fetchIntervalMins = 1 --  intervalle de mise à jour. 
 local adresseLB = '192.168.1.1' --Adresse IP de votre Livebox 4
 local password = "123456"
 local tmpDir = "/var/tmp" --répertoire temporaire, dans l'idéal en RAM
@@ -32,8 +33,8 @@ local Attn = nil --"Attn" -- Nom du capteur custom Attenuation de la ligne, nil 
 local MargedAttn = nil --"Marge d'Attn" -- Nom du capteur custom Marge d'atténuation, nil si non utilisé
 local IPWAN = nil --"IP WAN" -- Nom du capteur Text IP WAN, nil si non utilisé
 local IPv6WAN = nil --"IPv6 WAN" -- Nom du capteur Text IPv6 WAN, nil si non utilisé
-local DernierAppel = "Dernier Appel" -- Nom du capteur Text Dernier Appel, nil si non utilisé
-local UptimeLB = "Uptime Livebox"  -- Nom du capteur Text Uptime Livebox, nil si non utilisé
+local DernierAppel = nil --"Dernier Appel" -- Nom du capteur Text Dernier Appel, nil si non utilisé
+local UptimeLB = nil -- "Uptime Livebox"  -- Nom du capteur Text Uptime Livebox, nil si non utilisé
 local TransmitBlocks = nil --"TransmitBlocks"  -- Nom du capteur Incremental Counter TransmitBlocks, nil si non utilisé
 local ReceiveBlocks = nil --"ReceiveBlocks"  -- Nom du capteur Incremental Counter ReceiveBlocks, nil si non utilisé
 local internet = nil --"Internet"  -- Nom du capteur Interrupteur Internet, nil si non utilisé
@@ -41,20 +42,22 @@ local VoIP = nil --"VoIP"  -- Nom du capteur Interrupteur VoIP, nil si non utili
 local ServiceTV = nil --"Service TV"  -- Nom du capteur Interrupteur Service TV, nil si non utilisé
 local wifi24 = nil --"WiFi 2.4"  -- Nom du capteur Interrupteur wifi 2.4Ghz, nil si non utilisé
 local wifi5 = nil --"WiFi 5"  -- Nom du capteur Interrupteur wifi 5Ghz, nil si non utilisé
-local missedCall = "Appels manqués" -- Nom du capteur Text appels manqués, nil si non utilisé
-local nbMissedCall = 5 -- Nombre d'appels manqués à afficher
-local failedCall = "Appels sans réponse" -- Nom du capteur Text appels sans réponse, nil si non utilisé
-local nbFailedCall = 5 -- Nombre d'appels sans réponse à afficher
-local succeededCall = "Appels Réussis" -- Nom du capteur Text appels réussis, nil si non utilisé
-local nbSucceededCall = 5 -- Nombre d'appels réussis à afficher
+local missedCall = nil --"Appels manqués" -- Nom du capteur Text appels manqués, nil si non utilisé
+local nbMissedCall = 4 -- Nombre d'appels manqués à afficher
+local failedCall = nil -- "Appels sans réponse" -- Nom du capteur Text appels sans réponse, nil si non utilisé
+local nbFailedCall = 4 -- Nombre d'appels sans réponse à afficher
+local succeededCall = nil -- "Appels Réussis" -- Nom du capteur Text appels réussis, nil si non utilisé
+local nbSucceededCall = 4 -- Nombre d'appels réussis à afficher
+local clearCallList = "Effacer liste appels" -- Nom du capteur Interrupteur PushOn clearCallList
+local reboot = 1297 -- Nom du capteur Interrupteur PushOn reboot
 local devices_livebox_mac_adress = { -- MAC ADDRESS des périphériques à surveiller
                                         "18:A6:43:4B:C9:D8",
                                         "BC:DE:5F:GH:IJ:2K",
                                         "L0:M6:37:M5:O3:03",
                                         "P0:70:2Q:25:R9:8S",
+
                                     }
 -- SVP, ne rien changer sous cette ligne (sauf pour modifier le logging level)
-
 function os.capture(cmd, raw)
   local f = assert(io.popen(cmd, 'r'))
   local s = assert(f:read('*a'))
@@ -102,11 +105,12 @@ function ReverseTable(t)
 end
 
 local scriptName = 'Livebox'
-local scriptVersion = '1.2'
+local scriptVersion = '1.4'
 
 local missedCallList = ""
 local failedCallList = ""
 local succeededCallList = ""
+local patternMacAdresses = string.format("([^%s]+)", ";")
 
 return {
 	active = true,
@@ -122,7 +126,7 @@ return {
 		timer = {
 			'every '..tostring(fetchIntervalMins)..' minutes',
 		},
-		devices = {wifi5,wifi24}
+    devices = {wifi5,wifi24,clearCallList,reboot}
 	},
 
 	execute = function(domoticz, item)
@@ -161,7 +165,7 @@ return {
 			
 			--Données de connexion
 			local lbAPIData = domoticz.utils.fromJSON(MIBs)
-			if lbAPIData.status == nil then
+			if lbAPIData.status == nil or lbAPIData == nil then
 				domoticz.log('Lecture de la MIBs impossible', domoticz.LOG_ERROR)
 			else
 				if SyncATM then domoticz.log('ATM Down: '..lbAPIData.status.dsl.dsl0.DownstreamCurrRate, domoticz.LOG_INFO)
@@ -323,23 +327,24 @@ return {
         local json_peripheriques = domoticz.utils.fromJSON(devicesList)
         etatPeripheriques = false
         -- Liste des périphériques
-        for index, peripherique in pairs(json_peripheriques.status) do   
-            domoticz.log("Péripherique " .. index .. " ".. peripherique.hostName .." " .. peripherique.ipAddress .. " [".. peripherique.physAddress .."] actif : ".. tostring(peripherique.active), domoticz.LOG_DEBUG)
-            for i, mac in pairs(devices_livebox_mac_adress) do
-                mac = string.lower(mac)
-                if peripherique.physAddress == mac then
-                domoticz.log("Statut du périphérique ".. peripherique.hostName .." [" .. mac .. "]  =>  actif:" .. tostring(peripherique.active), domoticz.LOG_INFO)
-                if peripherique.active == true then
-                etatPeripheriques = true   
-                    if domoticz.devices(peripherique.hostName) then domoticz.devices(peripherique.hostName).switchOn().checkFirst()end
-                    domoticz.log("Activation de : " .. peripherique.hostName, domoticz.LOG_INFO)
-                else
-                    if domoticz.devices(peripherique.hostName) then domoticz.devices(peripherique.hostName).switchOff().checkFirst()end
-                    domoticz.log("DésActivation de : " .. peripherique.hostName, domoticz.LOG_INFO)
-                    end		
+        
+            for index, peripherique in pairs(json_peripheriques.status) do   
+                domoticz.log("Péripherique " .. index .. " ".. peripherique.hostName .." " .. peripherique.ipAddress .. " [".. peripherique.physAddress .."] actif : ".. tostring(peripherique.active), domoticz.LOG_DEBUG)
+                for i, mac in pairs(devices_livebox_mac_adress) do
+                    mac = string.lower(mac)
+                    if peripherique.physAddress == mac then
+                    domoticz.log("Statut du périphérique ".. peripherique.hostName .." [" .. mac .. "]  =>  actif:" .. tostring(peripherique.active), domoticz.LOG_INFO)
+                        if peripherique.active == true then
+                        etatPeripheriques = true   
+                            if domoticz.devices(peripherique.hostName) then domoticz.devices(peripherique.hostName).switchOn().checkFirst()end
+                            domoticz.log("Activation de : " .. peripherique.hostName, domoticz.LOG_INFO)
+                        else
+                            if domoticz.devices(peripherique.hostName) then domoticz.devices(peripherique.hostName).switchOff().checkFirst()end
+                            domoticz.log("DésActivation de : " .. peripherique.hostName, domoticz.LOG_INFO)
+                        end		
+                    end
                 end
-            end
-        end   
+            end   
         else
 			if(item.name == wifi5)then
 				os.execute("curl -s -b \""..myCookies.."\" -X POST -H 'Content-Type: application/x-sah-ws-4-call+json' -H \"X-Context: "..
@@ -351,8 +356,17 @@ return {
 					myContextID.."\" -d \"{\\\"service\\\":\\\"NeMo.Intf.lan\\\",\\\"method\\\":\\\"setWLANConfig\\\",\\\"parameters\\\":{\\\"mibs\\\":{\\\"penable\\\":{\\\"wifi0_bcm\\\":{\\\"PersistentEnable\\\":"..
 					tostring(item.active)..", \\\"Enable\\\":true}}}}}\" http://"..adresseLB.."/ws &")
 				domoticz.log("wifi24 "..tostring(item.active),domoticz.LOG_INFO)
-			end
-		end
+			elseif(item.name == clearCallList)then
+				os.execute("curl -s -b \""..myCookies.."\" -X POST -H 'Content-Type: application/x-sah-ws-4-call+json' -H \"X-Context: "..
+					myContextID.."\" -d \"{\\\"service\\\":\\\"VoiceService.VoiceApplication\\\",\\\"method\\\":\\\"clearCallList\\\",\\\"parameters\\\":{}}\" http://"..adresseLB.."/ws &")
+				domoticz.log("clearCallList "..tostring(item.active),domoticz.LOG_INFO)			
+
+			elseif(item.name == reboot)then
+            os.execute("curl -s -b \""..myCookies.."\" -X POST -H 'Content-Type: application/x-sah-ws-4-call+json' -H \"X-Context: "..
+                    myContextID.."\" -d \"{\\\"parameters\\\":{}}\" http://"..adresseLB.."/sysbus/NMC:reboot &")
+				domoticz.log("reboot "..tostring(item.active),domoticz.LOG_INFO)			
+            end		
+        end
 		--Déconnexion et suppression des fichiers temporaires
 		os.execute("curl -s -b "..myCookies.." -X POST http://"..adresseLB.."/logout &")
 		os.execute('rm "'..myCookies..'" "'..myOutput..'" &')
