@@ -16,6 +16,7 @@
     	V1.2 - papoo - Liste des n derniers appels manqués, sans réponse, réussis et surveillance périphériques des connectés/déconnectés
 	V1.3 - Neutrino - Possibilité de purger le journal d'appels
     	V1.4 - papoo - Possibilité de rebooter la Livebox
+	V1.5 - papoo - Correction non mise à jour des devices après RAZ de la liste des appels 
 ]]--
 -- Variables à modifier ------------------------------------------------
 
@@ -105,7 +106,7 @@ function ReverseTable(t)
 end
 
 local scriptName = 'Livebox'
-local scriptVersion = '1.4'
+local scriptVersion = '1.5'
 
 local missedCallList = ""
 local failedCallList = ""
@@ -321,6 +322,25 @@ return {
                     end                     
 				else
 					NumeroEtat = "Aucun appel à afficher"
+                    domoticz.log('Dernier Appel : '..NumeroEtat, domoticz.LOG_INFO)
+                    if DernierAppel and domoticz.devices(DernierAppel).text ~= NumeroEtat then
+                        domoticz.devices(DernierAppel).updateText(NumeroEtat)
+                    end 
+                    if missedCallList == "" then missedCallList = "Aucun appel à afficher" end                        
+                    domoticz.log('Appels manqués : \n'..missedCallList, domoticz.LOG_INFO)
+                    if missedCall and domoticz.devices(missedCall).text ~= traduction(missedCallList) then 
+                        domoticz.devices(missedCall).updateText(traduction(missedCallList))
+                    end 
+                    if failedCallList == "" then failedCallList = "Aucun appel à afficher" end                        
+                    domoticz.log('Appels sans réponse : \n'..failedCallList, domoticz.LOG_INFO)
+                    if failedCall and domoticz.devices(failedCall).text ~= traduction(failedCallList) then 
+                        domoticz.devices(failedCall).updateText(traduction(failedCallList))
+                    end 
+                    if succeededCallList == "" then succeededCallList = "Aucun appel à afficher" end
+                    domoticz.log('Appels réussis : \n'..succeededCallList, domoticz.LOG_INFO)
+                    if succeededCall and domoticz.devices(succeededCall).text ~= traduction(succeededCallList) then 
+                        domoticz.devices(succeededCall).updateText(traduction(succeededCallList))
+                    end                    
 				end
             end
 		
