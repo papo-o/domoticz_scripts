@@ -7,8 +7,10 @@
 				https://github.com/NextDom/plugin-livebox/
 
 	Livebox 4 stats
-    
+
+                https://easydomoticz.com/forum/viewtopic.php?f=17&t=7247
                 https://github.com/papo-o/domoticz_scripts/new/master/dzVents/scripts/livebox.lua
+                https://pon.fr/dzvents-toutes-les-infos-de-la-livebox-en-un-seul-script/
 	
 	-- Authors  ----------------------------------------------------------------
 	V1.0 - Neutrino - Domoticz
