@@ -7,7 +7,7 @@
 				https://github.com/NextDom/plugin-livebox/
 
 	Livebox 4 stats
-
+    
                 https://easydomoticz.com/forum/viewtopic.php?f=17&t=7247
                 https://github.com/papo-o/domoticz_scripts/new/master/dzVents/scripts/livebox.lua
                 https://pon.fr/dzvents-toutes-les-infos-de-la-livebox-en-un-seul-script/
@@ -15,10 +15,11 @@
 	-- Authors  ----------------------------------------------------------------
 	V1.0 - Neutrino - Domoticz
 	V1.1 - Neutrino - Activation/désactivation du WiFi
-    	V1.2 - papoo - Liste des n derniers appels manqués, sans réponse, réussis et surveillance périphériques des connectés/déconnectés
+    V1.2 - papoo - Liste des n derniers appels manqués, sans réponse, réussis et surveillance périphériques des connectés/déconnectés
 	V1.3 - Neutrino - Possibilité de purger le journal d'appels
-    	V1.4 - papoo - Possibilité de rebooter la Livebox
-	V1.5 - papoo - Correction non mise à jour des devices après RAZ de la liste des appels 
+    V1.4 - papoo - Possibilité de rebooter la Livebox
+    V1.5 - papoo - Correction non mise à jour des devices après RAZ de la liste des appels
+    V1.6 - papoo - Correction horodatage heures d'appel à GMT+2
 ]]--
 -- Variables à modifier ------------------------------------------------
 
@@ -91,10 +92,11 @@ function traduction(str) -- supprime les accents de la chaîne str
     end
     return (str)
 end
-function format_date(str) -- supprime les accents de la chaîne str
+function format_date(str) -- supprime les caractères T et Z de la chaîne str  et corrige l'heure a GMT +2
     if (str) then
-	str = string.gsub (str,"T", " - ")
-	str = string.gsub (str,"Z", "")
+    _, _, A, M, j, h, m, s = string.find(str, "^(%d+)-(%d+)-(%d+)T(%d+):(%d+):(%d+)Z$")
+   h = h + 2
+    str= A.."-"..M.."-"..j.." - "..h..":"..m..":"..s
     end
     return (str)
 end
