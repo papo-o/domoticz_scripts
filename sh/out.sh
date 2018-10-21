@@ -27,6 +27,9 @@ case $1 in
 		lettre) curl -s -i -H "Accept: application/json" "http://$DOMO_IP:$DOMO_PORT/json.htm?type=command&param=switchlight&idx=$LETTRE_IDX&switchcmd=On";;
 		inondation_ON) curl -s -i -H "Accept: application/json" "http://$DOMO_IP:$DOMO_PORT/json.htm?type=command&param=switchlight&idx=$INONDATION_IDX&switchcmd=Off";;
 		inondation_OFF) curl -s -i -H "Accept: application/json" "http://$DOMO_IP:$DOMO_PORT/json.htm?type=command&param=switchlight&idx=$INONDATION_IDX&switchcmd=On";;        
+		lum_cave_on) DAMOCLES_CMD_1=`snmpset -c $PASSWORD -v1 -O qv  $DAMOCLES_IP .1.3.6.1.4.1.21796.3.4.2.1.2.5 i 1`;; 
+		lum_cave_off) DAMOCLES_CMD_1=`snmpset -c $PASSWORD -v1 -O qv  $DAMOCLES_IP .1.3.6.1.4.1.21796.3.4.2.1.2.5 i 0`;;        
+        
 		# sonnette_ON) curl -s -i -H "Accept: application/json" "http://$DOMO_IP:$DOMO_PORT/json.htm?type=command&param=switchlight&idx=$SONNETTE_IDX&switchcmd=On";;
 		# sonnette_OFF) curl -s -i -H "Accept: application/json" "http://$DOMO_IP:$DOMO_PORT/json.htm?type=command&param=switchlight&idx=$SONNETTE_IDX&switchcmd=Off";;
 		*);;		
