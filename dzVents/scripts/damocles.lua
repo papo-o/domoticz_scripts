@@ -2,7 +2,7 @@
 name : damocles.lua
 auteur : papoo
 creation : 26/08/2018
-mise à  jour : 28/08/2018
+mise à  jour : 21/10/2018
 
 Install SNMP on Raspberry Pi
 Log in to you Raspberry Pi and issue:
