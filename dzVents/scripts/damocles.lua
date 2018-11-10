@@ -2,7 +2,7 @@
 name : damocles.lua
 auteur : papoo
 creation : 26/08/2018
-mise à  jour : 21/10/2018
+mise à  jour : 10/11/2018
 
 Install SNMP on Raspberry Pi
 Log in to you Raspberry Pi and issue:
@@ -25,42 +25,39 @@ Then create:
 x meter device   
 --]]
 
-    local DAMOCLESIp = "192.168.100.200"                                 -- DAMOCLES IP Address
+    local DAMOCLESIp = "192.168.1.20"                                 -- DAMOCLES IP Address
     local CommunityPassword = "private"                               -- SNMP Password
     local DAMOCLES = "Damocles"                                       -- DAMOCLES Switch
-    local DOMOTICZ_CPT_1 = "Compteur Eau Froide"                      -- DOMOTICZ CPT 1 Eau Froide
+
     local DOMOTICZ_CPT_2 = "Compteur Eau Chaude"                      -- DOMOTICZ CPT 2 Eau Chaude
     local DOMOTICZ_CPT_3 = "Compteur Gaz"                             -- DOMOTICZ CPT 3 gaz
     local DOMOTICZ_CPT_4 = "Compteur Prises"                          -- DOMOTICZ CPT 4 Prises
     local DOMOTICZ_CPT_5 = "Compteur Lumières"                        -- DOMOTICZ CPT 5 Lumiere 
     local DOMOTICZ_CPT_6 = "Compteur Technique"                       -- DOMOTICZ CPT 6 Technique
-    local OID_CPT_1 = ".1.3.6.1.4.1.21796.4.6.1.3.1.6.1.1005"         -- DOMOTICZ CPT 1 Eau Froide
     local OID_CPT_2 = ".1.3.6.1.4.1.21796.3.4.1.1.6.2"                -- DOMOTICZ CPT 2 Eau Chaude
     local OID_CPT_3 = ".1.3.6.1.4.1.21796.3.4.1.1.6.3"                -- DOMOTICZ CPT 3 gaz
     local OID_CPT_4 = ".1.3.6.1.4.1.21796.3.4.1.1.6.4"                -- DOMOTICZ CPT 4 Prises
     local OID_CPT_5 = ".1.3.6.1.4.1.21796.3.4.1.1.6.5"                -- DOMOTICZ CPT 5 Lumiere 
     local OID_CPT_6 = ".1.3.6.1.4.1.21796.3.4.1.1.6.6"                -- DOMOTICZ CPT 6 Technique
-
-    local pir_cave ="pir cave"
-    local lumiere_cave = "Lumiere cave"
+    -- local pir_cave ="pir cave"
+    -- local lumiere_cave = "Lumiere cave"
    
 return {
     active = true,
     on = {
-    timer = {'every minute'},
-    devices = { DAMOCLES, DOMOTICZ_CPT_2, DOMOTICZ_CPT_3, DOMOTICZ_CPT_4, DOMOTICZ_CPT_5, DOMOTICZ_CPT_6, pir_cave}
+    timer = {'every minute'}
     },    
    -- on = { devices = { "your trigger device" }},
         
   logging =   { -- level    =   domoticz.LOG_INFO,                                             -- Seulement un niveau peut être actif; commenter les autres
-                level    =   domoticz.LOG_ERROR,                                            -- Only one level can be active; comment others
+                -- level    =   domoticz.LOG_ERROR,                                            -- Only one level can be active; comment others
                 -- level    =   domoticz.LOG_DEBUG,
                 -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
-                marker    =   "Damoclès Monitor v1.1 "      },
+                marker    =   "Damoclès Monitor v1.2 "      },
     
-    execute = function(dz, item)
+    execute = function(dz)
 
-        if (item.isTimer)then
+        --if (item.isTimer)then
             local i = 0
             local results = {}
             local command = 'snmpget -c '..CommunityPassword..' -v1 -O qv '..DAMOCLESIp..' '..OID_CPT_2..' '..OID_CPT_3..' '..OID_CPT_4..' '..OID_CPT_5..' '..OID_CPT_6 --..' '..OID_HDtemp2
@@ -146,12 +143,6 @@ return {
                     dz.log("Requete SNMP incorrecte ",dz.LOG_DEBUG)
                     dz.devices(DAMOCLES).switchOff().checkFirst()
                 end
-        else
-            if(item.name == pir_cave)then
-                if dz.devices(pir_cave).active then
-                dz.devices(lumiere_cave).switchOn().forSec(2)
-                end
-            end
-        end
+        
     end
 }
