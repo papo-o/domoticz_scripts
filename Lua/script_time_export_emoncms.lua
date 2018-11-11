@@ -1,7 +1,7 @@
 --[[script_time_export_emoncms.lua
 auteur : papoo
 
-maj : 28/04/2018
+maj : 11/11/2018
 date : 18/05/2016
 Principe : 
 exporter les données de compteurs, Températures, etc.. sur le site https://emoncms.org/
@@ -44,7 +44,7 @@ local fields =""
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = "export emoncms"
-local version = "2.11"
+local version = "2.12"
 --------------------------------------------
 ---------------- Fonctions -----------------
 ------------------------------------------
@@ -120,7 +120,7 @@ local API_key = uservariables[api_emoncms]
 			voir_les_logs("--- --- --- ".. sans_accent(d.device) .." = "..(v or "nil"),debugging)
 			voir_les_logs("--- --- --- canal = "..(c or "nil"),debugging)
 			if v~= nil then v,nbCommas=string.gsub(v,";",";") end-- vérification de la présence d'un ou plusieurs point virgule => valeurs multiples
-	   if nbCommas > 1 and c ~= nil then
+	   if nbCommas >= 1 and c ~= nil then
 			voir_les_logs("--- --- --- valeurs multiples dans ".. sans_accent(d.device) .." = ".. v,debugging)
 			voir_les_logs("--- --- ---  Nb de point virgule = "..(nbCommas or "nil"),debugging) 
 			local valeurs = split(v,";")
