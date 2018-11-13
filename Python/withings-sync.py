@@ -12,6 +12,11 @@ que vous pouvez installer sur votre machine via la commande
 sudo pip3 install nokia
 ou
 wget https://raw.githubusercontent.com/orcasgit/python-nokia/master/bin/nokia
+
+si vous utilisiez une version précédente de cette librairie la désinstaller avant via les commandes
+sudo pip uninstall nokia
+et
+sudo pip3 uninstall nokia
 Copier ensuite ce script dans votre répertoire de scripts python dans domoticz. Pour moi :  /home/pi/domoticz/scripts/python/nokia-weight-sync.py
 et personnalisez les idx de vos capteurs, votre taille, etc.
 
@@ -52,9 +57,9 @@ pour une exécution toutes les minutes
 après chaque pesée les mesures seront mises à jour sur domoticz
 """
 __author__ = "papoo"
-__version__ = "1.01"
+__version__ = "1.02"
 __date__ = "10/11/2018"
-__date_maj__= "11/11/2018"
+__date_maj__= "13/11/2018"
 __url__ = "https://python-recuperation-des-donnees-api-withings-avec-oauth-2-0"
 __url_github__ = "https://github.com/papo-o/domoticz_scripts/blob/master/Python/withings-sync.py"
 __url_forum__ = "https://easydomoticz.com/forum/viewtopic.php?f=17&t=7428"
@@ -83,7 +88,7 @@ nokia_auth_code = None
 domoticz_host           = '127.0.0.1'    # Url domoticz
 domoticz_port           = '8080'            # port
 domoticz_url            = 'json.htm'        # Ne pas modifier
-debugging				= True		    # True pour voir les logs dans la console log Dz et en ligne de commande, ou False pour ne pas les voir (attention aux majuscules)
+debugging				= False		    # True pour voir les logs dans la console log Dz et en ligne de commande, ou False pour ne pas les voir (attention aux majuscules)
 
 votre_taille            =  182          # renseigner votre taille en cm pour le calcul de votre IMC dans le cas ou l'information ne serait pas disponible via l'API          
 
@@ -387,18 +392,18 @@ elif command == 'sync':
             y = 0
         elif measures[1].heart_pulse != None:
             y = 1
-        if y != None:    
-            
-            heart_pulse = measures[y].heart_pulse
+            if y != None:    
+                
+                heart_pulse = measures[y].heart_pulse
 
-            if idx_heart_pulse != None and heart_pulse != None:
-              if should_update:
-                domoticzupdate(idx_heart_pulse, heart_pulse)
+                if idx_heart_pulse != None and heart_pulse != None:
+                  if should_update:
+                    domoticzupdate(idx_heart_pulse, heart_pulse)
 
-              if debugging == True:   
-                log("Votre pouls  : " + str(heart_pulse) + " bpm")
-            
-        ####################################################################################################      
+                  if debugging == True:   
+                    log("Votre pouls  : " + str(heart_pulse) + " bpm")
+                
+            ####################################################################################################      
         muscle_mass = measures[x].get_measure(76)
 
         if idx_muscle_mass != None and muscle_mass != None:
