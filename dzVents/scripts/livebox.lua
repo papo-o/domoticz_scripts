@@ -12,14 +12,15 @@
                 https://github.com/papo-o/domoticz_scripts/new/master/dzVents/scripts/livebox.lua
                 https://pon.fr/dzvents-toutes-les-infos-de-la-livebox-en-un-seul-script/
 	
-	-- Authors  ----------------------------------------------------------------
-	V1.0 - Neutrino - Domoticz
-	V1.1 - Neutrino - Activation/désactivation du WiFi
+-- Authors  ----------------------------------------------------------------
+    V1.0 - Neutrino - Domoticz
+    V1.1 - Neutrino - Activation/désactivation du WiFi
     V1.2 - papoo - Liste des n derniers appels manqués, sans réponse, réussis et surveillance périphériques des connectés/déconnectés
-	V1.3 - Neutrino - Possibilité de purger le journal d'appels
+    V1.3 - Neutrino - Possibilité de purger le journal d'appels
     V1.4 - papoo - Possibilité de rebooter la Livebox
     V1.5 - papoo - Correction non mise à jour des devices après RAZ de la liste des appels
     V1.6 - papoo - Correction horodatage heures d'appel à GMT+2
+    V1.7 - papoo - Affichage des noms connus via fichiers de contacts
 ]]--
 -- Variables à modifier ------------------------------------------------
 
@@ -61,6 +62,8 @@ local devices_livebox_mac_adress = { -- MAC ADDRESS des périphériques à surve
                                         "P0:70:2Q:25:R9:8S",
 
                                     }
+local fichier_contacts = "/home/pi/domoticz/scripts/contacts.json"
+json = assert(loadfile('/home/pi/domoticz/scripts/lua/JSON.lua'))()    
 -- SVP, ne rien changer sous cette ligne (sauf pour modifier le logging level)
 function os.capture(cmd, raw)
   local f = assert(io.popen(cmd, 'r'))
@@ -108,9 +111,34 @@ function ReverseTable(t)
     end
     return reversedTable
 end
+function json2table(file)
+    local f = io.open(file, "rb")
+	if(f == nil) then
+		return ""
+	else
+		local content = f:read("*all")
+		f:close()
+        jsonValeur = json:decode(content)
+		return jsonValeur
+	end
+end
 
+contacts = {}
+contacts = json2table(fichier_contacts)
+
+function searchName(contacts, phoneNumber)
+    for index, variable in pairs(contacts) do
+        if variable.Phone == phoneNumber then
+            name = variable.Name
+        end
+    end
+    if name == nil then
+        name = phoneNumber
+    end
+    return name
+end
 local scriptName = 'Livebox'
-local scriptVersion = '1.5'
+local scriptVersion = '1.7'
 
 local missedCallList = ""
 local failedCallList = ""
@@ -270,7 +298,6 @@ return {
 				domoticz.log('Wifi 5 Ghz : '..lbAPIDataWifi.status.wlanvap.eth6.VAPStatus, domoticz.LOG_INFO)
                 if wifi5 then
                     if (lbAPIDataWifi.status.wlanvap.eth6.VAPStatus == 'Up' and domoticz.devices(wifi5).active == false)then
-                        --domoticz.devices(wifi5).switchOn()
                         domoticz.devices(wifi5).update(1,0)
                     elseif (lbAPIDataWifi.status.wlanvap.eth6.VAPStatus ~= 'Up' and domoticz.devices(wifi5).active)then
                         domoticz.devices(wifi5).update(0,0)
@@ -287,7 +314,7 @@ return {
 				if (#lbAPIDataCallList.status>0) then
 					domoticz.log('Dernier Appel : '..lbAPIDataCallList.status[#lbAPIDataCallList.status].remoteNumber, domoticz.LOG_INFO)
 					domoticz.log('Dernier Appel : '..traduction(lbAPIDataCallList.status[#lbAPIDataCallList.status].callType), domoticz.LOG_INFO)
-					NumeroEtat = lbAPIDataCallList.status[#lbAPIDataCallList.status].remoteNumber .. " - "..lbAPIDataCallList.status[#lbAPIDataCallList.status].callType
+					NumeroEtat = searchName(contacts, lbAPIDataCallList.status[#lbAPIDataCallList.status].remoteNumber) .. " - "..lbAPIDataCallList.status[#lbAPIDataCallList.status].callType
                     if DernierAppel and domoticz.devices(DernierAppel).text ~= traduction(NumeroEtat) then
                             domoticz.devices(DernierAppel).updateText(traduction(NumeroEtat))
                     end                    
@@ -295,17 +322,17 @@ return {
                     for i, call in ipairs(ReverseTable(lbAPIDataCallList.status)) do
                         if call.callType == "missed" and nbMissedCall > 0 then
                             --domoticz.log(call.remoteNumber .. " " .. traduction(call.callType) .. " " .. format_date(call.startTime), domoticz.LOG_INFO)
-                            missedCallList = missedCallList .. call.remoteNumber .. " - " .. format_date(call.startTime) .. "\n"
+                            missedCallList = missedCallList .. searchName(contacts, call.remoteNumber) .. " - " .. format_date(call.startTime) .. "\n"
                             nbMissedCall = nbMissedCall - 1
                         end
                         if call.callType == "failed" and nbFailedCall > 0 then
                             --domoticz.log(call.remoteNumber .. " " .. traduction(call.callType) .." ".. format_date(call.startTime), domoticz.LOG_INFO)
-                            failedCallList = failedCallList .. call.remoteNumber .." - ".. format_date(call.startTime) .. "\n"
+                            failedCallList = failedCallList .. searchName(contacts, call.remoteNumber) .." - ".. format_date(call.startTime) .. "\n"
                             nbFailedCall = nbFailedCall - 1
                         end
                         if call.callType == "succeeded" and nbSucceededCall > 0 then
                             --domoticz.log(call.remoteNumber .. " " .. traduction(call.callType) .. " " .. format_date(call.startTime), domoticz.LOG_INFO)
-                            succeededCallList = succeededCallList .. call.remoteNumber .. " - " .. format_date(call.startTime) .. "\n"
+                            succeededCallList = succeededCallList .. searchName(contacts, call.remoteNumber) .. " - " .. format_date(call.startTime) .. "\n"
                             nbSucceededCall = nbSucceededCall - 1
                         end
                     end                    
