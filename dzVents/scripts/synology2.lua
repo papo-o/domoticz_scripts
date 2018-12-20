@@ -5,7 +5,7 @@ creation : 24/08/2018
 mise à  jour : 03/09/2018
 
 https://pon.fr/dzvents-supervision-dun-nas-synology-avec-snmp/
-https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/Synology.lua
+https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/synology2.lua
 https://easydomoticz.com/forum/viewtopic.php?f=17&t=7022
 https://www.domoticz.com/forum/viewtopic.php?f=59&t=24618
 
