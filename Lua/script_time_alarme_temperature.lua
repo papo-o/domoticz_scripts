@@ -2,7 +2,7 @@
 script_time_alarme_temperature.lua
 auteur : papoo
 
-MAJ : 28/04/2018
+MAJ : 20/12/2018
 création : 15/08/2016
 
 Principe : ce script vérifie toutes les deux minutes (modifiable via la variable delai) si il n'y a pas une augmentation de température anormale
@@ -54,7 +54,7 @@ les_devices[#les_devices+1] = {device="Temperature Entree",  type_device = "ambi
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = "Alarme température"
-local version = "2.01"
+local version = "2.02"
 local message = {}
 local alarmes = 0
 local seuil_notification = nil
@@ -75,6 +75,16 @@ require('fonctions_perso')                                                      
 		end
     end
 end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+-------------------------------------------- 
+function round(value, digits)
+	if not value or not digits then
+		return nil
+	end
+		local precision = 10^digits
+        return (value >= 0) and
+		  (math.floor(value * precision + 0.5) / precision) or
+		  (math.ceil(value * precision - 0.5) / precision)
+end
 --]]
 --------------------------------------------
 -------------- Fin Fonctions ---------------
@@ -103,22 +113,22 @@ if script_actif == true then
                 voir_les_logs("--- --- --- seuil de notification : ".. seuil_notification .."°C",debugging)
             end
 
-            voir_les_logs("--- --- --- device value "..v.device.." = "..(V or "nil"),debugging)
+            voir_les_logs("--- --- --- device value "..v.device.." = "..(round(V, 2) or "nil"),debugging)
             if V~= nil then
                 if string.match(V, ';')  then
                 V=V:match('^(.-);')
-                voir_les_logs("--- --- --- svalue "..v.device.." = "..(V or "nil"),debugging)
+                voir_les_logs("--- --- --- svalue "..v.device.." = "..(round(V, 2) or "nil"),debugging)
                 end	
                 
               
                 if  tonumber(seuil_notification) < tonumber(V) then
                     alarmes = alarmes+1
-                    table.insert(message, 'température '..v.device..' : '..V..'°C, supérieure au seuil fixé à '..seuil_notification..'°C <br>')
+                    table.insert(message, 'température '..v.device..' : '..round(V, 2)..'°C, supérieure au seuil fixé à '..seuil_notification..'°C <br>')
                     if only_mail ~= true then
                         if v.subsystem ~= nil then
-                            commandArray['SendNotification'] = 'Attention#température '..v.device..' : '..V..'°C, supérieure au seuil fixé à '..seuil_notification..'°C!#0###'.. v.subsystem ..''
+                            commandArray['SendNotification'] = 'Attention#température '..v.device..' : '..round(V, 2)..'°C, supérieure au seuil fixé à '..seuil_notification..'°C!#0###'.. v.subsystem ..''
                         else
-                            commandArray['SendNotification'] = 'Attention#température '..v.device..' : '..V..'°C, supérieure au seuil fixé à '..seuil_notification..'°C!'
+                            commandArray['SendNotification'] = 'Attention#température '..v.device..' : '..round(V, 2)..'°C, supérieure au seuil fixé à '..seuil_notification..'°C!'
                         end                        
                     end
                 end
