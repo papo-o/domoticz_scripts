@@ -1,7 +1,7 @@
 --[[   
 ~/domoticz/scripts/lua/script_time_dju_methode_costic.lua
 auteur : papoo
-MAJ : 24/02/2018
+MAJ : 27/12/2018
 création : 29/01/2018
 Principe :
 Calculer, via l'information température d'une sonde extérieure, les Degrés jour Chauffage méthode COSTIC
@@ -29,16 +29,16 @@ http://easydomoticz.com/forum/viewtopic.php?f=17&t=5984
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local debugging = false  			                -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = false  			    -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif = true                           -- active (true) ou désactive (false) ce script simplement
-local temp_ext  = 'Temperature exterieure' 	        -- nom de la sonde de température extérieure
+local temp_ext  = 'Temperature exterieure' 	    -- nom de la sonde de température extérieure
 local domoticzURL = '127.0.0.1:8080'                -- user:pass@ip:port de domoticz
 local var_user_djc = 'dju_methode_costic'           -- nom de la variable utilisateur de type 2 (chaine) pour le stockage temporaire des données journalières DJC
 local Tn = "Tn_methode_costic"                      -- température maximale du jour J relevée entre J à 6h et J+1 (le lendemain) à 6h UTC
 local Tx = "Tx_methode_costic"                      -- température minimale du jour J relevée entre J-1 (la veille) à 18h et J à 18h UTC.
 local Tn_hold = "Tn_Hold_methode_costic"            -- variable de stockage de la température mini.
 local S = 18                                        -- seuil de température de non chauffage, par convention : 18°C
-local cpt_djc = 'DJU méthode COSTIC' 				-- nom du  dummy compteur DJC en degré
+local cpt_djc = 'DJU méthode COSTIC' 		    -- nom du  dummy compteur DJC en degré
 
 
 --------------------------------------------
@@ -46,85 +46,13 @@ local cpt_djc = 'DJU méthode COSTIC' 				-- nom du  dummy compteur DJC en degr�
 -------------------------------------------- 
 commandArray = {}
 local nom_script = 'Calcul Degrés jour Chauffage méthode COSTIC'
-local version = '1.02'
+local version = '1.03'
 local id
 local djc
 
 time=os.date("*t")
-
---------------------------------------------
----------------- Fonctions -----------------
--------------------------------------------- 
-curl = '/usr/bin/curl -m 9 '
-if (package.config:sub(1,1) == '/') then
-     luaDir = debug.getinfo(1).source:match("@?(.*/)")
-else
-     luaDir = string.gsub(debug.getinfo(1).source:match("@?(.*\\)"),'\\','\\\\')
-end
-json = assert(loadfile(luaDir..'JSON.lua'))()-- chargement du fichier JSON.lua
-
---==============================================================================================
-function voir_les_logs (s, debugging)
-    if (debugging) then 
-		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>");
-		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>");
-		end
-    end
-end	
-
---==============================================================================================
-function round(value, digits)
-	if not value or not digits then
-		return nil
-	end
-		local precision = 10^digits
-        return (value >= 0) and
-		  (math.floor(value * precision + 0.5) / precision) or
-		  (math.ceil(value * precision - 0.5) / precision)
-end
-
---============================================================================================== 
-function url_encode(str) -- encode la chaine str pour la passer dans une url 
-   if (str) then
-   str = string.gsub (str, "\n", "\r\n")
-   str = string.gsub (str, "([^%w ])",
-   function (c) return string.format ("%%%02X", string.byte(c)) end)
-   str = string.gsub (str, " ", "+")
-   end
-   return str
-end
-
---============================================================================================== 
-function creaVar(vname,vtype,vvalue) -- pour créer une variable de type 2 nommée toto comprenant la valeur 10
-	os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=command&param=saveuservariable&vname='..url_encode(vname)..'&vtype='..vtype..'&vvalue='..url_encode(vvalue)..'" &')
-end -- usage :  creaVar('toto','2','10') 
-
---==============================================================================================
-function DeviceInfos(device)  
-    --[[
-    inspiré de  http://www.domoticz.com/forum/viewtopic.php?f=61&t=15556&p=115795&hilit=otherdevices_SwitchTypeVal&sid=dda0949f5f3d71cb296b865a14827a34#p115795
-    Attributs disponibles :
-    AddjMulti; AddjMulti2; AddjValue; AddjValue2; BatteryLevel; CustomImage; Data; Description; Favorite; 
-    HardwareID; HardwareName; HardwareType; HardwareTypeVal; HaveDimmer; HaveGroupCmd; HaveTimeout; ID; 
-    Image; IsSubDevice; LastUpdate; Level; LevelInt; MaxDimLevel; Name; Notifications; PlanID; PlanIDs; 
-    Protected; ShowNotifications; SignalLevel; Status; StrParam1; StrParam2; SubType; SwitchType; 
-    SwitchTypeVal; Timers; Type; TypeImg; Unit; Used; UsedByCamera; XOffset; YOffset; idx
-    --]]
-local config = assert(io.popen(curl..'"'.. domoticzURL ..'/json.htm?type=devices&rid='..otherdevices_idx[device]..'"'))
-local blocjson = config:read('*all')
-config:close()
-local jsonValeur = json:decode(blocjson)
-    if jsonValeur ~= nil then
-        return json:decode(blocjson).result[1]    
-    end       
-end --[[usage : 
-        local attribut = DeviceInfos(cpt_djc)
-        if attribut.SwitchTypeVal == 0 then    end
-    --]]
-    
---==============================================================================================
+package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   
+require('fonctions_perso')                                                      
 
 --------------------------------------------
 -------------- Fin Fonctions ---------------
@@ -158,7 +86,7 @@ if script_actif == true then
                 os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=setused&idx='..otherdevices_idx[cpt_djc]..'&name='..url_encode(cpt_djc)..'&switchtype=3&used=true"')
             end
         else
-            voir_les_logs("--- --- --- impossible d\'extraire les caracteristiques du compteur ".. cpt_djc .."  --- --- ---",debugging)
+            voir_les_logs("--- --- --- impossible d\'extraire les caractéristiques du compteur ".. cpt_djc .."  --- --- ---",debugging)
         end
     end -- if otherdevices[cpt_djc]
     
@@ -170,7 +98,8 @@ if script_actif == true then
         if (uservariables[Tn_hold] == nil) then creaVar(Tn_hold,2,150)end
         
         if (uservariables[Tx] ~= nil) and (uservariables[Tn] ~= nil) and (uservariables[Tn_hold] ~= nil) then
-            temperature = tonumber(string.match(otherdevices_svalues[temp_ext], "%d+%.*%d*"))
+            --temperature = tonumber(string.match(otherdevices_svalues[temp_ext], "%d+%.*%d*"))
+            temperature = tonumber(string.match(otherdevices_svalues[temp_ext], "%-?%d+%.*%d*"))
             voir_les_logs("--- --- --- Température Ext : "..temperature,debugging)
             voir_les_logs("--- --- ---  Tn : "..uservariables[Tn],debugging)
             voir_les_logs("--- --- ---  Tx : "..uservariables[Tx],debugging)
