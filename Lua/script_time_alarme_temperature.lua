@@ -2,7 +2,7 @@
 script_time_alarme_temperature.lua
 auteur : papoo
 
-MAJ : 20/12/2018
+MAJ : 30/12/2018
 création : 15/08/2016
 
 Principe : ce script vérifie toutes les deux minutes (modifiable via la variable delai) si il n'y a pas une augmentation de température anormale
@@ -54,7 +54,7 @@ les_devices[#les_devices+1] = {device="Temperature Entree",  type_device = "ambi
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = "Alarme température"
-local version = "2.02"
+local version = "2.03"
 local message = {}
 local alarmes = 0
 local seuil_notification = nil
@@ -126,9 +126,9 @@ if script_actif == true then
                     table.insert(message, 'température '..v.device..' : '..round(V, 2)..'°C, supérieure au seuil fixé à '..seuil_notification..'°C <br>')
                     if only_mail ~= true then
                         if v.subsystem ~= nil then
-                            commandArray['SendNotification'] = 'Attention#température '..v.device..' : '..round(V, 2)..'°C, supérieure au seuil fixé à '..seuil_notification..'°C!#0###'.. v.subsystem ..''
+                            commandArray[#commandArray + 1] = {['SendNotification'] = 'Attention#température '..v.device..' : '..round(V, 2)..'°C, supérieure au seuil fixé à '..seuil_notification..'°C!#0###'.. v.subsystem ..''}
                         else
-                            commandArray['SendNotification'] = 'Attention#température '..v.device..' : '..round(V, 2)..'°C, supérieure au seuil fixé à '..seuil_notification..'°C!'
+                            commandArray[#commandArray + 1] = {['SendNotification'] = 'Attention#température '..v.device..' : '..round(V, 2)..'°C, supérieure au seuil fixé à '..seuil_notification..'°C!'}
                         end                        
                     end
                 end
