@@ -1,7 +1,7 @@
 --[[
 name : script_time_fete_du_jour.lua
 auteur : papoo
-MAJ : 22/12/2018
+MAJ : 06/01/2019
 date : 28/05/2016
 Principe : Ce script a pour but d'afficher dans un device texte l'évenement (anniversaire, jour férié ou fête) du jour et du lendemain
 http://pon.fr/fete-du-jour-et-du-lendemain-en-lua/
@@ -29,7 +29,7 @@ local date_mariage = 1900	                    -- année de votre date de mariage
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = 'Fete du jour et du lendemain'
-local version = "1.66"							-- version du script
+local version = "1.67"							-- version du script
 local fete_jour = ''
 local fete_demain = ''
 local ferie =  ''
@@ -500,41 +500,53 @@ function getJourPaques(annee)
     getJourPaquesEpochPaque=os.time{year=annee,month=mois,day=jour,hour=12,min=0}
    return getJourPaquesEpochPaque
 end
-
-
+function deuxDigits(nombre)
+nombre = string.format("%02d",nombre)
+return nombre
+end
 
 local annee = os.date("%Y")
 --local annee = "2017"
 local epochPaques=getJourPaques(annee)
-
 local paques = os.date("%d:%m",epochPaques) 
+voir_les_logs("--- --- --- Pâques : ".. paques,debugging)
 local lundi_paques = os.date("%d:%m",epochPaques+24*60*60) -- Lundi de Pâques = Pâques + 1 jour
+voir_les_logs("--- --- --- Lundi de Pâques : ".. lundi_paques,debugging)
 local ascension = os.date("%d:%m",epochPaques+24*60*60*39) -- Ascension = Pâques + 39 jours
+voir_les_logs("--- --- --- Ascension : ".. ascension,debugging)
 local pentecote = os.date("%d:%m",epochPaques+24*60*60*49)      -- Pentecôte = Pâques + 49 jours
+voir_les_logs("--- --- --- Pentecôte : ".. pentecote,debugging)
 local lundi_pentecote = os.date("%d:%m",epochPaques+24*60*60*50)      -- Lundi Pentecôte = Pâques + 50 jours
-
+voir_les_logs("--- --- --- Lundi de Pentecôte : ".. lundi_pentecote,debugging)
 local derJourMai = tonumber(os.date("%w",os.time{year=annee,month=5,day=31}))      -- dernier jour de Mai
-
 local derDimMai = 31-derJourMai..":05"
 voir_les_logs("--- --- --- derDimMai : ".. derDimMai,debugging)
-local premDimJuin = 7-derJourMai..":06"
-voir_les_logs("--- --- --- premDimJuin : ".. premDimJuin,debugging)
+local premDimJuin = deuxDigits(7-derJourMai)..":06"
+voir_les_logs("--- --- --- premier Dimanche de Juin : ".. premDimJuin,debugging)
 local troisDimJuin = 21-derJourMai..":06"
-voir_les_logs("--- --- --- troisDimJuin : ".. troisDimJuin,debugging)
+voir_les_logs("--- --- --- troisième Dimanche de Juin : ".. troisDimJuin,debugging)
 
 if derDimMai == pentecote then
    meres = premDimJuin
 else
    meres = derDimMai
 end
-
 voir_les_logs("--- --- --- fête des mères : ".. meres,debugging)
 voir_les_logs("--- --- --- fête des pères : ".. troisDimJuin,debugging)
+local derJourDecembre = deuxDigits(tonumber(os.date("%w",os.time{year=(annee-1),month=12,day=31})))      -- dernier jour de Décembre annee-1
+voir_les_logs("--- --- --- Dernier Jour de Décembre : ".. derJourDecembre,debugging)
+local premDimJanvier = deuxDigits(7-derJourDecembre)
+voir_les_logs("--- --- --- premier Dimanche de Janvier : ".. premDimJanvier,debugging)
+if premDimJanvier == 01 then epiphanie = "08:01"  else epiphanie = premDimJanvier..":01" end
+
+
 
 --===========================================================
     if jour_ferie[today] ~= nil then ferie = true end --passage de la variable à true si jour ferié 
-
-    if meres == today then 
+    if epiphanie == today then 
+        fete_jour = "Epiphanie"
+        voir_les_logs("--- --- --- Aujourd&apos;hui : ".. fete_jour,debugging)
+    elseif meres == today then 
         fete_jour = "la&nbsp;Fête&nbsp;des&nbsp;Mères"
         voir_les_logs("--- --- --- Aujourd&apos;hui : ".. fete_jour,debugging)		
     elseif troisDimJuin == today then 
@@ -575,8 +587,10 @@ voir_les_logs("--- --- --- fête des pères : ".. troisDimJuin,debugging)
         end
 		voir_les_logs("--- --- --- Anniversaire du jour : ".. anniversaire[today],debugging)
     end    
-
-    if meres == tomorrow then 
+    if epiphanie == tomorrow then 
+            fete_demain = "Epiphanie"
+        voir_les_logs("--- --- --- Demain : ".. fete_demain,debugging)
+    elseif meres == tomorrow then 
         fete_demain = "la&nbsp;Fête&nbsp;des&nbsp;Mères"
         voir_les_logs("--- --- --- Demain : ".. fete_demain,debugging)		
     elseif troisDimJuin == tomorrow then 
@@ -688,3 +702,6 @@ voir_les_logs("--- --- --- fête des pères : ".. troisDimJuin,debugging)
     end
     
 voir_les_logs("========= Fin Fete du jour (v".. version ..") =========",debugging)
+
+end
+return commandArray
