@@ -5,6 +5,7 @@ update/mise à jour = 10/01/2019
 creation = 10/01/2019
 https://pon.fr/dzvents-suivre-le-nombre-dabonnes-dun-compte-twitter
 https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/twitterFollowers.lua
+https://easydomoticz.com/forum/viewtopic.php?f=17&t=7809
 --]]
 --------------------------------------------
 ------------ Variables à éditer ------------
