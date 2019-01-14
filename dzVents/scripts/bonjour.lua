@@ -4,6 +4,8 @@
 auteur = papoo
 update/mise à jour = 10/01/2019
 creation = 5/11/2018
+https://pon.fr/dzvents-souhaitez-la-bienvenue/
+https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/bonjour.lua
 --]]
 
 --------------------------------------------
