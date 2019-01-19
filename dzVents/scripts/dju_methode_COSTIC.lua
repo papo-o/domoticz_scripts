@@ -37,7 +37,7 @@ local S                     = 18                        -- seuil de température
 -------------------------------------------- 
 
 local scriptName            = 'DJU MéthodeCOSTIC'
-local scriptVersion         = '2.1'
+local scriptVersion         = '2.2'
 local djc                   = nil
 local Txj                   = nil
 local Tnj                   = nil
@@ -104,7 +104,7 @@ return {
                 djc = 0
                 domoticz.log("--- --- --- Le Seuil de "..tostring(S)..")°C est inférieur à la température maximum atteinte lors des dernières 24 heures (".. tostring(Txj) .."°C)", domoticz.LOG_DEBUG)
             end
-            local cpt_djc_index = domoticz.devices[cpt_djc].counter
+            local cpt_djc_index = domoticz.devices(cpt_djc).counter
             domoticz.log("--- --- --- compteur avant mise à jour ".. tostring(cpt_djc) .." : ".. tostring(cpt_djc_index) .." DJU", domoticz.LOG_DEBUG)
             cpt_djc_index = tonumber(cpt_djc_index) + djc
             domoticz.log("--- --- --- mise à jour compteur ".. tostring(cpt_djc) .." : ".. tostring(cpt_djc_index) .." DJU", domoticz.LOG_DEBUG)
