@@ -1,7 +1,7 @@
 --[[   
 ~/domoticz/scripts/dzVents/scripts/dju_methode_COSTIC.lua
 auteur : papoo
-MAJ : 19/01/2019
+MAJ : 23/01/2019
 création : 27/12/2018
 Principe :
 Calculer, via l'information température d'une sonde extérieure, les Degrés jour Chauffage méthode COSTIC
@@ -37,7 +37,7 @@ local S                     = 18                        -- seuil de température
 -------------------------------------------- 
 
 local scriptName            = 'DJU MéthodeCOSTIC'
-local scriptVersion         = '2.2'
+local scriptVersion         = '2.3'
 local djc                   = nil
 local Txj                   = nil
 local Tnj                   = nil
@@ -50,7 +50,7 @@ return {
         devices = { device_temp_ext } 	-- nom de la sonde de température/humidité extérieure'
     },
     
-    logging =   {   -- level    =   domoticz.LOG_DEBUG,
+    logging =   {    level    =   domoticz.LOG_DEBUG,
                     -- level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
                     -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others    
                     -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
@@ -70,21 +70,20 @@ return {
             domoticz.log("--- --- --- Température Ext :     ".. tostring(domoticz.utils.round(temperature, 2)) .." °C", domoticz.LOG_DEBUG)
             -- add new data
             domoticz.data.temperatures.add(temperature)
-
-            
+   
         --end
         if (item.trigger == 'at 06:02') then
             local tn = domoticz.data.temperatures.minSince('24:02:00')
             domoticz.log("--- --- --- température minimale du jour :     ".. tostring(tn) .." °C", domoticz.LOG_DEBUG)
             domoticz.data.Tn.add(tn)            
         
-       end
+        end
         if (item.trigger == 'at 18:02') then
             Txj = domoticz.data.temperatures.maxSince('24:02:00')
             domoticz.log("--- --- --- température maximale du jour : ".. tostring(Txj) .." °C", domoticz.LOG_DEBUG)
             Tnj = domoticz.data.Tn.getLatest().data
             domoticz.log("--- --- --- température minimale du jour : ".. tostring(Tnj) .." °C", domoticz.LOG_DEBUG)
-            moy = (Txj*Tnj)/2
+            moy = (Txj+Tnj)/2
             domoticz.log("--- --- --- température moyenne du jour  : ".. tostring(moy) .." °C", domoticz.LOG_DEBUG)
             
             if (S > Txj) then 
@@ -106,11 +105,15 @@ return {
             end
             local cpt_djc_index = domoticz.devices(cpt_djc).counter
             domoticz.log("--- --- --- compteur avant mise à jour ".. tostring(cpt_djc) .." : ".. tostring(cpt_djc_index) .." DJU", domoticz.LOG_DEBUG)
-            cpt_djc_index = tonumber(cpt_djc_index) + djc
+            
+            if cpt_djc_index ~= nil then
+                cpt_djc_index = tonumber(cpt_djc_index) + djc
+            else
+                cpt_djc_index = djc
+            end    
             domoticz.log("--- --- --- mise à jour compteur ".. tostring(cpt_djc) .." : ".. tostring(cpt_djc_index) .." DJU", domoticz.LOG_DEBUG)
             domoticz.devices(cpt_djc).updateCounter(cpt_djc_index)
-            
-            
+  
         end        
 
 
