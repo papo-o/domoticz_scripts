@@ -1,15 +1,12 @@
 --[[   
 ~/domoticz/scripts/dzVents/scripts/dju_methode_COSTIC.lua
 auteur : papoo
-MAJ : 23/01/2019
+MAJ : 24/01/2019
 création : 27/12/2018
 Principe :
 Calculer, via l'information température d'une sonde extérieure, les Degrés jour Chauffage méthode COSTIC
-
-Création automatique du device compteur et des variables nécessaire au fonctionnement de ce script.
-Seul pré-requis à la création d'un device par ce script, l'existence d'un hardware dummy dans votre domoticz.
-Pour cela, uploadez ou créez ce script dans le répertoire domoticz/scripts/lua/ 
-éditer éventuellement les noms des devices à créer, passez la variable script_actif à true, sauvegardez et vérifiez vos logs.
+Renseignez le nom de votre sonde extérieure dans la variable local device_temp_ext
+Créez un custom device counter ou custom sensor, inscrivez son non dans la variable local cpt_djc
 
 Un degré jour est calculé à partir des températures météorologiques extrêmes du lieu et du jour J : 
 - Tn : température minimale du jour J mesurée à 2 mètres du sol sous abri et relevée entre J-1 (la veille) à 18h et J à 18h UTC. 
@@ -37,7 +34,7 @@ local S                     = 18                        -- seuil de température
 -------------------------------------------- 
 
 local scriptName            = 'DJU MéthodeCOSTIC'
-local scriptVersion         = '2.3'
+local scriptVersion         = '2.4'
 local djc                   = nil
 local Txj                   = nil
 local Tnj                   = nil
@@ -70,7 +67,6 @@ return {
             domoticz.log("--- --- --- Température Ext :     ".. tostring(domoticz.utils.round(temperature, 2)) .." °C", domoticz.LOG_DEBUG)
             -- add new data
             domoticz.data.temperatures.add(temperature)
-   
         --end
         if (item.trigger == 'at 06:02') then
             local tn = domoticz.data.temperatures.minSince('24:02:00')
@@ -112,8 +108,11 @@ return {
                 cpt_djc_index = djc
             end    
             domoticz.log("--- --- --- mise à jour compteur ".. tostring(cpt_djc) .." : ".. tostring(cpt_djc_index) .." DJU", domoticz.LOG_DEBUG)
-            domoticz.devices(cpt_djc).updateCounter(cpt_djc_index)
-  
+            if (domoticz.devices(cpt_djc).deviceSubType) == 'RFXMeter counter' then 
+                domoticz.devices(cpt_djc).updateCounter(cpt_djc_index) 
+            elseif (domoticz.devices('@pap_oo').deviceSubType) == 'Custom Sensor' then 
+                domoticz.devices(deviceTwitter).updateCustomSensor(cpt_djc_index)
+            end
         end        
 
 
