@@ -1,7 +1,7 @@
 --[[   
 ~/domoticz/scripts/dzVents/scripts/dju_methode_COSTIC.lua
 auteur : papoo
-MAJ : 24/01/2019
+MAJ : 27/01/2019
 création : 27/12/2018
 Principe :
 Calculer, via l'information température d'une sonde extérieure, les Degrés jour Chauffage méthode COSTIC
@@ -33,8 +33,8 @@ local S                     = 18                        -- seuil de température
 ----------- Fin variables à éditer ---------
 -------------------------------------------- 
 
-local scriptName            = 'DJU MéthodeCOSTIC'
-local scriptVersion         = '2.4'
+local scriptName            = 'DJU Méthode COSTIC'
+local scriptVersion         = '2.5'
 local djc                   = nil
 local Txj                   = nil
 local Tnj                   = nil
@@ -43,7 +43,7 @@ local moy                   = nil
 return {
     active  = true,
     on = {
-        timer   = { 'at 06:02', 'at 18:02' },
+        timer   = { 'on 01/10-20/05 at 06:02', 'on 01/10-20/05 at 18:02' },
         devices = { device_temp_ext } 	-- nom de la sonde de température/humidité extérieure'
     },
     
@@ -110,8 +110,8 @@ return {
             domoticz.log("--- --- --- mise à jour compteur ".. tostring(cpt_djc) .." : ".. tostring(cpt_djc_index) .." DJU", domoticz.LOG_DEBUG)
             if (domoticz.devices(cpt_djc).deviceSubType) == 'RFXMeter counter' then 
                 domoticz.devices(cpt_djc).updateCounter(cpt_djc_index) 
-            elseif (domoticz.devices('@pap_oo').deviceSubType) == 'Custom Sensor' then 
-                domoticz.devices(deviceTwitter).updateCustomSensor(cpt_djc_index)
+            elseif (domoticz.devices(cpt_djc).deviceSubType) == 'Custom Sensor' then 
+                domoticz.devices(cpt_djc).updateCustomSensor(cpt_djc_index)
             end
         end        
 
