@@ -22,7 +22,7 @@ URL github : https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scri
 --------------------------------------------
 local email             = false                                     -- true si l'on ne souhaite être notifié que par mail, false si l'on souhaite 
 local notification            = true                                      -- mettre à false si vous ne voulez pas de notification
-local adresseMail      = 'papoo1er@gmail.com'                      -- adresse mail, séparées par ; si plusieurs
+local adresseMail      = 'pvotre.adresse@mail.com'                      -- adresse mail, séparées par ; si plusieurs
 local defaut_seuil      = '45'                                      -- seuil en °C par défaut avant notification pour tous les devices non personnalisés
 local seuil_ambiance    = '40'                                      -- seuil en °C par défaut avant notification pour les devices du groupe ambiance
 local seuil_frigo       = '25'                                      -- seuil en °C par défaut avant notification pour les devices du groupe refrigerateur
