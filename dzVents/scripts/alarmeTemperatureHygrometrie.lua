@@ -160,7 +160,7 @@ return {
                 domoticz.log("dernière notification de l\'alarme sonde "..tostring(nom).." : "..tostring(timeNotif).." minutes", domoticz.LOG_INFO)
                 if  timeNotif == nil  or (timeNotif ~= nil and timeNotif >= tonumber(delai)) then 
                     if email then domoticz.email(sujet,message,adresseMail) end
-                    if notification then domoticz.notify(sujet, message, dz.PRIORITY_NORMAL, domoticz.SOUND_INTERMISSION,"",  tableNotification ) end                
+                    if notification then domoticz.notify(sujet, message, domoticz.PRIORITY_NORMAL, domoticz.SOUND_INTERMISSION,"",  tableNotification ) end                
                     domoticz.data.envoiNotification.add(nomtype)
                 end   
             end
