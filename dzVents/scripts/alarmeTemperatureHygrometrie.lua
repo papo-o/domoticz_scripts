@@ -56,8 +56,6 @@ local les_devices = {
 { ['nom'] = 'Temperature Entree',       ['groupe'] = 'ambiance', ['type'] = 'temperature', ['seuil'] = nil, ['sens'] = 'augmentation',},
 { ['nom'] = 'Temperature Raspberry',    ['groupe'] = 'materiel', ['type'] = 'temperature', ['seuil'] = nil, ['sens'] = 'augmentation',},
 { ['nom'] = 'Synology Temp',            ['groupe'] = 'materiel', ['type'] = 'temperature', ['seuil'] = 50,  ['sens'] = 'augmentation',},
-{ ['nom'] = 'Temperature Maud',         ['groupe'] = 'ambiance', ['type'] = 'temperature', ['seuil'] = nil, ['sens'] = 'augmentation',},
-{ ['nom'] = 'Temperature Audrey',       ['groupe'] = 'ambiance', ['type'] = 'temperature', ['seuil'] = nil, ['sens'] = 'augmentation',},
 };
 --------------------------------------------
 ----------- Fin variables à éditer ---------
