@@ -14,7 +14,7 @@ comparaison de chaque valeur au seuil fixé et envoi d'une notification si dépa
 Si plusieurs valeurs de sonde dépassent le(s) seuil(s), envoie d'une notification pour chacune d'elle.
 définir le délai en minutes entre deux notifications d'une même alarme, par défaut delai configuré à 1440 minutes  = 24 heures (modifiable)
 url blog : https://pon.fr/dzvents-alarme-temperature-et-hygrometrie-v3
-URL post : http://easydomoticz.com/forum/viewtopic.php?f=17&t=6205
+URL post : https://easydomoticz.com/forum/viewtopic.php?f=17&t=7947
 URL github : https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/alarmeTemperatureHygrometrie.lua
 --]]
 --------------------------------------------
