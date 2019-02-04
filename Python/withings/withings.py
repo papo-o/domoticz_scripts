@@ -8,31 +8,31 @@
 #• oauth_token
 #• À l'étape 1, vous pouvez laisser le champ «Callback URL» vierge.
 
-import sys; sys.path.insert(0,'/usr/local/lib/python3.4/dist-packages/')
+import sys; sys.path.insert(0,'/usr/local/lib/python3.5/dist-packages/')
 import pickle, json
 import datetime
-import urllib, urllib2#, hashlib,subprocess
+import urllib, urllib.request as urllib2#, hashlib,subprocess
 from get_withings_data import WithingsAuth, WithingsApi  # projet initial https://github.com/maximebf/python-withings
 
 ####################################################################################################
 ######################################## variable à éditer #########################################
 
-CONSUMER_KEY = ''       # clé API
-CONSUMER_SECRET = '' # secret API
+CONSUMER_KEY = 'b772215d29f5cb36526f832714f9b622dc54fcb875f34404d8031070f8'       # clé API
+CONSUMER_SECRET = '60e8789b9864dee74891e283fe8cf42212ff1fd0d80cdc5bbce2977d481d0' # secret API
 #domoticz settings
 domoticz_host           = '127.0.0.1'    # Url domoticz
 domoticz_port           = '8080'            # port
 domoticz_url            = 'json.htm'        # Ne pas modifier
 
 idx_weight              = '717'   # renseigner l'idx du device Poids associé si souhaité (custom sensor, nom de l'axe : kg)
-idx_fat_free_mass       = ''      # renseigner l'idx du device Masse hors graisse associé si souhaité, sinon laisser vide '' (custom sensor, nom de l'axe : kg)
-idx_fat_ratio           = ''      # renseigner l'idx du device Pourcentage graisse associé si souhaité, sinon laisser vide '' (custom sensor, nom de l'axe : %)
-idx_fat_mass_weight     = ''      # renseigner l'idx du device Masse grasse associé si souhaité, sinon laisser vide '' (custom sensor, nom de l'axe : kg)
+idx_fat_free_mass       = '1288'      # renseigner l'idx du device Masse hors graisse associé si souhaité, sinon laisser vide '' (custom sensor, nom de l'axe : kg)
+idx_fat_ratio           = '1289'      # renseigner l'idx du device Pourcentage graisse associé si souhaité, sinon laisser vide '' (custom sensor, nom de l'axe : %)
+idx_fat_mass_weight     = '1290'      # renseigner l'idx du device Masse grasse associé si souhaité, sinon laisser vide '' (custom sensor, nom de l'axe : kg)
 idx_heart_pulse         = '881'   # renseigner l'idx du device Rythme cardiaque associé si souhaité, sinon laisser vide '' (custom sensor, nom de l'axe : bpm)
-idx_muscle_mass         = ''      # renseigner l'idx du device Masse musculaire associé si souhaité, sinon laisser vide '' (custom sensor, nom de l'axe : kg)
-idx_hydration           = ''      # renseigner l'idx du device Taux d'hydratation associé si souhaité, sinon laisser vide '' (custom sensor, nom de l'axe : %)
-idx_bone_mass           = ''      # renseigner l'idx du device Masse osseuse associé si souhaité, sinon laisser vide '' (custom sensor, nom de l'axe : kg)
-idx_pulse_wave_velocity = '882'   # renseigner l'idx du device Vitesse d'onde de pouls associé si souhaité, sinon laisser vide '' (custom sensor, nom de l'axe : m/s)
+idx_muscle_mass         = '1291'      # renseigner l'idx du device Masse musculaire associé si souhaité, sinon laisser vide '' (custom sensor, nom de l'axe : kg)
+idx_hydration           = '1292'      # renseigner l'idx du device Taux d'hydratation associé si souhaité, sinon laisser vide '' (custom sensor, nom de l'axe : %)
+idx_bone_mass           = '1293'      # renseigner l'idx du device Masse osseuse associé si souhaité, sinon laisser vide '' (custom sensor, nom de l'axe : kg)
+idx_pulse_wave_velocity = ''      # renseigner l'idx du device Vitesse d'onde de pouls associé si souhaité, sinon laisser vide '' (custom sensor, nom de l'axe : m/s)
 debugging = False                 # True pour voir les logs dans la console log Dz et en ligne de commande, ou False pour ne pas les voir (attention aux majuscules)
 
 #################################### fin  variables à éditer #######################################
@@ -40,7 +40,7 @@ debugging = False                 # True pour voir les logs dans la console log 
 
 def log(message):
   if debugging == True:
-    print message
+    print (message)
 
 def domoticzrequest (url):
   request = urllib2.Request(url)
@@ -53,7 +53,7 @@ try:
     #with open(sys.path[0] + '/pickled_creds', 'rb') as pf:
     with open('./pickled_creds', 'rb') as pf:
         credentials = pickle.load(pf)
-	pass	
+    pass	
 except IOError:	
     authorize_url = auth.get_authorize_url()
     print("Go to %s allow the app and copy your oauth_verifier" % authorize_url)
@@ -62,7 +62,7 @@ except IOError:
     # save new credentials to file
     with open('./pickled_creds', 'wb') as pf:
         pickle.dump(credentials, pf)
-	pass
+    pass
 	
 creds = credentials #auth.get_credentials(oauth_verifier)
 client = WithingsApi(creds)
@@ -73,7 +73,7 @@ measures = client.get_measures(limit=10)
 if idx_weight != None:
 
   domoticzurl = "http://" + domoticz_host + ":" + domoticz_port + "/" + domoticz_url + "?type=devices&rid=" + idx_weight
-  json_object = json.loads(domoticzrequest(domoticzurl))
+  json_object = json.loads(domoticzrequest(domoticzurl).decode('utf-8'))
   if json_object["status"] == "OK":
     if json_object["result"][0]["idx"] == idx_weight:
       lastupdate = json_object["result"][0]["LastUpdate"]
@@ -279,26 +279,26 @@ if idx_bone_mass != None and bone_mass != None:
     urllib2.urlopen(url , timeout = 5)
     
   ####################################################################################################
-if measures[0].pulse_wave_velocity != None:
-  pulse_wave_velocity = measures[0].pulse_wave_velocity 
+# if measures[0].pulse_wave_velocity != None:
+  # pulse_wave_velocity = measures[0].pulse_wave_velocity 
    
-elif measures[1].pulse_wave_velocity != None:
-  pulse_wave_velocity = measures[1].pulse_wave_velocity
+# elif measures[1].pulse_wave_velocity != None:
+  # pulse_wave_velocity = measures[1].pulse_wave_velocity
   
-elif measures[2].pulse_wave_velocity != None:
-  pulse_wave_velocity = measures[2].pulse_wave_velocity
+# elif measures[2].pulse_wave_velocity != None:
+  # pulse_wave_velocity = measures[2].pulse_wave_velocity
 
-log("vitesse onde de pouls : %s" % pulse_wave_velocity)
+# log("vitesse onde de pouls : %s" % pulse_wave_velocity)
   
-if idx_pulse_wave_velocity != None and pulse_wave_velocity != None:
-  if date > lastupdate:
-    #uploading values to domoticz  
-    url = "http://" + domoticz_host + ":" + domoticz_port + "/" + domoticz_url + "?type=command&param=udevice&idx=" + idx_pulse_wave_velocity + "&nvalue=0&svalue=" + str(pulse_wave_velocity)
-    urllib2.urlopen(url , timeout = 5)  
-  if debugging == True:   
-    #uploading log message to domoticz
-    log_pulse_wave_velocity = urllib.quote(("Withings : votre vitesse d'onde de pouls est de : ").encode("utf-8"))
-    url = "http://" + domoticz_host + ":" + domoticz_port + "/" + domoticz_url + "?type=command&param=addlogmessage&message=" + log_pulse_wave_velocity + str(pulse_wave_velocity)
-    urllib2.urlopen(url , timeout = 5) 
+# if idx_pulse_wave_velocity != None and pulse_wave_velocity != None:
+  # if date > lastupdate:
+    ## uploading values to domoticz  
+    # url = "http://" + domoticz_host + ":" + domoticz_port + "/" + domoticz_url + "?type=command&param=udevice&idx=" + idx_pulse_wave_velocity + "&nvalue=0&svalue=" + str(pulse_wave_velocity)
+    # urllib2.urlopen(url , timeout = 5)  
+  # if debugging == True:   
+    ## uploading log message to domoticz
+    # log_pulse_wave_velocity = urllib.quote(("Withings : votre vitesse d'onde de pouls est de : ").encode("utf-8"))
+    # url = "http://" + domoticz_host + ":" + domoticz_port + "/" + domoticz_url + "?type=command&param=addlogmessage&message=" + log_pulse_wave_velocity + str(pulse_wave_velocity)
+    # urllib2.urlopen(url , timeout = 5) 
     
   ####################################################################################################
