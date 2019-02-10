@@ -32,7 +32,7 @@
 
 local fetchIntervalMins = 1 --  intervalle de mise à jour. 
 local adresseLB = '192.168.1.1' --Adresse IP de votre Livebox 4
-local password = "9tkFGvsc"
+local password = "password"
 local tmpDir = "/var/tmp" --répertoire temporaire, dans l'idéal en RAM
 local myOutput=tmpDir.."/Output.txt"
 local myCookies=tmpDir.."/Cookies.txt"
