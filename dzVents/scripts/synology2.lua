@@ -1,7 +1,7 @@
 --[[
 name : synology2.lua
 auteur : papoo
-creation : 24/08/2018
+creation : 17/02/2019
 mise à  jour : 03/09/2018
 
 https://pon.fr/dzvents-supervision-dun-nas-synology-avec-snmp/
@@ -90,8 +90,8 @@ end
     local NAS_MEM = "Synology Utilisation RAM"                  -- NAS MEM 
     local NAS_HD_SPACE_PERC = "Synology Occupation Disque"      -- NAS HD Space  in %
     local NAS_HD_SPACE = "Synology Espace Disponible"           -- NAS HD Space  in Go
-    local NAS_HD1_TEMP = "Synology HDD1 Temp"                   -- NAS HD1 Temp 
-    -- local NAS_HD2_TEMP = ""                                     -- NAS HD2 Temp 
+    local NAS_HDD1_TEMP = "Synology HDD1 Temp"                   -- NAS HD1 Temp 
+    -- local NAS_HDD2_TEMP = ""                                     -- NAS HD2 Temp 
     local OID_NAS_TEMP = '1.3.6.1.4.1.6574.1.2.0'
     local OID_HDUnit = '1.3.6.1.2.1.25.2.3.1.4.51'              -- OID HD Unit Change OID to .38 on DSM 5.1 or .41 on DSM 6.0+ or .51 on my DS218
     local OID_HDTotal = '1.3.6.1.2.1.25.2.3.1.5.51'             -- OID Total space volume in Go Change OID to .38 on DSM 5.1 or .41 on DSM 6.0+ or .51 on my DS218
@@ -117,7 +117,7 @@ return {
                 -- level    =   domoticz.LOG_ERROR,                                            -- Only one level can be active; comment others
                 -- level    =   domoticz.LOG_DEBUG,
                 -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
-                marker    =   "Synology Monitor v1.1 "      },
+                marker    =   "Synology Monitor v1.2 "      },
     
     execute = function(dz)
         local i = 0
@@ -142,11 +142,11 @@ return {
         if results[5] then dz.log("CpuSystem : "..results[5],dz.LOG_DEBUG) end  
         if results[6] then dz.log("MemAvailable : "..results[6],dz.LOG_DEBUG) end
         if results[7] then 
-            dz.log("HDTemp1 : "..results[7],dz.LOG_DEBUG) 
+            dz.log("HDDTemp1 : "..results[7],dz.LOG_DEBUG) 
             if NAS_HDD1_TEMP then dz.devices(NAS_HDD1_TEMP).update(0,results[7]) end
             end        
         if results[8] then 
-            dz.log("HDTemp2 : "..results[8],dz.LOG_DEBUG) 
+            dz.log("HDDTemp2 : "..results[8],dz.LOG_DEBUG) 
             if NAS_HDD2_TEMP then dz.devices(NAS_HDD2_TEMP).update(0,results[8]) end
             end
         -- if results[9] then dz.log("Physical Memory Units : "..results[9],dz.LOG_DEBUG) end
