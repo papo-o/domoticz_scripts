@@ -1,7 +1,7 @@
 --[[
 name : script_time_fete_du_jour.lua
 auteur : papoo
-MAJ : 06/01/2019
+MAJ : 03/03/2019
 date : 28/05/2016
 Principe : Ce script a pour but d'afficher dans un device texte l'évenement (anniversaire, jour férié ou fête) du jour et du lendemain
 http://pon.fr/fete-du-jour-et-du-lendemain-en-lua/
@@ -11,25 +11,26 @@ https://easydomoticz.com/forum/viewtopic.php?f=10&t=1878
 ------------ Variables à éditer ------------
 -------------------------------------------- 
 
-local debugging = true  						-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
-local fete_text_idx = nil --391   				-- idx du capteur texte saint du jour, nil si inutilisé
-local fete_demain_text_idx = nil --703 			-- idx du capteur texte saint du lendemain, nil si inutilisé
-local anniversaire_text_idx = nil   			-- idx du capteur texte anniversaire du jour pour afficher les anniversaires dans un device séparé, nil si inutilisé
-local anniversaire_demain_text_idx = nil  		-- idx du capteur texte anniversaire du lendemain pour afficher les anniversaires dans un device séparé, nil si inutilisé
-local jour_ferie_switch = "Jour Ferie" 			-- nom du capteur switch jour férié, nil si inutilisé
-local jour_ferie_scene = "Jour Férié" 			-- nom du scénario jour férié entre, nil si inutilisé
-local variable_jour = "Saint_Jour"				-- nom de la variable jour, nil si inutilisé
+local debugging = true  			-- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local fete_text_idx = nil --391   		-- idx du capteur texte saint du jour, nil si inutilisé
+local fete_demain_text_idx = nil --703 		-- idx du capteur texte saint du lendemain, nil si inutilisé
+local anniversaire_text_idx = nil   		-- idx du capteur texte anniversaire du jour pour afficher les anniversaires dans un device séparé, nil si inutilisé
+local anniversaire_demain_text_idx = nil  	-- idx du capteur texte anniversaire du lendemain pour afficher les anniversaires dans un device séparé, nil si inutilisé
+local jour_ferie_switch = "Jour Ferie" 		-- nom du capteur switch jour férié, nil si inutilisé
+local jour_ferie_scene = "Jour Férié" 		-- nom du scénario jour férié entre, nil si inutilisé
+local variable_jour = "Saint_Jour"		-- nom de la variable jour, nil si inutilisé
 local variable_lendemain = "Saint_Lendemain" 	-- nom de la variable lendemain, nil si inutilisé
-local variable_jour_ferie = "Jour_ferie"		-- nom de la variable
+local variable_jour_ferie = "Jour_ferie"	-- nom de la variable
 local Scene_Semaine_Paire = "Semaine Paire"     -- nom du scénario semaine paire, nil si inutilisé
 local Scene_Semaine_Impaire = "Semaine Impaire" -- nom du scénario semaine impaire, nil si inutilisé
 local Scene_Week_End = "Week-End"               -- nom du scénario Week-End, nil si inutilisé
-local date_mariage = 1900	                    -- année de votre date de mariage
+local date_mariage = 1900	                -- année de votre date de mariage
+local jour_semaine_switch = "Jour de la semaine"-- nom du capteur switch jour de la semaine, nil si inutilisé
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local nom_script = 'Fete du jour et du lendemain'
-local version = "1.67"							-- version du script
+local version = "1.68"				-- version du script
 local fete_jour = ''
 local fete_demain = ''
 local ferie =  ''
@@ -56,6 +57,31 @@ end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ==
 function year_difference(s)
     return tostring(os.date("%Y")) - tostring(s)
 end
+function date_en_francais(str)
+    if (str) then
+	str = string.gsub(str, "January", "Janvier");
+	str = string.gsub(str, "February",	"Février")
+	str = string.gsub(str, "March",	"Mars")
+	str = string.gsub(str, "April",	"Avril")
+	str = string.gsub(str, "May",	"Mai")
+	str = string.gsub(str, "June",	"Juin")
+	str = string.gsub(str, "July",	"Juillet")
+	str = string.gsub(str, "August",	"Août")
+	str = string.gsub(str, "september",	"Septembre")
+	str = string.gsub(str, "October",	"Octobre")
+	str = string.gsub(str, "November",	"Novembre")
+	str = string.gsub(str, "December",	"Décembre")
+	str = string.gsub(str, "Monday",	"Lundi")
+	str = string.gsub(str, "Tuesday",	"Mardi")
+	str = string.gsub(str, "Wednesday",	"Mercredi")
+	str = string.gsub(str, "Thursday", "Jeudi")
+    str = string.gsub(str, "Friday", "Vendredi")
+    str = string.gsub(str, "Saturday", "Samedi")
+    str = string.gsub(str, "Sunday", "Dimanche")
+
+     end
+    return (str)
+end
 --]]
 --------------------------------------------
 ------------- Fin Fonctions ----------------
@@ -66,8 +92,8 @@ time = os.date("*t")
 --[[time = os.date("*t")]] --
 
 --if time.hour % 2 == 0 then -- toutes les deux heures
-if (time.hour%2 == 0 and time.min == 10) then  --Toutes les 2 heures et 10 minutes
---if time.min % 1 == 0 then 
+--if (time.hour%2 == 0 and time.min == 10) then  --Toutes les 2 heures et 10 minutes
+if time.min % 1 == 0 then 
 
 voir_les_logs("=========== Fete du jour (v".. version ..") ===========",debugging)
 local today=tostring(os.date("%d:%m"))
@@ -90,12 +116,26 @@ else
 			voir_les_logs("--- --- --- Mise à jour scénario  ".. Scene_Week_End .." => Off",debugging)        
         end
 end
-anniversaire["28:05"]="l\'anniversaire&nbsp;de&nbsp;Pierre"
-anniversaire["29:05"]="l\'anniversaire&nbsp;de&nbsp;Paul"
-anniversaire["30:05"]="l\'anniversaire&nbsp;de&nbsp;Jacques"
-anniversaire["01:06"]="nos&nbsp;".. annee_mariage .."&nbsp;ans&nbsp;de&nbsp;mariage"
-
---===================================================
+--anniversaire["28:05"]="l\'anniversaire&nbsp;de&nbsp;Pierre"
+--anniversaire["29:05"]="l\'anniversaire&nbsp;de&nbsp;Paul"
+--anniversaire["30:05"]="l\'anniversaire&nbsp;de&nbsp;Jacques"
+--anniversaire["01:06"]="nos&nbsp;".. annee_mariage .."&nbsp;ans&nbsp;de&nbsp;mariage"
+anniversaire["08:01"]="l\'anniversaire&nbsp;de&nbsp;Papy&nbsp;Michel"
+anniversaire["10:01"]="l\'anniversaire&nbsp;de&nbsp;Laurent"
+anniversaire["17:01"]="l\'anniversaire&nbsp;de&nbsp;Jöelle"
+anniversaire["31:01"]="l\'anniversaire&nbsp;de&nbsp;Dominique"
+anniversaire["08:03"]="l\'anniversaire&nbsp;de&nbsp;Marjorie"
+anniversaire["12:02"]="l\'anniversaire&nbsp;de&nbsp;Clémence"
+anniversaire["20:03"]="notre&nbsp;rencontre"
+anniversaire["14:04"]="l\'anniversaire&nbsp;de&nbsp;Louis"
+anniversaire["16:05"]="l\'anniversaire&nbsp;d\'&nbsp;Audrey"   
+anniversaire["16:07"]="l\'anniversaire&nbsp;de&nbsp;Pascal"
+anniversaire["27:07"]="nos&nbsp;".. annee_mariage .."&nbsp;ans&nbsp;de&nbsp;mariage"
+anniversaire["03:08"]="l\'anniversaire&nbsp;de&nbsp;Catherine" 
+anniversaire["08:10"]="l\'anniversaire&nbsp;de&nbsp;Maud" 
+anniversaire["07:11"]="l\'anniversaire&nbsp;de&nbsp;Mamy&nbsp;Marguerite" 
+anniversaire["30:12"]="l\'anniversaire&nbsp;de&nbsp;Lina"
+--===========================================================
 saint_jour["01:01"]="le&nbsp;jour&nbsp;de&nbsp;l\'An"
 saint_jour["02:01"]="les&nbsp;Basile"
 saint_jour["03:01"]="les&nbsp;Geneviève"
@@ -462,7 +502,7 @@ saint_jour["28:12"]="les&nbsp;Innocents"
 saint_jour["29:12"]="les&nbsp;David"
 saint_jour["30:12"]="les&nbsp;Roger"
 saint_jour["31:12"]="les&nbsp;Sylvestre"
---=========================================================
+--===========================================================
 jour_ferie["01:01"] = "Le&nbsp;1er&nbsp;janvier"
 jour_ferie["01:05"] = "La&nbsp;Fête&nbsp;du&nbsp;travail"
 jour_ferie["08:05"] = "La&nbsp;Victoire&nbsp;des&nbsp;alliés"
@@ -500,13 +540,32 @@ function getJourPaques(annee)
     getJourPaquesEpochPaque=os.time{year=annee,month=mois,day=jour,hour=12,min=0}
    return getJourPaquesEpochPaque
 end
+
 function deuxDigits(nombre)
-nombre = string.format("%02d",nombre)
-return nombre
+    nombre = string.format("%02d",nombre)
+    return nombre
+end
+
+function LeapYear(year)
+	if ((((year % 4 ==0) and (year % 100~=0)) or (year % 400==0)))then
+        joursFevrier = 29
+	else
+        joursFevrier = 28
+    end
+    return joursFevrier
 end
 
 local annee = os.date("%Y")
 --local annee = "2017"
+voir_les_logs("--- --- --- nombre de jours en février : ".. LeapYear(annee),debugging)
+local derJourDecembre = deuxDigits(tonumber(os.date("%w",os.time{year=(annee-1),month=12,day=31})))      -- dernier jour de Décembre annee-1
+voir_les_logs("--- --- --- Dernier Jour de Décembre : ".. derJourDecembre,debugging)
+local premDimJanvier = deuxDigits(7-derJourDecembre)
+voir_les_logs("--- --- --- premier Dimanche de Janvier : ".. premDimJanvier,debugging)
+if premDimJanvier == 01 then epiphanie = "08:01"  else epiphanie = premDimJanvier..":01" end
+local derJourFevrier = tonumber(os.date("%w",os.time{year=annee,month=2,day=LeapYear(annee)}))      -- dernier jour de Mars
+local premDimMars  = deuxDigits(7-derJourFevrier)..":03"
+voir_les_logs("--- --- --- premDimMars : ".. premDimMars,debugging)
 local epochPaques=getJourPaques(annee)
 local paques = os.date("%d:%m",epochPaques) 
 voir_les_logs("--- --- --- Pâques : ".. paques,debugging)
@@ -525,7 +584,6 @@ local premDimJuin = deuxDigits(7-derJourMai)..":06"
 voir_les_logs("--- --- --- premier Dimanche de Juin : ".. premDimJuin,debugging)
 local troisDimJuin = 21-derJourMai..":06"
 voir_les_logs("--- --- --- troisième Dimanche de Juin : ".. troisDimJuin,debugging)
-
 if derDimMai == pentecote then
    meres = premDimJuin
 else
@@ -533,12 +591,10 @@ else
 end
 voir_les_logs("--- --- --- fête des mères : ".. meres,debugging)
 voir_les_logs("--- --- --- fête des pères : ".. troisDimJuin,debugging)
-local derJourDecembre = deuxDigits(tonumber(os.date("%w",os.time{year=(annee-1),month=12,day=31})))      -- dernier jour de Décembre annee-1
-voir_les_logs("--- --- --- Dernier Jour de Décembre : ".. derJourDecembre,debugging)
-local premDimJanvier = deuxDigits(7-derJourDecembre)
-voir_les_logs("--- --- --- premier Dimanche de Janvier : ".. premDimJanvier,debugging)
-if premDimJanvier == 01 then epiphanie = "08:01"  else epiphanie = premDimJanvier..":01" end
 
+local derJourSeptembre = tonumber(os.date("%w",os.time{year=annee,month=9,day=30}))      -- dernier jour de Mars
+local premDimOctobre  = deuxDigits(7-derJourSeptembre)..":10"
+voir_les_logs("--- --- --- premDimOctobre : ".. premDimOctobre,debugging)
 
 
 --===========================================================
@@ -546,6 +602,9 @@ if premDimJanvier == 01 then epiphanie = "08:01"  else epiphanie = premDimJanvie
     if epiphanie == today then 
         fete_jour = "Epiphanie"
         voir_les_logs("--- --- --- Aujourd&apos;hui : ".. fete_jour,debugging)
+    elseif premDimMars == today then 
+        fete_jour = "la&nbsp;Fête&nbsp;des&nbsp;Grand-Mères"
+        voir_les_logs("--- --- --- Aujourd&apos;hui : ".. fete_jour,debugging)		        
     elseif meres == today then 
         fete_jour = "la&nbsp;Fête&nbsp;des&nbsp;Mères"
         voir_les_logs("--- --- --- Aujourd&apos;hui : ".. fete_jour,debugging)		
@@ -574,7 +633,10 @@ if premDimJanvier == 01 then epiphanie = "08:01"  else epiphanie = premDimJanvie
         voir_les_logs("--- --- --- Aujourd&apos;hui : ".. fete_jour,debugging)
     elseif jour_ferie[today] ~= nil then 
         fete_jour = jour_ferie[today]
-        voir_les_logs("--- --- --- Aujourd&apos;hui : ".. fete_jour,debugging)					
+        voir_les_logs("--- --- --- Aujourd&apos;hui : ".. fete_jour,debugging)
+        elseif premDimOctobre == today then 
+        fete_jour = "la&nbsp;Fête&nbsp;des&nbsp;Grand-Pères"
+        voir_les_logs("--- --- --- Aujourd&apos;hui : ".. fete_jour,debugging)
     else fete_jour = saint_jour[today] 
         voir_les_logs("--- --- --- Fête du jour : ".. saint_jour[today],debugging)
 	end
@@ -593,6 +655,9 @@ if premDimJanvier == 01 then epiphanie = "08:01"  else epiphanie = premDimJanvie
     elseif meres == tomorrow then 
         fete_demain = "la&nbsp;Fête&nbsp;des&nbsp;Mères"
         voir_les_logs("--- --- --- Demain : ".. fete_demain,debugging)		
+    elseif premDimMars == tomorrow then 
+        fete_demain = "la&nbsp;Fête&nbsp;des&nbsp;Grand-Mères"
+        voir_les_logs("--- --- --- Demain : ".. fete_demain,debugging)		        
     elseif troisDimJuin == tomorrow then 
         fete_demain = "la&nbsp;Fête&nbsp;des&nbsp;pères"
         voir_les_logs("--- --- --- Demain : ".. fete_demain,debugging)			
@@ -604,6 +669,9 @@ if premDimJanvier == 01 then epiphanie = "08:01"  else epiphanie = premDimJanvie
         voir_les_logs("--- --- --- Demain : ".. fete_demain,debugging)
     elseif lundi_pentecote == tomorrow then 
         fete_demain = "Lundi&nbsp;de&nbsp;Pentecôte"
+        voir_les_logs("--- --- --- Demain : ".. fete_demain,debugging)
+        elseif premDimOctobre == tomorrow then 
+        fete_demain = "la&nbsp;Fête&nbsp;des&nbsp;Grand-Pères"
         voir_les_logs("--- --- --- Demain : ".. fete_demain,debugging)
     else fete_demain = saint_jour[tomorrow]
         voir_les_logs("--- --- --- Fête de demain : ".. saint_jour[tomorrow],debugging)		
@@ -700,8 +768,15 @@ if premDimJanvier == 01 then epiphanie = "08:01"  else epiphanie = premDimJanvie
 			voir_les_logs("--- --- --- Mise à jour scénario  "..Scene_Semaine_Impaire .." => On",debugging)            
         end        
     end
+    voir_les_logs("--- --- --- jour de la semaine : ".. date_en_francais(os.date("%A")),debugging)
+    voir_les_logs("--- --- --- jour de la semaine (nb) : ".. os.date("*t").wday,debugging)
+    if jour_semaine_switch ~= nil then
+    local select_day = os.date("*t").wday.."0"
+    	commandArray[jour_semaine_switch] = 'Set Level: '.. select_day
+		voir_les_logs("--- --- --- Mise à jour device  ".. jour_semaine_switch .." => "..select_day,debugging)
+    end
     
-voir_les_logs("========= Fin Fete du jour (v".. version ..") =========",debugging)
+voir_les_logs("=========== Fin Fete du jour (v".. version ..") =========",debugging)
 
 end
 return commandArray
