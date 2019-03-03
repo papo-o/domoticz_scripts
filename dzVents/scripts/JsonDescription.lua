@@ -45,8 +45,16 @@ either of the "Overloop: Motion" or the "Trap: Motion" devices:
 With this new version you can : 
 - be notified if temperature and or hygrometry exceed min or max threshold.
 - be notified if device is on, off or out
-you can mix the desired notifications like only max temp, or min and max hygrometry, or do not set quiets hours, or min temp and timout
-if you want to notified frequency_notifications is required
+you can mix the desired notifications, such as only the maximum temperature rise, 
+or the minimum and maximum humidity, or do not set quiet hours, or minimum temperature and timout
+if you want to use the notification functions, the frequency of notifications is necessary
+Avec cette nouvelle version vous pouvez :
+- être averti après le délai défini si la température et / ou l'hygrométrie dépassent le seuil minimal ou maximal.
+- être averti si l'appareil est allumé, éteint ou éteint hors service
+vous pouvez mélanger les notifications souhaitées, telles que uniquement le dépassement de température maxi, 
+ou  l'hygrométrie mini et maxi, ou ne pas définir d'heures calmes, ou température mini et timout
+si vous souhaitez utiliser les fonctions de notification,  la fréquence de notifications est nécessaire
+
 
 Example 4 : be notified if temperature or hygrometry exceed min or max threshold 
 with notifications frequency in minutes and quiet hours notification
