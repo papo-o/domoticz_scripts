@@ -2,7 +2,7 @@
 --[[ 
 original script by rrozema Generic auto-off : https://www.domoticz.com/forum/viewtopic.php?f=72&t=23717&p=205159&hilit=auto+off#p201976
 author = papoo
-maj : 04/02/2019
+maj : 03/03/2019
 this version need a waaren script, Universal function notification :
 https://www.domoticz.com/forum/viewtopic.php?f=59&t=26542#p204958
 https://pon.fr/dzvents-fonction-de-notification-universelle/
@@ -41,6 +41,13 @@ either of the "Overloop: Motion" or the "Trap: Motion" devices:
 "auto_off_minutes": 2,
 "auto_off_motion_device": {"Overloop: Motion", "Trap: Motion"}
 }
+
+With this new version you can : 
+- be notified if temperature and or hygrometry exceed min or max threshold.
+- be notified if device is on, off or out
+you can mix the desired notifications like only max temp, or min and max hygrometry, or do not set quiets hours, or min temp and timout
+if you want to notified frequency_notifications is required
+
 Example 4 : be notified if temperature or hygrometry exceed min or max threshold 
 with notifications frequency in minutes and quiet hours notification
 {
@@ -76,7 +83,7 @@ with notifications frequency in minutes and quiet hours notification
 --]]
 
 local scriptName = 'Json Description'
-local scriptVersion = '0.5'
+local scriptVersion = '0.6'
 
 return {
     active = true,    
