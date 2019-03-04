@@ -2,7 +2,7 @@
 --[[ 
 original script by rrozema Generic auto-off : https://www.domoticz.com/forum/viewtopic.php?f=72&t=23717&p=205159&hilit=auto+off#p201976
 author = papoo
-maj : 03/03/2019
+maj : 04/03/2019
 this version need a waaren script, Universal function notification :
 https://www.domoticz.com/forum/viewtopic.php?f=59&t=26542#p204958
 https://pon.fr/dzvents-fonction-de-notification-universelle/
@@ -52,7 +52,7 @@ Avec cette nouvelle version vous pouvez :
 - être averti après le délai défini si la température et / ou l'hygrométrie dépassent le seuil minimal ou maximal.
 - être averti si l'appareil est allumé, éteint ou éteint hors service
 vous pouvez mélanger les notifications souhaitées, telles que uniquement le dépassement de température maxi, 
-ou  l'hygrométrie mini et maxi, ou ne pas définir d'heures calmes, ou température mini et timout
+ou  l'hygrométrie mini et maxi, ou ne pas définir d'heures calmes, ou température mini et timeout
 si vous souhaitez utiliser les fonctions de notification,  la fréquence de notifications est nécessaire
 
 
@@ -91,7 +91,7 @@ with notifications frequency in minutes and quiet hours notification
 --]]
 
 local scriptName = 'Json Description'
-local scriptVersion = '0.6'
+local scriptVersion = '0.7'
 
 return {
     active = true,    
@@ -105,7 +105,7 @@ return {
 
 	-- custom logging level for this script
 	logging = {
-                -- level    =   domoticz.LOG_DEBUG,
+                 level    =   domoticz.LOG_DEBUG,
                 -- level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
                 -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others    
                 -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
@@ -167,30 +167,9 @@ return {
                             
                             
                             if device.state == 'Off' or device.state == 'Close' then    
-                            -- auto off
-                                if settings.auto_off_minutes ~= nil and device.lastUpdate.minutesAgo >= settings.auto_off_minutes then
-                                    if settings.auto_off_motion_device == nil then
-                                        domoticz.log(device.name .. ' is switched off because it has been on for ' .. settings.auto_off_minutes .. ' minutes.', domoticz.LOG_INFO)
-                                        device.switchOff()
-                                    elseif type(settings.auto_off_motion_device) == "string" then
-                                        local motion_device = domoticz.devices(settings.auto_off_motion_device)
-                                        if motion_device.state == 'Off' then
-                                            domoticz.log(device.name .. ' is switched off because no one was in the room for ' .. settings.auto_off_minutes .. ' minutes.', domoticz.LOG_INFO)
-                                            device.switchOff()
-                                        end
-                                    elseif type(settings.auto_off_motion_device) == "table" then
-                                        local off = true
-                                        for i,v in ipairs(settings.auto_off_motion_device) do
-                                            if domoticz.devices(v).state ~= 'Off' then
-                                                off = false
-                                            end
-                                        end
-                                        if off then
-                                            domoticz.log(device.name .. ' is switched off because no one was in the room for ' .. settings.auto_off_minutes .. ' minutes.', domoticz.LOG_INFO)
-                                            device.switchOff()
-                                        end
-                                    end
-                                end
+
+                            
+                            
                              -- Alarme dispositif inactif
                                 domoticz.log(device.name .. ' est à l\'état ' .. device.state, domoticz.LOG_INFO)                         
                                 if settings.time_inactive_notification ~= nil and device.lastUpdate.minutesAgo >= settings.time_inactive_notification then
@@ -240,7 +219,30 @@ return {
                                     message = 'Le délai fixé à '.. settings.time_active_notification .. ' minutes pour '.. device.name .. ' est dépassé'
                                     domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
                                 end
-                        
+                                                            -- auto off
+                                if settings.auto_off_minutes ~= nil and device.lastUpdate.minutesAgo >= settings.auto_off_minutes then
+                                    if settings.auto_off_motion_device == nil then
+                                        domoticz.log(device.name .. ' is switched off because it has been on for ' .. settings.auto_off_minutes .. ' minutes.', domoticz.LOG_INFO)
+                                        device.switchOff()
+                                    elseif type(settings.auto_off_motion_device) == "string" then
+                                        local motion_device = domoticz.devices(settings.auto_off_motion_device)
+                                        if motion_device.state == 'Off' then
+                                            domoticz.log(device.name .. ' is switched off because no one was in the room for ' .. settings.auto_off_minutes .. ' minutes.', domoticz.LOG_INFO)
+                                            device.switchOff()
+                                        end
+                                    elseif type(settings.auto_off_motion_device) == "table" then
+                                        local off = true
+                                        for i,v in ipairs(settings.auto_off_motion_device) do
+                                            if domoticz.devices(v).state ~= 'Off' then
+                                                off = false
+                                            end
+                                        end
+                                        if off then
+                                            domoticz.log(device.name .. ' is switched off because no one was in the room for ' .. settings.auto_off_minutes .. ' minutes.', domoticz.LOG_INFO)
+                                            device.switchOff()
+                                        end
+                                    end
+                                end
                             end
                            
                         else
