@@ -2,7 +2,7 @@
 --[[ 
 original script by rrozema Generic auto-off : https://www.domoticz.com/forum/viewtopic.php?f=72&t=23717&p=205159&hilit=auto+off#p201976
 author = papoo
-maj : 04/03/2019
+maj : 06/03/2019
 this version need a waaren script, Universal function notification :
 https://www.domoticz.com/forum/viewtopic.php?f=59&t=26542#p204958
 https://pon.fr/dzvents-fonction-de-notification-universelle/
@@ -91,7 +91,7 @@ with notifications frequency in minutes and quiet hours notification
 --]]
 
 local scriptName = 'Json Description'
-local scriptVersion = '0.7'
+local scriptVersion = '0.72'
 
 return {
     active = true,    
@@ -105,8 +105,8 @@ return {
 
 	-- custom logging level for this script
 	logging = {
-                 level    =   domoticz.LOG_DEBUG,
-                -- level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
+                -- level    =   domoticz.LOG_DEBUG,
+                 level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
                 -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others    
                 -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
                 marker = scriptName..' v'..scriptVersion
@@ -133,129 +133,124 @@ return {
                                           domoticz.NSS_TELEGRAM,
                                         }
         local subject               = "/!\\ Attention /!\\"           -- sujet des notifications                                  
-                       
+
 		domoticz.devices().forEach(
 	        function(device)
 	            cnt = cnt + 1
                 local frequency_notifications = nil
                 local quiet_hours = nil
                 local message = nil
-                --domoticz.log( 'Device "' .. device.name .. '" is "' .. tostring(device.state) .. '".', domoticz.LOG_INFO)
-	            --if device.state ~= 'Off' or device.temperature ~= nil or device.humidity ~= nil or device.state~= 'Close' then
-    	            local description = device.description
-    	            if description ~= nil and description ~= '' then
-    	                --domoticz.log( 'description = ' .. description .. '.', domoticz.LOG_INFO)
-    	                local ok, settings = pcall( domoticz.utils.fromJSON, description)
-    	                if ok and settings ~= nil then
-                        
-                        -- fréquence de notification
-                            if settings.frequency_notifications ~= nil then 
-                                frequency_notifications = settings.frequency_notifications
-                                domoticz.log('la fréquence de notification pour '.. device.name .. ' est de  ' .. settings.frequency_notifications.." minutes", domoticz.LOG_INFO)
-                            end
-                        -- période silencieuse    
-                            if settings.quiet_hours ~= nil then 
-                                quiet_hours = settings.quiet_hours
-                                domoticz.log('la période silencieuse de notification pour '.. device.name .. ' est fixée à  ' .. quiet_hours, domoticz.LOG_INFO)                                    
-                            end
-                            -- Alarme dispositif injoignable    
-                            if settings.timeout_notification and device.timedOut then
-                                domoticz.log(device.name .. ' est injoignable. Sa dernière activité remonte à ' .. device.lastUpdate.minutesAgo .. ' minutes.', domoticz.LOG_INFO)
-                                message = device.name .. ' est injoignable depuis '.. settings.timeout_notification ..' minutes'
-                                domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
-                            end 
-                            
-                            
-                            if device.state == 'Off' or device.state == 'Close' then    
+                
+                local description = device.description
+                local j = string.find(tostring(description), '^{.*}$')
+                
+                if description ~= nil and description ~= '' and j ~= nil then
 
-                            
-                            
-                             -- Alarme dispositif inactif
-                                domoticz.log(device.name .. ' est à l\'état ' .. device.state, domoticz.LOG_INFO)                         
-                                if settings.time_inactive_notification ~= nil and device.lastUpdate.minutesAgo >= settings.time_inactive_notification then
-                                    domoticz.log(device.name .. ' est inactif depuis ' .. device.lastUpdate.minutesAgo .. ' minutes. Le délai est fixé à '.. settings.time_inactive_notification.. ' minutes.', domoticz.LOG_INFO)
-                                    message = 'Le délai d\'inactivité fixé à '.. settings.time_inactive_notification .. ' minutes pour '.. device.name .. ' est dépassé'
+                    
+                    local ok, settings = pcall( domoticz.utils.fromJSON, description)
+                    if ok and settings then
+                    
+                    -- fréquence de notification
+                        if settings.frequency_notifications ~= nil then 
+                            frequency_notifications = settings.frequency_notifications
+                            domoticz.log('la fréquence de notification pour '.. device.name .. ' est de  ' .. settings.frequency_notifications.." minutes", domoticz.LOG_INFO)
+                        end
+                    -- période silencieuse    
+                        if settings.quiet_hours ~= nil then 
+                            quiet_hours = settings.quiet_hours
+                            domoticz.log('la période silencieuse de notification pour '.. device.name .. ' est fixée à  ' .. quiet_hours, domoticz.LOG_INFO)                                    
+                        end
+                        -- Alarme dispositif injoignable    
+                        if settings.timeout_notification and device.timedOut then
+                            domoticz.log(device.name .. ' est injoignable. Sa dernière activité remonte à ' .. device.lastUpdate.minutesAgo .. ' minutes.', domoticz.LOG_INFO)
+                            message = device.name .. ' est injoignable depuis '.. settings.timeout_notification ..' minutes'
+                            domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
+                        end 
+
+                        if device.state == 'Off' or device.state == 'Close' then    
+                         -- Alarme dispositif inactif
+                            domoticz.log(device.name .. ' est à l\'état ' .. device.state, domoticz.LOG_INFO)                         
+                            if settings.time_inactive_notification ~= nil and device.lastUpdate.minutesAgo >= settings.time_inactive_notification then
+                                domoticz.log(device.name .. ' est inactif depuis ' .. device.lastUpdate.minutesAgo .. ' minutes. Le délai est fixé à '.. settings.time_inactive_notification.. ' minutes.', domoticz.LOG_INFO)
+                                message = 'Le délai d\'inactivité fixé à '.. settings.time_inactive_notification .. ' minutes pour '.. device.name .. ' est dépassé'
+                                domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
+                            end  
+                        
+                        
+                        elseif device.temperature ~= nil or device.humidity ~= nil then     
+                        -- Alarme température    
+                            if device.temperature ~= nil and (settings.low_threshold_temp ~= nil or settings.high_threshold_temp ~= nil)  then
+                                domoticz.log('La température mesurée par '.. device.name .. ' est de  ' .. tostring(domoticz.utils.round(device.temperature, 1)) ..'°C', domoticz.LOG_INFO)                            
+                                if settings.low_threshold_temp ~= nil and device.temperature < settings.low_threshold_temp then  -- seuil bas température
+                                    domoticz.log(device.name .. ' a un seuil temperature basse défini à  ' .. settings.low_threshold_temp..'°C', domoticz.LOG_INFO)
+                                    message = 'La température mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_temp..'°C)'
                                     domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
-                                end  
-                            
-                            
-                            elseif device.temperature ~= nil or device.humidity ~= nil then     
-                            -- Alarme température    
-                                if device.temperature ~= nil and (settings.low_threshold_temp ~= nil or settings.high_threshold_temp ~= nil)  then
-                                    domoticz.log('La température mesurée par '.. device.name .. ' est de  ' .. tostring(domoticz.utils.round(device.temperature, 1)) ..'°C', domoticz.LOG_INFO)                            
-                                    if settings.low_threshold_temp ~= nil and device.temperature < settings.low_threshold_temp then  -- seuil bas température
-                                        domoticz.log(device.name .. ' a un seuil temperature basse défini à  ' .. settings.low_threshold_temp..'°C', domoticz.LOG_INFO)
-                                        message = 'La température mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_temp..'°C)'
-                                        domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
-                                    end    
-                                    if settings.high_threshold_temp ~= nil and device.temperature > settings.high_threshold_temp then  -- seuil haut température                               
-                                        domoticz.log(device.name .. ' a un seuil temperature haute défini à  ' .. settings.high_threshold_temp..'°C', domoticz.LOG_INFO)
-                                        message = 'La température mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_temp..'°C)'
-                                        domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
-                                    end                           
-                                end
-                            -- alarme hygrométrie    
-                                if device.humidity ~= nil and (settings.low_threshold_hr ~= nil or settings.high_threshold_hr)  then
-                                    domoticz.log('L\'hygrometrie mesurée par '.. device.name .. ' est de  ' .. tostring(device.humidity)..'%hr', domoticz.LOG_INFO)                             
-                                    if settings.low_threshold_hr ~= nil and device.humidity < settings.low_threshold_hr then -- seuil bas hygrométrie
-                                        domoticz.log(device.name .. ' a un seuil hygrometrie bassse défini à  ' .. settings.low_threshold_hr..'%hr', domoticz.LOG_INFO)
-                                        message = 'L\'humidité mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_hr..'%hr)'
-                                        domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
-                                    end    
-                                    if settings.high_threshold_hr and device.humidity > settings.high_threshold_hr then -- seuil haut hygrométrie
-                                        domoticz.log(device.name .. ' a un seuil hygrometrie haute défini à  ' .. settings.high_threshold_hr..'%hr', domoticz.LOG_INFO)
-                                        message = 'L\'humidité mesurée par '.. device.name .. ' est supérieure au seuil défini ('..settings.high_threshold_hr..'%hr)'
-                                        domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
-                                    end   
-                                end
-                                
-                            
-                            
-                            elseif device.state == 'On' or device.state == 'Open' then    
-                            -- Alarme dispositif actif 
-                                domoticz.log(device.name .. ' est à l\'état ' .. device.state, domoticz.LOG_INFO) 
-                                if settings.time_active_notification ~= nil and device.lastUpdate.minutesAgo >= settings.time_active_notification then
-                                    domoticz.log(device.name .. ' est actif depuis ' .. device.lastUpdate.minutesAgo .. ' minutes. Le délai est fixé à '.. settings.time_active_notification.. ' minutes.', domoticz.LOG_INFO)
-                                    message = 'Le délai fixé à '.. settings.time_active_notification .. ' minutes pour '.. device.name .. ' est dépassé'
+                                end    
+                                if settings.high_threshold_temp ~= nil and device.temperature > settings.high_threshold_temp then  -- seuil haut température                               
+                                    domoticz.log(device.name .. ' a un seuil temperature haute défini à  ' .. settings.high_threshold_temp..'°C', domoticz.LOG_INFO)
+                                    message = 'La température mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_temp..'°C)'
                                     domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
-                                end
-                                                            -- auto off
-                                if settings.auto_off_minutes ~= nil and device.lastUpdate.minutesAgo >= settings.auto_off_minutes then
-                                    if settings.auto_off_motion_device == nil then
-                                        domoticz.log(device.name .. ' is switched off because it has been on for ' .. settings.auto_off_minutes .. ' minutes.', domoticz.LOG_INFO)
+                                end                           
+                            end
+                        -- alarme hygrométrie    
+                            if device.humidity ~= nil and (settings.low_threshold_hr ~= nil or settings.high_threshold_hr)  then
+                                domoticz.log('L\'hygrometrie mesurée par '.. device.name .. ' est de  ' .. tostring(device.humidity)..'%hr', domoticz.LOG_INFO)                             
+                                if settings.low_threshold_hr ~= nil and device.humidity < settings.low_threshold_hr then -- seuil bas hygrométrie
+                                    domoticz.log(device.name .. ' a un seuil hygrometrie bassse défini à  ' .. settings.low_threshold_hr..'%hr', domoticz.LOG_INFO)
+                                    message = 'L\'humidité mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_hr..'%hr)'
+                                    domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
+                                end    
+                                if settings.high_threshold_hr and device.humidity > settings.high_threshold_hr then -- seuil haut hygrométrie
+                                    domoticz.log(device.name .. ' a un seuil hygrometrie haute défini à  ' .. settings.high_threshold_hr..'%hr', domoticz.LOG_INFO)
+                                    message = 'L\'humidité mesurée par '.. device.name .. ' est supérieure au seuil défini ('..settings.high_threshold_hr..'%hr)'
+                                    domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
+                                end   
+                            end
+                            
+                        
+                        
+                        elseif device.state == 'On' or device.state == 'Open' then    
+                        -- Alarme dispositif actif 
+                            domoticz.log(device.name .. ' est à l\'état ' .. device.state, domoticz.LOG_INFO) 
+                            if settings.time_active_notification ~= nil and device.lastUpdate.minutesAgo >= settings.time_active_notification then
+                                domoticz.log(device.name .. ' est actif depuis ' .. device.lastUpdate.minutesAgo .. ' minutes. Le délai est fixé à '.. settings.time_active_notification.. ' minutes.', domoticz.LOG_INFO)
+                                message = 'Le délai fixé à '.. settings.time_active_notification .. ' minutes pour '.. device.name .. ' est dépassé'
+                                domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
+                            end
+                                                        -- auto off
+                            if settings.auto_off_minutes ~= nil and device.lastUpdate.minutesAgo >= settings.auto_off_minutes then
+                                if settings.auto_off_motion_device == nil then
+                                    domoticz.log('Extinction de '..device.name .. ' car actif depuis ' .. settings.auto_off_minutes .. ' minutes.', domoticz.LOG_INFO)
+                                    device.switchOff()
+                                elseif type(settings.auto_off_motion_device) == "string" then
+                                    local motion_device = domoticz.devices(settings.auto_off_motion_device)
+                                    if motion_device.state == 'Off' then
+                                        domoticz.log('Extinction de '.. device.name .. ' car aucune détection de mouvement dans la piece depuis ' .. settings.auto_off_minutes .. ' minutes.', domoticz.LOG_INFO)
                                         device.switchOff()
-                                    elseif type(settings.auto_off_motion_device) == "string" then
-                                        local motion_device = domoticz.devices(settings.auto_off_motion_device)
-                                        if motion_device.state == 'Off' then
-                                            domoticz.log(device.name .. ' is switched off because no one was in the room for ' .. settings.auto_off_minutes .. ' minutes.', domoticz.LOG_INFO)
-                                            device.switchOff()
+                                    end
+                                elseif type(settings.auto_off_motion_device) == "table" then
+                                    local off = true
+                                    for i,v in ipairs(settings.auto_off_motion_device) do
+                                        if domoticz.devices(v).state ~= 'Off' then
+                                            off = false
                                         end
-                                    elseif type(settings.auto_off_motion_device) == "table" then
-                                        local off = true
-                                        for i,v in ipairs(settings.auto_off_motion_device) do
-                                            if domoticz.devices(v).state ~= 'Off' then
-                                                off = false
-                                            end
-                                        end
-                                        if off then
-                                            domoticz.log(device.name .. ' is switched off because no one was in the room for ' .. settings.auto_off_minutes .. ' minutes.', domoticz.LOG_INFO)
-                                            device.switchOff()
-                                        end
+                                    end
+                                    if off then
+                                        domoticz.log('Extinction de '.. device.name .. ' car aucune détection de mouvement dans la piece depuis  ' .. settings.auto_off_minutes .. ' minutes.', domoticz.LOG_INFO)
+                                        device.switchOff()
                                     end
                                 end
                             end
-                           
-                        else
-                            domoticz.log( 'Device description for '.. device.name ..' is not in json format. Ignoring this device.', domoticz.LOG_ERROR)
                         end
-                            domoticz.log('--------------------------------------------------------------------------------------------------', domoticz.LOG_INFO)                         
+                       
+                    else
+                        domoticz.log( 'la description de '.. device.name ..' n\'est pas au format json. Ignorer cet appareil.', domoticz.LOG_ERROR)
                     end
-                --end
-                
-                
+                        domoticz.log('--------------------------------------------------------------------------------------------------', domoticz.LOG_INFO)                         
+                end
             end
         )
     
-        domoticz.log('Scanned ' .. tostring(cnt) .. ' devices.', domoticz.LOG_INFO)
+        domoticz.log(tostring(cnt) .. ' devices scannés.', domoticz.LOG_INFO)
 	end
 }
