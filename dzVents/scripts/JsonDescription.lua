@@ -8,6 +8,7 @@ https://www.domoticz.com/forum/viewtopic.php?f=59&t=26542#p204958
 https://pon.fr/dzvents-fonction-de-notification-universelle/
 
 blog url : https://pon.fr/dzvents-script-de-notification-ultime-mais-pas-que
+fourm url : https://easydomoticz.com/forum/viewtopic.php?f=17&t=8167
 github url : https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/JsonDescription.lua
 
 
