@@ -2,13 +2,13 @@
 --[[ 
 original script by rrozema Generic auto-off : https://www.domoticz.com/forum/viewtopic.php?f=72&t=23717&p=205159&hilit=auto+off#p201976
 author = papoo
-maj : 06/03/2019
+maj : 10/03/2019
 this version need a waaren script, Universal function notification :
 https://www.domoticz.com/forum/viewtopic.php?f=59&t=26542#p204958
 https://pon.fr/dzvents-fonction-de-notification-universelle/
 
 blog url : https://pon.fr/dzvents-script-de-notification-ultime-mais-pas-que
-fourm url : https://easydomoticz.com/forum/viewtopic.php?f=17&t=8167
+forum url : https://easydomoticz.com/forum/viewtopic.php?f=17&t=8167
 github url : https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/JsonDescription.lua
 
 
@@ -51,7 +51,7 @@ or the minimum and maximum humidity, or do not set quiet hours, or minimum tempe
 if you want to use the notification functions, the frequency of notifications is necessary
 Avec cette nouvelle version vous pouvez :
 - être averti après le délai défini si la température et / ou l'hygrométrie dépassent le seuil minimal ou maximal.
-- être averti si l'appareil est allumé, éteint ou éteint hors service
+- être averti si un périphérique est allumé, éteint ou hors service
 vous pouvez mélanger les notifications souhaitées, telles que uniquement le dépassement de température maxi, 
 ou  l'hygrométrie mini et maxi, ou ne pas définir d'heures calmes, ou température mini et timeout
 si vous souhaitez utiliser les fonctions de notification,  la fréquence de notifications est nécessaire
@@ -59,6 +59,8 @@ si vous souhaitez utiliser les fonctions de notification,  la fréquence de noti
 
 Example 4 : be notified if temperature or hygrometry exceed min or max threshold 
 with notifications frequency in minutes and quiet hours notification
+être averti si la température ou l'hygrométrie dépasse le seuil minimal ou maximal
+avec fréquence de notifications en minutes et notification des heures calmes
 {
  "low_threshold_temp": 10,
  "high_threshold_temp": 40,
@@ -67,32 +69,82 @@ with notifications frequency in minutes and quiet hours notification
  "frequency_notifications": 60,
  "quiet_hours":"23:00-07:15"
   }
+  
 Example 5 : be notified if device is on since x minutes
 with notifications frequency in minutes and quiet hours notification
- { 
+être averti si un périphérique est allumé depuis x minutes
+avec fréquence de notifications en minutes et notification des heures calmes
+  {
  "time_active_notification": 120,
  "frequency_notifications": 60,
  "quiet_hours":"23:00-07:15"
   }
+  
 Example 6 : be notified if device is off since x minutes
 with notifications frequency in minutes and quiet hours notification
+être averti si un périphérique est éteint depuis x minutes
+avec fréquence de notifications en minutes et notification des heures calmes
   { 
  "time_inactive_notification": 2,
  "frequency_notifications": 60,
  "quiet_hours":"23:00-07:15"
   }
+  
 Example 7 : be notified if device is out since x minutes
 with notifications frequency in minutes and quiet hours notification
+être averti si un périphérique ne fonctionne plus depuis x minutes
+avec fréquence de notifications en minutes et notification des heures calmes
  {
 "timeout_notification": 1440,
 "frequency_notifications": 60,
 "quiet_hours":"23:00-07:15"
   }
 
+Exemple 8 : be notified if a device% exceeds the minimum or maximum thresholds
+with frequency of notifications in minutes and notification of quiet hours
+être averti si un périphérique % dépasse les seuils minimal ou maximal
+avec fréquence de notifications en minutes et notification des heures calmes
+  {
+ "low_threshold_percent": 10,
+ "high_threshold_percent": 40,
+ "frequency_notifications": 60,
+ "quiet_hours":"23:00-07:15"
+  }
+  
+Exemple 9 : be notified if a Custom Sensor device exceeds the minimum or maximum thresholds
+with frequency of notifications in minutes and notification of quiet hours
+être averti si un périphérique Custom Sensor dépasse les seuils minimal ou maximal
+avec fréquence de notifications en minutes et notification des heures calmes
+  {
+ "low_threshold_custom": 1000,
+ "high_threshold_custom": 4000,
+ "frequency_notifications": 60,
+ "quiet_hours":"23:00-07:15"
+  }  
+Exemple 10 : be notified if alert device is out since x minutes
+with notifications frequency in minutes and quiet hours notification
+être averti si un périphérique Custom Sensor dépasse les seuils minimal ou maximal
+avec fréquence de notifications en minutes et notification des heures calmes
+  {
+ "low_threshold_custom": 1000,
+ "high_threshold_custom": 4000,
+ "frequency_notifications": 60,
+ "quiet_hours":"23:00-07:15"
+  }  
+  
+Exemple 11 : être averti si un périphérique Alert dépasse un seuil prédéfini (1,2,3 ou 4)
+avec fréquence de notifications en minutes et notification des heures calmes
+be notified if an Alert device exceeds a predefined threshold (1,2,3 or 4)
+with frequency of notifications in minutes and notification of quiet hours
+  {
+ "high_threshold_color": 4,
+ "frequency_notifications": 60,
+ "quiet_hours":"23:00-07:15"
+  }  
 --]]
 
 local scriptName = 'Json Description'
-local scriptVersion = '0.72'
+local scriptVersion = '0.8'
 
 return {
     active = true,    
@@ -106,8 +158,8 @@ return {
 
 	-- custom logging level for this script
 	logging = {
-                -- level    =   domoticz.LOG_DEBUG,
-                 level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
+                 level    =   domoticz.LOG_DEBUG,
+                -- level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
                 -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others    
                 -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
                 marker = scriptName..' v'..scriptVersion
@@ -159,7 +211,7 @@ return {
                     -- période silencieuse    
                         if settings.quiet_hours ~= nil then 
                             quiet_hours = settings.quiet_hours
-                            domoticz.log('la période silencieuse de notification pour '.. device.name .. ' est fixée à  ' .. quiet_hours, domoticz.LOG_INFO)                                    
+                            domoticz.log('la période silencieuse de notification pour '.. device.name .. ' est définie entre  ' .. quiet_hours, domoticz.LOG_INFO)                                    
                         end
                         -- Alarme dispositif injoignable    
                         if settings.timeout_notification and device.timedOut then
@@ -218,7 +270,7 @@ return {
                                 message = 'Le délai fixé à '.. settings.time_active_notification .. ' minutes pour '.. device.name .. ' est dépassé'
                                 domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
                             end
-                                                        -- auto off
+                            --auto off
                             if settings.auto_off_minutes ~= nil and device.lastUpdate.minutesAgo >= settings.auto_off_minutes then
                                 if settings.auto_off_motion_device == nil then
                                     domoticz.log('Extinction de '..device.name .. ' car actif depuis ' .. settings.auto_off_minutes .. ' minutes.', domoticz.LOG_INFO)
@@ -243,14 +295,48 @@ return {
                                 end
                             end
                         end
+                        
+                       elseif device.sensorType ~= nil and (settings.high_threshold_custom ~= nil or settings.low_threshold_custom ~= nil)  then
+                        --alarme custom sensor
+                            domoticz.log('La valeur mesurée par '.. device.name .. ' est de  ' .. tostring(domoticz.utils.round(device.state, 1)) .. device.sensorUnit, domoticz.LOG_INFO)   
+                            if settings.low_threshold_custom ~= nil and tonumber(device.state) < settings.low_threshold_custom then -- seuil bas %
+                                domoticz.log(device.name .. ' a un seuil bas défini à  ' .. settings.low_threshold_custom..device.sensorUnit, domoticz.LOG_INFO)
+                                message = 'La valeur mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_custom..device.sensorUnit..'). Valeur : '..tostring(domoticz.utils.round(device.state, 1))..device.sensorUnit
+                                domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
+                            end    
+                            if settings.high_threshold_custom ~= nil and tonumber(device.state) > settings.high_threshold_custom then -- seuil haut %
+                                domoticz.log(device.name .. ' a un seuil haut défini à  ' .. settings.high_threshold_custom..device.sensorUnit, domoticz.LOG_INFO)
+                                message = 'La valeur mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_custom..device.sensorUnit..'). Valeur : '..tostring(domoticz.utils.round(device.state, 1))..device.sensorUnit
+                                domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
+                            end 
+
+                        elseif device.percentage ~= nil and (settings.high_threshold_percent ~= nil or settings.low_threshold_percent ~= nil)  then
+                            -- alarme pourcentage
+                            domoticz.log('La valeur mesurée par '.. device.name .. ' est de  ' .. tostring(domoticz.utils.round(device.percentage, 1)) ..'%', domoticz.LOG_INFO)   
+                            if settings.low_threshold_percent ~= nil and device.percentage < settings.low_threshold_percent then -- seuil bas %
+                                domoticz.log(device.name .. ' a un seuil % bas défini à  ' .. settings.low_threshold_percent..'%', domoticz.LOG_INFO)
+                                message = 'La valeur mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_percent..'%). Valeur : '.. tostring(domoticz.utils.round(device.percentage, 1)) ..'%'
+                                domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
+                            end    
+                            if settings.high_threshold_percent ~= nil and device.percentage > settings.high_threshold_percent then -- seuil haut % 
+                                domoticz.log(device.name .. ' a un seuil % haut défini à  ' .. settings.high_threshold_percent..'%', domoticz.LOG_INFO)
+                                message = 'La valeur mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_percent..'%). Valeur : '.. tostring(domoticz.utils.round(device.percentage, 1)) ..'%'
+                                domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
+                            end 
                        
-                    else
-                        domoticz.log( 'la description de '.. device.name ..' n\'est pas au format json. Ignorer cet appareil.', domoticz.LOG_ERROR)
+                        elseif device.color ~= nil and settings.high_threshold_color ~= nil  then
+                            -- notification alerte
+                            domoticz.log('Le seuil d\'alerte de '.. device.name .. ' est de  ' .. tostring(device.color), domoticz.LOG_INFO)   
+                            message = 'Le seuil d\'alerte de  '.. device.name ..' est supérieur au seuil défini ('..settings.high_threshold_color..'). Valeur : '.. tostring(device.color) ..' alerte : '.. tostring(device.text)
+                            domoticz.helpers.managedNotify(domoticz, subject, message, SubSystem, frequency_notifications , quiet_hours)
+
+                        else
+                            domoticz.log( 'la description de '.. device.name ..' n\'est pas au format json. Ignorer cet appareil.', domoticz.LOG_ERROR)
+                        end
+                            domoticz.log('--------------------------------------------------------------------------------------------------', domoticz.LOG_INFO)                         
                     end
-                        domoticz.log('--------------------------------------------------------------------------------------------------', domoticz.LOG_INFO)                         
                 end
-            end
-        )
+            )
     
         domoticz.log(tostring(cnt) .. ' devices scannés.', domoticz.LOG_INFO)
 	end
