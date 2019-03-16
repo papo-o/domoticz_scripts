@@ -498,7 +498,7 @@ jour_ferie["15:08"] = "L'Assomption"
 jour_ferie["01:11"] = "La&nbsp;Toussaint"
 jour_ferie["11:11"] = "L'Armistice"
 jour_ferie["25:12"] = "Noël"
-if ferie_lendemain_noel == true jour_ferie["25:12"] = "Lendemain&nbsp;de&nbsp;Noël" end
+if ferie_lendemain_noel == true then jour_ferie["25:12"] = "Lendemain&nbsp;de&nbsp;Noël" end
 --[[
 calcule du jour de la fête de mères
 la fête des mères est fixée au dernier dimanche de mai sauf si cette date coïncide avec celle de la Pentecôte
