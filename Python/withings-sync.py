@@ -57,10 +57,10 @@ pour une exécution toutes les minutes
 après chaque pesée les mesures seront mises à jour sur domoticz
 """
 __author__ = "papoo"
-__version__ = "1.03"
+__version__ = "1.04"
 __date__ = "10/11/2018"
-__date_maj__= "17/11/2018"
-__url__ = "https://python-recuperation-des-donnees-api-withings-avec-oauth-2-0"
+__date_maj__= "24/04/2019"
+__url__ = "https://pon.fr/python-recuperation-des-donnees-api-withings-avec-oauth-2-0"
 __url_github__ = "https://github.com/papo-o/domoticz_scripts/blob/master/Python/withings-sync.py"
 __url_forum__ = "https://easydomoticz.com/forum/viewtopic.php?f=17&t=7428"
 
@@ -88,26 +88,26 @@ nokia_auth_code = None
 domoticz_host           = '127.0.0.1'    # Url domoticz
 domoticz_port           = '8080'            # port
 domoticz_url            = 'json.htm'        # Ne pas modifier
-debugging				= True		    # True pour voir les logs dans la console log Dz et en ligne de commande, ou False pour ne pas les voir (attention aux majuscules)
+debugging                = False            # True pour voir les logs dans la console log Dz et en ligne de commande, ou False pour ne pas les voir (attention aux majuscules)
 
 votre_taille            =  182          # renseigner votre taille en cm pour le calcul de votre IMC dans le cas ou l'information ne serait pas disponible via l'API          
 
-idx_weight              = '717'		    # renseigner l'idx du device Poids associé si souhaité (custom sensor, nom de l'axe : kg)
-idx_body_mass_index     = '1418'		# renseigner l'idx du device IMC associé si souhaité (custom sensor, nom de l'axe : kg/m2)
-idx_fat_free_mass       = '1288'		# renseigner l'idx du device Masse hors graisse associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : kg)
-idx_fat_ratio           = '1289'		# renseigner l'idx du device Ratio graisse associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : %)
-idx_lean_ratio          = '1419'		# renseigner l'idx du device Ratio masse maigre associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : %)
-idx_fat_mass_weight     = '1290'		# renseigner l'idx du device Masse grasse associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : kg)
+idx_weight              = '717'            # renseigner l'idx du device Poids associé si souhaité (custom sensor, nom de l'axe : kg)
+idx_body_mass_index     = '1418'        # renseigner l'idx du device IMC associé si souhaité (custom sensor, nom de l'axe : kg/m2)
+idx_fat_free_mass       = '1288'        # renseigner l'idx du device Masse hors graisse associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : kg)
+idx_fat_ratio           = '1289'        # renseigner l'idx du device Ratio graisse associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : %)
+idx_lean_ratio          = '1419'        # renseigner l'idx du device Ratio masse maigre associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : %)
+idx_fat_mass_weight     = '1290'        # renseigner l'idx du device Masse grasse associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : kg)
 idx_heart_pulse         = '881'         # renseigner l'idx du device Rythme cardiaque associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : bpm)
-idx_muscle_mass         = '1291'		# renseigner l'idx du device Masse musculaire associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : kg)
-idx_muscle_mass_ratio   = '1420'		# renseigner l'idx du device Ratio Masse musculaire associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : %)
-idx_hydration           = '1421'		# renseigner l'idx du device Masse hydratation associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : kg)
-idx_hydration_ratio     = '1292'		# renseigner l'idx du device Taux d'hydratation associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : %)
-idx_bone_mass           = '1422'		# renseigner l'idx du device Masse osseuse associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : kg)
-idx_bone_mass_ratio     = '1293'		# renseigner l'idx du device Ratio Masse osseuse associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : %)
-idx_pulse_wave_velocity = None		    # renseigner l'idx du device Vitesse d'onde de pouls associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : m/s)
+idx_muscle_mass         = '1291'        # renseigner l'idx du device Masse musculaire associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : kg)
+idx_muscle_mass_ratio   = '1420'        # renseigner l'idx du device Ratio Masse musculaire associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : %)
+idx_hydration           = '1421'        # renseigner l'idx du device Masse hydratation associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : kg)
+idx_hydration_ratio     = '1292'        # renseigner l'idx du device Taux d'hydratation associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : %)
+idx_bone_mass           = '1422'        # renseigner l'idx du device Masse osseuse associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : kg)
+idx_bone_mass_ratio     = '1293'        # renseigner l'idx du device Ratio Masse osseuse associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : %)
+idx_pulse_wave_velocity = '2199'        # renseigner l'idx du device Vitesse d'onde de pouls associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : m/s)
 
-timezone				= pytz.UTC
+timezone                = pytz.UTC
 
 #################################### End of custom variable ########################################
 ####################################################################################################
@@ -305,10 +305,23 @@ elif command == 'sync':
         if json_object["result"][0]["idx"] == idx_weight:
           lastupdate = json_object["result"][0]["LastUpdate"]
     ###############################################################################
+    x = None
     if measures[0].weight != None:
         x = 0
     elif measures[1].weight != None:
         x = 1
+    # elif measures[2].weight != None:
+        # x = 2
+    # elif measures[3].weight != None:
+        # x = 3
+    # elif measures[4].weight != None:
+        # x = 4
+    # elif measures[5].weight != None:
+        # x = 5
+    # elif measures[6].weight != None:
+        # x = 6
+
+        
     if x != None:
         ###############################################################################          
         date = measures[x].date.isoformat()
