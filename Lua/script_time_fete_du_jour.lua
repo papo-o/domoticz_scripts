@@ -1,4 +1,4 @@
----[[
+--[[
 name : script_time_fete_du_jour.lua
 auteur : papoo
 MAJ : 16/03/2019
