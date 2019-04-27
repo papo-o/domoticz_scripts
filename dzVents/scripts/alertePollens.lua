@@ -5,7 +5,7 @@ update/mise à jour = 26/04/2019
 creation = 03/04/2019
 https://pon.fr/dzvents-alerte-pollens
 https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/alertePollens.lua
-https://easydomoticz.com/forum/viewtopic.php
+https://easydomoticz.com/forum/viewtopic.php?f=17&t=8392
 --]]
 --------------------------------------------
 ------------ Variables à éditer ------------
