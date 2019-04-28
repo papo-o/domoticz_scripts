@@ -10,14 +10,14 @@ https://easydomoticz.com/forum/viewtopic.php?f=17&t=8392
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local departement = "06"
+local departement = "87"
         local alerte_url  = 'https://www.pollens.fr/risks/thea/counties/'  -- url
 local alert_device = 'Pollens' -- nom ou idx du device alerte, nil si inutilisé
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local scriptName        = 'Alerte Pollens'
-local scriptVersion     = '1.1'
+local scriptVersion     = '1.01'
 local text = ''
 
 return {
