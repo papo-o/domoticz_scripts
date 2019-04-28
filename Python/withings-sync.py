@@ -57,9 +57,9 @@ pour une exécution toutes les minutes
 après chaque pesée les mesures seront mises à jour sur domoticz
 """
 __author__ = "papoo"
-__version__ = "1.04"
+__version__ = "1.05"
 __date__ = "10/11/2018"
-__date_maj__= "24/04/2019"
+__date_maj__= "28/04/2019"
 __url__ = "https://pon.fr/python-recuperation-des-donnees-api-withings-avec-oauth-2-0"
 __url_github__ = "https://github.com/papo-o/domoticz_scripts/blob/master/Python/withings-sync.py"
 __url_forum__ = "https://easydomoticz.com/forum/viewtopic.php?f=17&t=7428"
@@ -105,7 +105,7 @@ idx_hydration           = '1421'        # renseigner l'idx du device Masse hydra
 idx_hydration_ratio     = '1292'        # renseigner l'idx du device Taux d'hydratation associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : %)
 idx_bone_mass           = '1422'        # renseigner l'idx du device Masse osseuse associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : kg)
 idx_bone_mass_ratio     = '1293'        # renseigner l'idx du device Ratio Masse osseuse associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : %)
-idx_pulse_wave_velocity = '2199'        # renseigner l'idx du device Vitesse d'onde de pouls associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : m/s)
+idx_pulse_wave_velocity = '882'        # renseigner l'idx du device Vitesse d'onde de pouls associé si souhaité, sinon laisser None (custom sensor, nom de l'axe : m/s)
 
 timezone                = pytz.UTC
 
@@ -275,7 +275,7 @@ elif command == 'sync':
     # user = client_nokia.get_user()
     # user_shortname = user['users'][0]['shortname']
     # user_shortname = 'DAD'
-    measures = client_nokia.get_measures(limit=2)
+    measures = client_nokia.get_measures(limit=3)
 
     def log(message):
       if debugging == True:
@@ -310,18 +310,11 @@ elif command == 'sync':
         x = 0
     elif measures[1].weight != None:
         x = 1
-    # elif measures[2].weight != None:
-        # x = 2
-    # elif measures[3].weight != None:
-        # x = 3
-    # elif measures[4].weight != None:
-        # x = 4
-    # elif measures[5].weight != None:
-        # x = 5
-    # elif measures[6].weight != None:
-        # x = 6
-
-        
+    elif measures[2].weight != None:
+        x = 2        
+    if debugging == True:
+      print("x : " + str(x))
+      
     if x != None:
         ###############################################################################          
         date = measures[x].date.isoformat()
@@ -352,7 +345,7 @@ elif command == 'sync':
           height  = votre_taille / 100
         if idx_body_mass_index != None and height != None and weight != None:
           bmi = weight / (height*height)
-          log("Indice de masse corporelle : %s kg/m2" % bmi)
+          # log("Indice de masse corporelle : %s kg/m2" % bmi)
           
           if should_update:
             domoticzupdate(idx_body_mass_index, bmi)
@@ -405,6 +398,11 @@ elif command == 'sync':
             y = 0
         elif measures[1].heart_pulse != None:
             y = 1
+        elif measures[2].heart_pulse != None:
+            y = 2
+        if debugging == True:
+            print("y : " + str(y))
+            
         if y != None and idx_heart_pulse != None:
             
             heart_pulse = measures[y].heart_pulse
@@ -474,7 +472,18 @@ elif command == 'sync':
             log("Votre rapport de masse osseuse : " + str(bone_mass_ratio) + " %")
             
         ####################################################################################################
-        pulse_wave_velocity = measures[x].get_measure(91) 
+        z = None
+        if measures[0].pulse_wave_velocity!= None:
+            z = 0
+        elif measures[1].pulse_wave_velocity != None:
+            z = 1
+        elif measures[2].pulse_wave_velocity != None:
+            z = 2
+        if debugging == True:
+            print("Z : " + str(z))
+          
+        if z != None and idx_pulse_wave_velocity != None:
+            pulse_wave_velocity = measures[z].get_measure(91) 
           
         if idx_pulse_wave_velocity != None and pulse_wave_velocity != None:
           if should_update:
@@ -485,15 +494,16 @@ elif command == 'sync':
             
         ####################################################################################################
         
-    if debugging == True:
-        measures = client_nokia.get_measures(limit=2)[1]
-        print(measures.date)
-        if len(args) == 1:
-            types = dict(nokia.NokiaMeasureGroup.MEASURE_TYPES)
-            print(measures.get_measure(types[args[0]]))
-        else:
-            for n, t in nokia.NokiaMeasureGroup.MEASURE_TYPES:
-                print("%s: %s" % (n.replace('_', ' ').capitalize(), measures.get_measure(t)))
+    # if debugging == True:
+        # measures = client_nokia.get_measures(limit=2)[1]
+        # print(measures.date)
+        # print(len(args))
+        # if len(args) == 1:
+            # types = dict(nokia.NokiaMeasureGroup.MEASURE_TYPES)
+            # print(measures.get_measure(types[args[0]]))
+        # else:
+            # for n, t in nokia.NokiaMeasureGroup.MEASURE_TYPES:
+                # print("%s: %s" % (n.replace('_', ' ').capitalize(), measures.get_measure(t)))
 
 else:
     print("Unknown command")
