@@ -1,22 +1,28 @@
 --[[
 alerteMeteoFrancePluie.lua
 author/auteur = papoo
-update/mise à jour = 09/03/2019
+update/mise à jour = 28/04/2019
 création = 09/03/2019
-https://pon.fr/dzvents-alerte MeteoFrance Pluie
+https://pon.fr/dzvents-alerte-previsions-de-pluie-prochaines-60-minutes
 https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/alerteMeteoFrancePluie.lua
 https://easydomoticz.com/forum/viewtopic.php
+
+Principe : récupérer via l'API non documentée de météo France 
+les informations de précipitation de votre commune sur un device alert et/ou text
+
 --]]
 --------------------------------------------
 ------------ Variables à éditer ------------
 --------------------------------------------
 local CityCode      = 870850-- Le code de votre ville est l'ID retourné par cette URL : http://www.meteofrance.com/mf3-rpc-portlet/rest/lieu/facet/pluie/search/nom_de_votre_ville
-local alert_device  = "Prévision de pluie"
+local alert_device  = "Alerte Pluie"
+local text_alert    = "Info Du Jour"
+
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local scriptName        = 'météo France alerte pluie'
-local scriptVersion     = '3.0'
+local scriptVersion     = '3.02'
 local response = "meteoFrance_response"
 return {
     on =        {       timer           =   { "every 5 minutes" },
@@ -62,7 +68,6 @@ return {
             end
 
         if item.isHTTPResponse then
-            --local prevision1heure  = {}
             local prevision1heure        = item.json.niveauPluieText[1]
             logWrite("Prévisions de pluie pour la prochaine heure    : " .. prevision1heure    )
             logWrite("---------------------------------------------------")
@@ -88,7 +93,11 @@ return {
                     lastMn, lastLevel, text = highLevel(j, InfoNiveauPluie[i], lastLevel, InfoNiveauPluieText[i])
                 j = j-5
                 end
+                if text_alert ~= nil then
+                dz.devices(text_alert).updateText(prevision1heure)
+                else 
                 text = text .. ' dans les ' .. lastMn .. ' prochaines minutes'
+                end
                 if alert_device ~= nil then
                     if devAlert.color ~= lastLevel or devAlert.lastUpdate.minutesAgo > 1440 then
                         logWrite('le device '.. devAlert.name ..' est à '.. tostring(devAlert.color) ..' et son texte est ' .. tostring(devAlert.text))
