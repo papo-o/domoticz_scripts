@@ -1,7 +1,7 @@
 --[[ alertePollens.lua for [ domoticzVents >= 2.4 ]
 
 author/auteur = papoo
-update/mise à jour = 26/04/2019
+update/mise à jour = 27/04/2019
 creation = 03/04/2019
 https://pon.fr/dzvents-alerte-pollens
 https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/alertePollens.lua
@@ -10,14 +10,14 @@ https://easydomoticz.com/forum/viewtopic.php?f=17&t=8392
 --------------------------------------------
 ------------ Variables à éditer ------------
 -------------------------------------------- 
-local departement = 87
+local departement = "06"
         local alerte_url  = 'https://www.pollens.fr/risks/thea/counties/'  -- url
 local alert_device = 'Pollens' -- nom ou idx du device alerte, nil si inutilisé
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local scriptName        = 'Alerte Pollens'
-local scriptVersion     = '1.0'
+local scriptVersion     = '1.1'
 local text = ''
 
 return {
@@ -27,7 +27,7 @@ return {
     },
 
     logging =   {  
-                -- level    =   domoticz.LOG_DEBUG,                                             -- Seulement un niveau peut être actif; commenter les autres
+                 level    =   domoticz.LOG_DEBUG,                                             -- Seulement un niveau peut être actif; commenter les autres
                 -- level    =   domoticz.LOG_INFO,                                            -- Only one level can be active; comment others
                 -- level    =   domoticz.LOG_ERROR,
                 -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
@@ -65,19 +65,27 @@ return {
                 end
             end
 
-            logWrite("niveau de risque : "..rt.riskLevel)
+
             local riskLevel = rt.riskLevel
-            --local riskLevel = 2
+            --riskLevel = 3
+            logWrite('alerte de niveau '..riskLevel)
+            local j=0
             for k, pollens in pairs(rt.risks) do
                 if pollens.level == riskLevel then
                     logWrite('alerte de niveau '..pollens.level..' pour le pollen '..pollens.pollenName)
                     text = " "..pollens.pollenName..","..text
-                elseif pollens.level == (riskLevel-1) then
-                    logWrite('alerte de niveau '..pollens.level..' pour le pollen '..pollens.pollenName)
-                    text = " "..pollens.pollenName..","..text
+                    j=j+1
                 end
-
             end
+            if j == 0 then
+                for k, pollens in pairs(rt.risks) do
+                    if pollens.level == (riskLevel-1) then
+                        logWrite('alerte de niveau '..pollens.level..' pour le pollen '..pollens.pollenName)
+                        text = " "..pollens.pollenName..","..text
+                    end
+                end
+            end
+            
             text = string.gsub (text, ",$", "")
             logWrite(text)
             if riskLevel == nil then
@@ -88,8 +96,6 @@ return {
                 domoticz.devices(alert_device).updateAlertSensor(riskLevel, text)
                 
             end
-            
-
 
         end
     end
