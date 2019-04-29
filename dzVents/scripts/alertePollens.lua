@@ -44,7 +44,7 @@ local scriptVersion     = '1.1'
 
 return {
     active = true,
-    on      =   {   timer           =   { 'every minute' },
+    on      =   {   timer           =   { 'every 6 hours' },
                     httpResponses   =   { "Pollens_Trigger" }    -- Trigger the handle Json part
     },
 
