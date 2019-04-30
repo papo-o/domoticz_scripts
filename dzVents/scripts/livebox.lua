@@ -13,172 +13,33 @@
                 https://pon.fr/dzvents-toutes-les-infos-de-la-livebox-en-un-seul-script/
 
 -- Authors  ----------------------------------------------------------------
-    V1.0 - Neutrino -     Domoticz
-    V1.1 - Neutrino -     Activation/désactivation du WiFi
-    V1.2 - papoo -         Liste des n derniers appels manqués, sans réponse, réussis et surveillance périphériques des connectés/déconnectés
-    V1.3 - Neutrino -     Possibilité de purger le journal d'appels
-    V1.4 - papoo -         Possibilité de rebooter la Livebox
-    V1.5 - papoo -         Correction non mise à jour des devices après RAZ de la liste des appels
-    V1.6 - papoo -         Correction horodatage heures d'appel à GMT+2
-    V1.7 - papoo -         Affichage des noms connus via fichiers de contacts
-    V1.8 - Neutrino -     Support de la Livebox 3 Play, gestion heures d'été/heure d'hiver
-    V1.9 - Neutrino -     Prise en charge du Wifi 5 GHz de la Livebox 3
-    V1.10 - Neutrino -     gestion fichier contacts inexistant, gestion périphériques différentes, version du firmware, correction de bugs,
-                        Optimisation du nombre de requêtes
-    V1.11 - Neutrino    Uptime de la box et non de la connexion dsl
-    V1.12 - JCLB        Faire sonner le téléphone
-    V1.13 - Neutrino    Correction de bugs
+    V1.0 -  Neutrino -     Domoticz
+    V1.1 -  Neutrino -     Activation/désactivation du WiFi
+    V1.2 -  papoo -        Liste des n derniers appels manqués, sans réponse, réussis et surveillance périphériques des connectés/déconnectés
+    V1.3 -  Neutrino -     Possibilité de purger le journal d'appels
+    V1.4 -  papoo -        Possibilité de rebooter la Livebox
+    V1.5 -  papoo -        Correction non mise à jour des devices après RAZ de la liste des appels
+    V1.6 -  papoo -        Correction horodatage heures d'appel à GMT+2
+    V1.7 -  papoo -        Affichage des noms connus via fichiers de contacts
+    V1.8 -  Neutrino -     Support de la Livebox 3 Play, gestion heures d'été/heure d'hiver
+    V1.9 -  Neutrino -     Prise en charge du Wifi 5 GHz de la Livebox 3
+    V1.10 - Neutrino -     Gestion fichier contacts inexistant, gestion périphériques différentes, version du firmware, correction de bugs,
+                           Optimisation du nombre de requêtes
+    V1.11 - Neutrino       Uptime de la box et non de la connexion dsl
+    V1.12 - JCLB           Faire sonner le téléphone
+    V1.13 - Neutrino       Correction de bugs
+    V1.14 - papoo          Notification appel manqué
 ]]--
--- Variables à modifier ------------------------------------------------
-
-local fetchIntervalMins = 1 --  intervalle de mise à jour. 
-local adresseLB = '192.168.1.1' --Adresse IP de votre Livebox 4
-local password = "password"
-local tmpDir = "/var/tmp" --répertoire temporaire, dans l'idéal en RAM
-local myOutput=tmpDir.."/Output.txt"
-local myCookies=tmpDir.."/Cookies.txt"
-local fichier_contacts = "/home/pi/domoticz/scripts/contacts.json"
-local liveBox3 = false --true si vous avez une liveBox3/play
-
--- Domoticz devices
-local IPWAN = nil --"IP WAN" -- Nom du capteur Text IP WAN, nil si non utilisé
-local IPv6WAN = nil --"IPv6 WAN" -- Nom du capteur Text IPv6 WAN, nil si non utilisé
-local DernierAppel = nil --"Dernier Appel" -- Nom du capteur Text Dernier Appel, nil si non utilisé
-local UptimeLB = nil -- "Uptime Livebox"  -- Nom du capteur Text Uptime Livebox, nil si non utilisé
-local internet = nil --"Internet"  -- Nom du capteur Interrupteur Internet, nil si non utilisé
-local VoIP = nil --"VoIP"  -- Nom du capteur Interrupteur VoIP, nil si non utilisé
-local ServiceTV = nil --"Service TV"  -- Nom du capteur Interrupteur Service TV, nil si non utilisé
-local wifi24 = nil --"WiFi 2.4"  -- Nom du capteur Interrupteur wifi 2.4Ghz, nil si non utilisé
-local wifi5 = nil --"WiFi 5"  -- Nom du capteur Interrupteur wifi 5Ghz, nil si non utilisé
-local firmware = nil -- Nom du capteur Text Firmware LB, nil si non utilisé
-local missedCall = 1374--nil --"Appels manqués" --"Appels manqués" -- Nom du capteur Text appels manqués, nil si non utilisé
-local nbMissedCall = 4 -- Nombre d'appels manqués à afficher
-local failedCall =  "Appels sans réponse" -- Nom du capteur Text appels sans réponse, nil si non utilisé
-local nbFailedCall = 4 -- Nombre d'appels sans réponse à afficher
-local succeededCall = 1378 --"Appels Réussis" -- Nom du capteur Text appels réussis, nil si non utilisé
-local nbSucceededCall = 4 -- Nombre d'appels réussis à afficher
-local clearCallList = "Effacer liste appels" -- Nom du capteur Interrupteur PushOn clearCallList
-local reboot = nil -- 1297 -- Nom du capteur Interrupteur PushOn reboot
-local sonner = nil -- Nom du capteur Interrupteur PushOn faire sonner tel
-local devices_livebox_mac_adress = { -- MAC ADDRESS des périphériques à surveiller
-                                        -- "18:A6:43:4B:C9:D8",
-                                        -- "BC:DE:5F:GH:IJ:2K",
-                                        -- "L0:M6:37:M5:O3:03",
-                                        -- "P0:70:2Q:25:R9:8S",
-                                    }
-
--- Capteurs pour connexion xDSL seulement
-local SyncATM = nil -- Nom du capteur custom Synchro ATM down, nil si non utilisé
-local SyncATMup = nil -- Nom du capteur custom Synchro ATM up, nil si non utilisé
-local Attn = nil -- Nom du capteur custom Attenuation de la ligne, nil si non utilisé
-local MargedAttn = nil -- Nom du capteur custom Marge d'atténuation, nil si non utilisé
--- Livebox 4 seulement
-local TransmitBlocks = nil  -- Nom du capteur Incremental Counter TransmitBlocks, nil si non utilisé
-local ReceiveBlocks = nil  -- Nom du capteur Incremental Counter ReceiveBlocks, nil si non utilisé
-
--- SVP, ne rien changer sous cette ligne (sauf pour modifier le logging level)
-
-function os.capture(cmd, raw)
-    local f = assert(io.popen(cmd, 'r'))
-    local s = assert(f:read('*a'))
-    f:close()
-    if raw then return s end
-    s = string.gsub(s, '^%s+', '')
-    s = string.gsub(s, '%s+$', '')
-    s = string.gsub(s, '[\n\r]+', ' ')
-    return s
-end
-
-function disp_time(time)
-    local days = math.floor(time/86400)
-    local remaining = time % 86400
-    local hours = math.floor(remaining/3600)
-    remaining = remaining % 3600
-    local minutes = math.floor(remaining/60)
-    remaining = remaining % 60
-    local seconds = remaining
-    return string.format("%d:%02d:%02d:%02d",days,hours,minutes,seconds)
-end
-
-function traduction(str) -- supprime les accents de la chaîne str
-    if (str) then
-    str = string.gsub (str,"missed", "manqué")
-    str = string.gsub (str,"failed", "échoué")
-    str = string.gsub (str,"succeeded", "réussi")
-    end
-    return (str)
-end
-
-local function get_timezone()
-  local now = os.time()
-  return os.difftime(now, os.time(os.date("!*t", now)))
-end
-
-
-function format_date(str) -- supprime les caractères T et Z de la chaîne str  et corrige l'heure suivant le fuseau horaire
-    if (str) then
-        _, _, A, M, j, h, m, s = string.find(str, "^(%d+)-(%d+)-(%d+)T(%d+):(%d+):(%d+)Z$")
-        h = h + get_timezone()/3600
-        str= A.."-"..M.."-"..j.." - "..h..":"..m..":"..s
-    end
-    return (str)
-end
-
-function delta_date(str) -- supprime les caractères T et Z de la chaîne str  et corrige l'heure suivant le fuseau horaire
-    diff = 0
-    if (str) then
-        _, _, A, M, j, h, m, s = string.find(str, "^(%d+)-(%d+)-(%d+)T(%d+):(%d+):(%d+)Z$")
-        h = h + get_timezone()/3600
-        diff = os.time()-os.time{year=A, month=M, day=j, hour=h, min=m, sec=s}
-    end
-    return (disp_time(diff))
-end
-
-
-
-function ReverseTable(t)
-    local reversedTable = {}
-    local itemCount = #t
-    for k, v in ipairs(t) do
-        reversedTable[itemCount + 1 - k] = v
-    end
-    return reversedTable
-end
-
-function searchName(contacts, phoneNumber)
-    name = phoneNumber
-    for index, variable in pairs(contacts) do
-        if variable.Phone == phoneNumber then
-            name = variable.Name
-            break
-        end
-    end
-    return name
-end
-
-function searchKey(children, mac)
-    key = -1
-    if children then
-        for index, variable in pairs(children) do
-            if variable.Key == mac then
-                key = index
-                break
-            end
-        end
-    end
-    return key
-end
-
+local fetchIntervalMins = 1 --  intervalle de mise à jour.
 local scriptName = 'Livebox'
-local scriptVersion = '1.13'
+local scriptVersion = '1.14'
 
 return {
     active = true,
     logging = {
                     -- level    =   domoticz.LOG_DEBUG, -- Uncomment to override the dzVents global logging setting
                     -- level    =   domoticz.LOG_INFO, -- Seulement un niveau peut être actif; commenter les autres
-                    -- level    =   domoticz.LOG_ERROR,                    
-                    -- level    =   domoticz.LOG_DEBUG,
+                    -- level    =   domoticz.LOG_ERROR,
                     -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
         marker = scriptName..' '..scriptVersion
     },
@@ -190,6 +51,152 @@ return {
     },
 
     execute = function(domoticz, item)
+    
+        -- Variables à modifier ------------------------------------------------
+        local adresseLB         = '192.168.1.1' --Adresse IP de votre Livebox 4
+        local password          = "password"
+        local tmpDir            = "/var/tmp" --répertoire temporaire, dans l'idéal en RAM
+        local myOutput          = tmpDir.."/Output.txt"
+        local myCookies         = tmpDir.."/Cookies.txt"
+        local fichier_contacts  = "/home/pi/domoticz/scripts/contacts.json"
+        local liveBox3          = false --true si vous avez une liveBox3/play
+
+        -- Domoticz devices
+
+        local IPWAN             = nil --"IP WAN" -- Nom du capteur Text IP WAN, nil si non utilisé
+        local IPv6WAN           = nil --"IPv6 WAN" -- Nom du capteur Text IPv6 WAN, nil si non utilisé
+        local UptimeLB          = nil --"Uptime Livebox"  -- Nom du capteur Text Uptime Livebox, nil si non utilisé
+        local internet          = nil --"Internet"  -- Nom du capteur Interrupteur Internet, nil si non utilisé
+        local VoIP              = nil --"VoIP"  -- Nom du capteur Interrupteur VoIP, nil si non utilisé
+        local ServiceTV         = nil --"Service TV"  -- Nom du capteur Interrupteur Service TV, nil si non utilisé
+        local wifi24            = nil --"WiFi 2.4"  -- Nom du capteur Interrupteur wifi 2.4Ghz, nil si non utilisé
+        local wifi5             = nil --"WiFi 5"  -- Nom du capteur Interrupteur wifi 5Ghz, nil si non utilisé
+        local firmware          = nil --"Firmware LB" -- Nom du capteur Text Firmware LB, nil si non utilisé
+        local DernierAppel      = nil --"Dernier Appel" -- Nom du capteur Text Dernier Appel, nil si non utilisé
+        local missedCall        = "Appels manqués" -- Nom du capteur Text appels manqués, nil si non utilisé
+        local nbMissedCall      = 4 -- Nombre d'appels manqués à afficher
+        local failedCall        = "Appels sans réponse" -- nil -- "Appels sans réponse" -- Nom du capteur Text appels sans réponse, nil si non utilisé
+        local nbFailedCall      = 4 -- Nombre d'appels sans réponse à afficher
+        local succeededCall     = "Appels réussis" -- Nom du capteur Text appels réussis, nil si non utilisé
+        local nbSucceededCall   = 4 -- Nombre d'appels réussis à afficher
+        local clearCallList     = "Effacer liste appels" -- Nom du capteur Interrupteur PushOn clearCallList
+        local reboot            = "Reboot Livebox" -- Nom du capteur Interrupteur PushOn reboot
+        local sonner            = nil -- "Sonner" -- Nom du capteur Interrupteur PushOn faire sonner tel
+        local notifyMissedCall  = true
+        local notificationTable = { domoticz.NSS_PUSHBULLET, domoticz.NSS_PROWL } --Systèmes de notification disponibles : "PUSHBULLET", "HTTP", "GCM", "KODI", "LMS", "PROWL", "PUSHALOT"
+                            --[[ Systèmes de notification disponibles :
+                                NSS_GOOGLE_CLOUD_MESSAGING NSS_HTTP NSS_KODI NSS_LOGITECH_MEDIASERVER NSS_NMA NSS_PROWL NSS_PUSHALOT NSS_PUSHBULLET NSS_PUSHOVER NSS_PUSHSAFER
+                                Pour une notification sur plusieurs systèmes, séparez les systèmes par une virgule et entourez l'ensemble par des {}.
+                                Exemple :{domoticz.NSS_PUSHBULLET, domoticz.NSS_HTTP}
+                            --]]
+
+        local devices_livebox_mac_adress = { -- MAC ADDRESS des périphériques à surveiller
+                                                 "18:A6:43:4B:C9:D8",
+                                                 "BC:DE:5F:GH:IJ:2K",
+                                                 "L0:M6:37:M5:O3:03",
+                                                 "P0:70:2Q:25:R9:8S",
+                                            }
+
+        -- Capteurs pour connexion xDSL seulement
+        local SyncATM = nil -- Nom du capteur custom Synchro ATM down, nil si non utilisé
+        local SyncATMup = nil -- Nom du capteur custom Synchro ATM up, nil si non utilisé
+        local Attn = nil -- Nom du capteur custom Attenuation de la ligne, nil si non utilisé
+        local MargedAttn = nil -- Nom du capteur custom Marge d'atténuation, nil si non utilisé
+        -- Livebox 4 seulement
+        local TransmitBlocks = nil  -- Nom du capteur Incremental Counter TransmitBlocks, nil si non utilisé
+        local ReceiveBlocks = nil  -- Nom du capteur Incremental Counter ReceiveBlocks, nil si non utilisé
+
+-- SVP, ne rien changer sous cette ligne
+        function os.capture(cmd, raw)
+            local f = assert(io.popen(cmd, 'r'))
+            local s = assert(f:read('*a'))
+            f:close()
+            if raw then return s end
+            s = string.gsub(s, '^%s+', '')
+            s = string.gsub(s, '%s+$', '')
+            s = string.gsub(s, '[\n\r]+', ' ')
+            return s
+        end
+
+        function disp_time(time)
+            local days = math.floor(time/86400)
+            local remaining = time % 86400
+            local hours = math.floor(remaining/3600)
+            remaining = remaining % 3600
+            local minutes = math.floor(remaining/60)
+            remaining = remaining % 60
+            local seconds = remaining
+            return string.format("%d:%02d:%02d:%02d",days,hours,minutes,seconds)
+        end
+
+        function traduction(str) -- supprime les accents de la chaîne str
+            if (str) then
+            str = string.gsub (str,"missed", "manqué")
+            str = string.gsub (str,"failed", "échoué")
+            str = string.gsub (str,"succeeded", "réussi")
+            end
+            return (str)
+        end
+
+        local function get_timezone()
+          local now = os.time()
+          return os.difftime(now, os.time(os.date("!*t", now)))
+        end
+
+
+        function format_date(str) -- supprime les caractères T et Z de la chaîne str  et corrige l'heure suivant le fuseau horaire
+            if (str) then
+                _, _, A, M, j, h, m, s = string.find(str, "^(%d+)-(%d+)-(%d+)T(%d+):(%d+):(%d+)Z$")
+                h = h + get_timezone()/3600
+                str= A.."-"..M.."-"..j.." - "..h..":"..m..":"..s
+            end
+            return (str)
+        end
+
+        function delta_date(str) -- supprime les caractères T et Z de la chaîne str  et corrige l'heure suivant le fuseau horaire
+            diff = 0
+            if (str) then
+                _, _, A, M, j, h, m, s = string.find(str, "^(%d+)-(%d+)-(%d+)T(%d+):(%d+):(%d+)Z$")
+                h = h + get_timezone()/3600
+                diff = os.time()-os.time{year=A, month=M, day=j, hour=h, min=m, sec=s}
+            end
+            return (disp_time(diff))
+        end
+
+
+
+        function ReverseTable(t)
+            local reversedTable = {}
+            local itemCount = #t
+            for k, v in ipairs(t) do
+                reversedTable[itemCount + 1 - k] = v
+            end
+            return reversedTable
+        end
+
+        function searchName(contacts, phoneNumber)
+            name = phoneNumber
+            for index, variable in pairs(contacts) do
+                if variable.Phone == phoneNumber then
+                    name = variable.Name
+                    break
+                end
+            end
+            return name
+        end
+
+        function searchKey(children, mac)
+            key = -1
+            if children then
+                for index, variable in pairs(children) do
+                    if variable.Key == mac then
+                        key = index
+                        break
+                    end
+                end
+            end
+            return key
+        end
         local function readLuaFromJsonFile(fileName)
             local file = io.open(fileName, 'r')
             if file then
@@ -228,11 +235,6 @@ return {
 
                     if MargedAttn then domoticz.log('Marge d\'Attn : '..tostring(lbAPIData.status.dsl.dsl0.DownstreamNoiseMargin/10)..' dB', domoticz.LOG_INFO)
                     domoticz.devices(MargedAttn).updateCustomSensor(tostring(lbAPIData.status.dsl.dsl0.DownstreamNoiseMargin/10)) end
-
-                    -- if UptimeLB then Uptime = disp_time(lbAPIData.status.dsl.dsl0.LastChange)
-                    -- domoticz.log('Uptime : '..Uptime, domoticz.LOG_INFO)
-                    -- domoticz.devices(UptimeLB).updateText(Uptime) end
-
                 end
             end
 
@@ -330,6 +332,14 @@ return {
                         end
                         if missedCallList == "" then missedCallList = "Aucun appel à afficher" end
                         domoticz.log('Appels manqués : \n'..missedCallList, domoticz.LOG_INFO)
+                        -- Notification appels manqués
+                        if missedCall and notifyMissedCall == true then
+                            domoticz.log("delai depuis la dernière MAJ du device appels manqués : "..tostring(domoticz.devices(missedCall).lastUpdate.minutesAgo).." minutes", domoticz.LOG_INFO)
+                            if domoticz.devices(missedCall).lastUpdate.minutesAgo < 1 and domoticz.devices(missedCall).text ~= "Aucun appel à afficher" then 
+                                   domoticz.notify("Notification d'appel en absence", "Appel(s) en absence : \n"..tostring(domoticz.devices(missedCall).text), domoticz.PRIORITY_NORMAL,domoticz.SOUND_DEFAULT, "" , notificationTable )
+                            end
+                        end
+
                         if missedCall and domoticz.devices(missedCall).text ~= traduction(missedCallList) then
                             domoticz.devices(missedCall).updateText(traduction(missedCallList))
                         end
@@ -448,7 +458,6 @@ return {
                         domoticz.devices(IPv6WAN).updateText(LAN.status[1].ConnectionIPv6Address)
                     end
                 end
-
 
             --Présence de périphériques
                 LAN = LAN.status[1]['Children']
