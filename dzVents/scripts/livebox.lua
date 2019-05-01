@@ -30,7 +30,56 @@
     V1.13 - Neutrino       Correction de bugs
     V1.14 - papoo          Notification appel manqué
 ]]--
+-- Variables à modifier ------------------------------------------------
+local adresseLB         = '192.168.1.1' --Adresse IP de votre Livebox 4
+local password          = "password"
+local tmpDir            = "/var/tmp" --répertoire temporaire, dans l'idéal en RAM
+local myOutput          = tmpDir.."/Output.txt"
+local myCookies         = tmpDir.."/Cookies.txt"
+local fichier_contacts  = "/home/pi/domoticz/scripts/contacts.json"
+local liveBox3          = false --true si vous avez une liveBox3/play
+
+-- Domoticz devices
+
+local IPWAN             = nil --"IP WAN" -- Nom du capteur Text IP WAN, nil si non utilisé
+local IPv6WAN           = nil --"IPv6 WAN" -- Nom du capteur Text IPv6 WAN, nil si non utilisé
+local UptimeLB          = nil --"Uptime Livebox"  -- Nom du capteur Text Uptime Livebox, nil si non utilisé
+local internet          = nil --"Internet"  -- Nom du capteur Interrupteur Internet, nil si non utilisé
+local VoIP              = nil --"VoIP"  -- Nom du capteur Interrupteur VoIP, nil si non utilisé
+local ServiceTV         = nil --"Service TV"  -- Nom du capteur Interrupteur Service TV, nil si non utilisé
+local wifi24            = nil --"WiFi 2.4"  -- Nom du capteur Interrupteur wifi 2.4Ghz, nil si non utilisé
+local wifi5             = nil --"WiFi 5"  -- Nom du capteur Interrupteur wifi 5Ghz, nil si non utilisé
+local firmware          = nil --"Firmware LB" -- Nom du capteur Text Firmware LB, nil si non utilisé
+local DernierAppel      = nil --"Dernier Appel" -- Nom du capteur Text Dernier Appel, nil si non utilisé
+local missedCall        = "Appels manqués" -- Nom du capteur Text appels manqués, nil si non utilisé
+local nbMissedCall      = 4 -- Nombre d'appels manqués à afficher
+local failedCall        = "Appels sans réponse" -- nil -- Nom du capteur Text appels sans réponse, nil si non utilisé
+local nbFailedCall      = 4 -- Nombre d'appels sans réponse à afficher
+local succeededCall     = "Appels réussis" -- Nom du capteur Text appels réussis, nil si non utilisé
+local nbSucceededCall   = 4 -- Nombre d'appels réussis à afficher
+local clearCallList     = "Effacer liste appels" -- Nom du capteur Interrupteur PushOn clearCallList
+local reboot            = "Reboot Livebox" -- Nom du capteur Interrupteur PushOn reboot
+local sonner            = nil -- "Sonner" -- Nom du capteur Interrupteur PushOn faire sonner tel
+local notifyMissedCall  = true
+
+local devices_livebox_mac_adress = { -- MAC ADDRESS des périphériques à surveiller
+                                        "18:A6:43:4B:C9:D8",
+                                        "BC:DE:5F:GH:IJ:2K",
+                                        "L0:M6:37:M5:O3:03",
+                                        "P0:70:2Q:25:R9:8S",
+                                    }
+
+
+-- Capteurs pour connexion xDSL seulement
+local SyncATM = nil -- Nom du capteur custom Synchro ATM down, nil si non utilisé
+local SyncATMup = nil -- Nom du capteur custom Synchro ATM up, nil si non utilisé
+local Attn = nil -- Nom du capteur custom Attenuation de la ligne, nil si non utilisé
+local MargedAttn = nil -- Nom du capteur custom Marge d'atténuation, nil si non utilisé
+-- Livebox 4 seulement
+local TransmitBlocks = nil  -- Nom du capteur Incremental Counter TransmitBlocks, nil si non utilisé
+local ReceiveBlocks = nil  -- Nom du capteur Incremental Counter ReceiveBlocks, nil si non utilisé
 local fetchIntervalMins = 1 --  intervalle de mise à jour.
+
 local scriptName = 'Livebox'
 local scriptVersion = '1.14'
 
@@ -51,60 +100,13 @@ return {
     },
 
     execute = function(domoticz, item)
-    
-        -- Variables à modifier ------------------------------------------------
-        local adresseLB         = '192.168.1.1' --Adresse IP de votre Livebox 4
-        local password          = "password"
-        local tmpDir            = "/var/tmp" --répertoire temporaire, dans l'idéal en RAM
-        local myOutput          = tmpDir.."/Output.txt"
-        local myCookies         = tmpDir.."/Cookies.txt"
-        local fichier_contacts  = "/home/pi/domoticz/scripts/contacts.json"
-        local liveBox3          = false --true si vous avez une liveBox3/play
-
-        -- Domoticz devices
-
-        local IPWAN             = nil --"IP WAN" -- Nom du capteur Text IP WAN, nil si non utilisé
-        local IPv6WAN           = nil --"IPv6 WAN" -- Nom du capteur Text IPv6 WAN, nil si non utilisé
-        local UptimeLB          = nil --"Uptime Livebox"  -- Nom du capteur Text Uptime Livebox, nil si non utilisé
-        local internet          = nil --"Internet"  -- Nom du capteur Interrupteur Internet, nil si non utilisé
-        local VoIP              = nil --"VoIP"  -- Nom du capteur Interrupteur VoIP, nil si non utilisé
-        local ServiceTV         = nil --"Service TV"  -- Nom du capteur Interrupteur Service TV, nil si non utilisé
-        local wifi24            = nil --"WiFi 2.4"  -- Nom du capteur Interrupteur wifi 2.4Ghz, nil si non utilisé
-        local wifi5             = nil --"WiFi 5"  -- Nom du capteur Interrupteur wifi 5Ghz, nil si non utilisé
-        local firmware          = nil --"Firmware LB" -- Nom du capteur Text Firmware LB, nil si non utilisé
-        local DernierAppel      = nil --"Dernier Appel" -- Nom du capteur Text Dernier Appel, nil si non utilisé
-        local missedCall        = "Appels manqués" -- Nom du capteur Text appels manqués, nil si non utilisé
-        local nbMissedCall      = 4 -- Nombre d'appels manqués à afficher
-        local failedCall        = "Appels sans réponse" -- nil -- "Appels sans réponse" -- Nom du capteur Text appels sans réponse, nil si non utilisé
-        local nbFailedCall      = 4 -- Nombre d'appels sans réponse à afficher
-        local succeededCall     = "Appels réussis" -- Nom du capteur Text appels réussis, nil si non utilisé
-        local nbSucceededCall   = 4 -- Nombre d'appels réussis à afficher
-        local clearCallList     = "Effacer liste appels" -- Nom du capteur Interrupteur PushOn clearCallList
-        local reboot            = "Reboot Livebox" -- Nom du capteur Interrupteur PushOn reboot
-        local sonner            = nil -- "Sonner" -- Nom du capteur Interrupteur PushOn faire sonner tel
-        local notifyMissedCall  = true
-        local notificationTable = { domoticz.NSS_PUSHBULLET, domoticz.NSS_PROWL } --Systèmes de notification disponibles : "PUSHBULLET", "HTTP", "GCM", "KODI", "LMS", "PROWL", "PUSHALOT"
+        local notificationTable = { domoticz.NSS_PUSHBULLET, domoticz.NSS_TELEGRAM } 
                             --[[ Systèmes de notification disponibles :
-                                NSS_GOOGLE_CLOUD_MESSAGING NSS_HTTP NSS_KODI NSS_LOGITECH_MEDIASERVER NSS_NMA NSS_PROWL NSS_PUSHALOT NSS_PUSHBULLET NSS_PUSHOVER NSS_PUSHSAFER
+                                NSS_GOOGLE_CLOUD_MESSAGING, NSS_HTTP, NSS_KODI, NSS_LOGITECH_MEDIASERVER, NSS_NMA NSS_PROWL,
+                                NSS_PUSHALOT, NSS_PUSHBULLET, NSS_PUSHOVER, NSS_PUSHSAFER domoticz.NSS_TELEGRAM
                                 Pour une notification sur plusieurs systèmes, séparez les systèmes par une virgule et entourez l'ensemble par des {}.
                                 Exemple :{domoticz.NSS_PUSHBULLET, domoticz.NSS_HTTP}
                             --]]
-
-        local devices_livebox_mac_adress = { -- MAC ADDRESS des périphériques à surveiller
-                                                 "18:A6:43:4B:C9:D8",
-                                                 "BC:DE:5F:GH:IJ:2K",
-                                                 "L0:M6:37:M5:O3:03",
-                                                 "P0:70:2Q:25:R9:8S",
-                                            }
-
-        -- Capteurs pour connexion xDSL seulement
-        local SyncATM = nil -- Nom du capteur custom Synchro ATM down, nil si non utilisé
-        local SyncATMup = nil -- Nom du capteur custom Synchro ATM up, nil si non utilisé
-        local Attn = nil -- Nom du capteur custom Attenuation de la ligne, nil si non utilisé
-        local MargedAttn = nil -- Nom du capteur custom Marge d'atténuation, nil si non utilisé
-        -- Livebox 4 seulement
-        local TransmitBlocks = nil  -- Nom du capteur Incremental Counter TransmitBlocks, nil si non utilisé
-        local ReceiveBlocks = nil  -- Nom du capteur Incremental Counter ReceiveBlocks, nil si non utilisé
 
 -- SVP, ne rien changer sous cette ligne
         function os.capture(cmd, raw)
@@ -138,7 +140,7 @@ return {
             return (str)
         end
 
-        local function get_timezone()
+        function get_timezone()
           local now = os.time()
           return os.difftime(now, os.time(os.date("!*t", now)))
         end
@@ -147,7 +149,11 @@ return {
         function format_date(str) -- supprime les caractères T et Z de la chaîne str  et corrige l'heure suivant le fuseau horaire
             if (str) then
                 _, _, A, M, j, h, m, s = string.find(str, "^(%d+)-(%d+)-(%d+)T(%d+):(%d+):(%d+)Z$")
-                h = h + get_timezone()/3600
+                if domoticz.time.isdst == true then --test si heure d'été
+                    h = h + 1 + get_timezone()/3600 
+                else
+                     h = h + get_timezone()/3600
+                end
                 str= A.."-"..M.."-"..j.." - "..h..":"..m..":"..s
             end
             return (str)
