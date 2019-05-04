@@ -29,6 +29,7 @@
     V1.12 - JCLB           Faire sonner le téléphone
     V1.13 - Neutrino       Correction de bugs
     V1.14 - papoo          Notification appel manqué
+    V1.15 - papoo          Correction de bugs
 ]]--
 -- Variables à modifier ------------------------------------------------
 local adresseLB         = '192.168.1.1' --Adresse IP de votre Livebox 4
@@ -327,7 +328,7 @@ return {
                             end
                             if call.callType == "failed" and nbFailedCall > 0 then
                                 --domoticz.log(call.remoteNumber .. " " .. traduction(call.callType) .." ".. format_date(call.startTime), domoticz.LOG_INFO)
-                                failedCallList = failedCallList .. call.remoteNumber .." - ".. format_date(call.startTime) .. "\n"
+                                failedCallList = failedCallList .. searchName(contacts, call.remoteNumber) .." - ".. format_date(call.startTime) .. "\n"
                                 nbFailedCall = nbFailedCall - 1
                             end
                             if call.callType == "succeeded" and nbSucceededCall > 0 then
