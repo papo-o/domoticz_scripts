@@ -1,5 +1,5 @@
 --[[
-~/home/pi/domoticz/scripts/dzVents/scripts/AlerteGivre.lua
+~/home/pi/domoticz/scripts/dzVents/scripts/alerteGivre.lua
 auteur : papoo
 MAJ : 05/05/2019
 création : 06/05/2016
@@ -7,8 +7,9 @@ Principe :
 Calculer via les informations température et hygrométrie d'une sonde extérieure
  le point de rosée, le point de givre et l'humidité absolue
 pour générer une alerte givre cohérente.
-http://pon.fr/script-calcul-et-alerte-givre/
+http://pon.fr/dzvents-alerte-givre-et-calcul-humidite-absolue
 http://easydomoticz.com/forum/viewtopic.php?f=21&t=1085&start=10#p17545
+https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/alerteGivre.lua
 ]]--
 
 --------------------------------------------
@@ -33,7 +34,7 @@ return {
         devices = { device_temp_ext }     -- nom de la sonde de température/humidité extérieure'
         },
 
-    logging =   {    level    =   domoticz.LOG_DEBUG,
+    logging =   {   -- level    =   domoticz.LOG_DEBUG,
                     -- level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
                     -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others
                     -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
@@ -135,6 +136,7 @@ return {
             if tonumber(domoticz.devices(device_freeze_alert).color) ~= 1 then domoticz.devices(device_freeze_alert).updateAlertSensor(domoticz.ALERTLEVEL_GREEN, 'Pas de givre') end
         end
 
+        --if ((item.trigger == 'at 06:25') or (item.trigger == 'at 07:01') or (item.trigger == 'at 07:15')) and message ~= nil then
         if (item.isTimer) then domoticz.log("--- --- --- La règle qui a déclenché l'événement était :".. item.trigger .." --- --- ---", domoticz.LOG_DEBUG) end
         if (item.isTimer) and (message ~= nil) then
             domoticz.log("--- --- --- notification alerte Givre --- --- ---", domoticz.LOG_DEBUG)
