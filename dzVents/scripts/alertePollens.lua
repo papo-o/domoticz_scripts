@@ -1,7 +1,7 @@
 --[[ alertePollens.lua for [ domoticzVents >= 2.4 ]
 
 author/auteur = papoo
-update/mise à jour = 29/04/2019
+update/mise à jour = 05/05/2019
 creation = 03/04/2019
 https://pon.fr/dzvents-alerte-pollens
 https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/alertePollens.lua
@@ -39,13 +39,13 @@ local risques = { -- Commentez (en ajoutant -- devant) ou décommentez (en enlev
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local scriptName        = 'Alerte Pollens'
-local scriptVersion     = '1.1'
+local scriptVersion     = '1.11'
 
 
 return {
     active = true,
     on      =   {   timer           =   { 'every 6 hours' },
-                    httpResponses   =   { "Pollens_Trigger" }    -- Trigger the handle Json part
+                    httpResponses   =   { "Pollens_" ..departement.. "_Trigger" }    -- Trigger the handle Json part
     },
 
     logging =   {
@@ -66,7 +66,7 @@ return {
         if (item.isTimer) then
             domoticz.openURL({
                 url = alerte_url..departement,
-                callback = 'Pollens_Trigger'
+                callback = 'Pollens_' ..departement.. '_Trigger'
             })
         end
 
