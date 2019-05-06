@@ -125,7 +125,7 @@ Exemple 8 : être averti si un périphérique % dépasse les seuils minimal ou m
   {
  "low_threshold_percent": 10,
  "high_threshold_percent": 40,
- "duration_exceeded_purcent": 20,
+ "duration_exceeded_percent": 20,
  "frequency_notifications": 60,
  "quiet_hours":"23:00-07:15"
   }
@@ -368,12 +368,12 @@ return {
                             domoticz.log(device.name .. ' a un seuil temperature basse défini à  ' .. settings.low_threshold_temp..'°C', domoticz.LOG_INFO)
                         end
 
-                        if device.percentage ~= nil and settings.high_threshold_purcent ~= nil then  -- seuil haut %
-                            domoticz.log(device.name .. ' a un seuil % haut défini à  ' .. settings.high_threshold_purcent..'%', domoticz.LOG_INFO)
+                        if device.percentage ~= nil and settings.high_threshold_percent ~= nil then  -- seuil haut %
+                            domoticz.log(device.name .. ' a un seuil % haut défini à  ' .. settings.high_threshold_percent..'%', domoticz.LOG_INFO)
                         end
 
-                        if device.percentage ~= nil and settings.low_threshold_purcent ~= nil then  -- seuil bas %
-                            domoticz.log(device.name .. ' a un seuil % bas défini à  ' .. settings.low_threshold_purcent..'%', domoticz.LOG_INFO)
+                        if device.percentage ~= nil and settings.low_threshold_percent ~= nil then  -- seuil bas %
+                            domoticz.log(device.name .. ' a un seuil % bas défini à  ' .. settings.low_threshold_percent..'%', domoticz.LOG_INFO)
                         end
 
                         --sensorType
@@ -615,25 +615,25 @@ return {
                                 domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
                             end
 
-                        elseif device.percentage ~= nil and (settings.high_threshold_purcent ~= nil or settings.low_threshold_purcent ~= nil)  then
+                        elseif device.percentage ~= nil and (settings.high_threshold_percent ~= nil or settings.low_threshold_percent ~= nil)  then
                             -- test settings.duration_exceeded_hr
                             test_high_threshold = true
                             test_low_threshold = true
-                            if settings.duration_exceeded_purcent ~= nil then
+                            if settings.duration_exceeded_percent ~= nil then
                                 domoticz.data.managedValue.add(device.percentage)
                                 domoticz.data.managedId.add(device.id)
 
-                                if settings.high_threshold_purcent ~= nil then high_threshold_purcent = settings.high_threshold_purcent else high_threshold_purcent = nil end
-                                if settings.low_threshold_purcent ~= nil then low_threshold_purcent = settings.low_threshold_purcent else low_threshold_purcent = nil end
-                                test_high_threshold, test_low_threshold = managed(domoticz, device.id, settings.duration_exceeded_purcent, high_threshold_purcent, low_threshold_purcent)
+                                if settings.high_threshold_percent ~= nil then high_threshold_percent = settings.high_threshold_percent else high_threshold_percent = nil end
+                                if settings.low_threshold_percent ~= nil then low_threshold_percent = settings.low_threshold_percent else low_threshold_percent = nil end
+                                test_high_threshold, test_low_threshold = managed(domoticz, device.id, settings.duration_exceeded_percent, high_threshold_percent, low_threshold_percent)
                             end
                             -- alarme pourcentage
                             domoticz.log('La valeur mesurée par '.. device.name .. ' est de  ' .. tostring(domoticz.utils.round(device.percentage, 1)) ..'%', domoticz.LOG_INFO)
                             if settings.low_threshold_percent ~= nil and device.percentage < settings.low_threshold_percent and test_low_threshold == true then  -- seuil bas %
                                 domoticz.log(device.name .. ' a un seuil % bas défini à  ' .. settings.low_threshold_percent..'%', domoticz.LOG_INFO)
                                 message = 'La valeur mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_percent..'%). Valeur : '.. tostring(domoticz.utils.round(device.percentage, 1)) ..'%'
-                                if settings.duration_exceeded_purcent ~= nil then
-                                    domoticz.data.managedValue.add(settings.low_threshold_purcent)
+                                if settings.duration_exceeded_percent ~= nil then
+                                    domoticz.data.managedValue.add(settings.low_threshold_percent)
                                     domoticz.data.managedId.add(device.id)
                                 end
                                 domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
