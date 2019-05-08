@@ -271,7 +271,7 @@ function managed(dz, id, duration_exceeded, high_threshold, low_threshold)
 
 end
 local scriptName = 'Json Description'
-local scriptVersion = '1.0'
+local scriptVersion = '1.01'
 
 return {
     active = true,
@@ -300,11 +300,14 @@ return {
         local cnt = 0
 
         function split(s, delimiter)
-        result = {};
-        for match in (s..delimiter):gmatch("(.-)"..delimiter) do
-            table.insert(result, match);
+        if s ~= nil then
+            result = {};
+            for match in (s..delimiter):gmatch("(.-)"..delimiter) do
+                table.insert(result, match);
+            end
+        else
+            result = {""};
         end
-
         return result;
         end
 
@@ -335,7 +338,7 @@ return {
                 local frequency_notifications = nil
                 local quiet_hours = nil
                 local message = nil
-                local subsystems = nil
+                local subSystems = nil
 
                 local description = device.description
                 local j = string.find(tostring(description), '^{.*}$')
@@ -345,10 +348,11 @@ return {
                     local ok, settings = pcall( domoticz.utils.fromJSON, description)
                     if ok and settings then
 
-                        if settings.subsystems ~= nil then -- systeme(s) de notificatio
-                            subsystems = settings.subsystems
-                            domoticz.log('le(s) systeme(s) de notification pour '.. device.name .. ' est(sont)  ' .. settings.subsystems, domoticz.LOG_INFO)
+                        if settings.subsystems ~= nil then -- systeme(s) de notification
+                            subSystems = settings.subsystems
+                            domoticz.log('le(s) systeme(s) de notification pour '.. device.name .. ' est(sont)  ' .. subSystems, domoticz.LOG_INFO)
                         end
+
 
                         if settings.frequency_notifications ~= nil then -- fréquence de notification
                             frequency_notifications = settings.frequency_notifications
@@ -416,7 +420,7 @@ return {
                         if settings.timeout_notification and device.timedOut then
                             domoticz.log(device.name .. ' est injoignable. Sa dernière activité remonte à ' .. device.lastUpdate.minutesAgo .. ' minutes.', domoticz.LOG_INFO)
                             message = device.name .. ' est injoignable depuis '.. tostring(settings.timeout_notification) ..' minutes'
-                            domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                            domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                         end
 
                         --batterie
@@ -426,7 +430,7 @@ return {
                                 domoticz.log(device.name .. ' a un niveau de batterie de ' .. device.batteryLevel..'%', domoticz.LOG_INFO)
                                 message = 'Le niveau de batterie '.. device.name .. ' est inférieur au seuil défini ('..settings.low_battery_level..'%). Valeur : '..tostring(domoticz.utils.round(device.batteryLevel, 1)) ..'%'
                                 --domoticz.log(message, domoticz.LOG_INFO)
-                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                         end
 
@@ -437,7 +441,7 @@ return {
                                 domoticz.log(device.name .. ' a un niveau de signal de ' .. device.signalLevel, domoticz.LOG_INFO)
                                 message = 'Le niveau de signal '.. device.name .. ' est inférieur au seuil défini ('..settings.low_signal_level..'). Valeur : '..device.signalLevel
                                 --domoticz.log(message, domoticz.LOG_INFO)
-                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                         end
 
@@ -448,7 +452,7 @@ return {
                                 domoticz.log(device.name .. ' a un niveau de puissance de ' .. device.WhActual..' Wh', domoticz.LOG_INFO)
                                 message = 'Le niveau de puissance '.. device.name .. ' est inférieur au seuil défini ('..settings.low_watt_usage..'). Valeur : '..device.WhActual..' Wh'
                                 --domoticz.log(message, domoticz.LOG_INFO)
-                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                         end
 
@@ -458,7 +462,7 @@ return {
                                 domoticz.log(device.name .. ' a un niveau de puissance de ' .. device.WhActual..' Wh', domoticz.LOG_INFO)
                                 message = 'Le niveau de puissance '.. device.name .. ' est superieur au seuil défini ('..settings.high_watt_usage..'). Valeur : '..device.WhActual..' Wh'
                                 --domoticz.log(message, domoticz.LOG_INFO)
-                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                         end
 
@@ -469,7 +473,7 @@ return {
                                 domoticz.log(device.name .. ' a un niveau de ' .. tostring(domoticz.utils.round(device.current, 0)), domoticz.LOG_INFO)
                                 message = 'Le niveau de '.. device.name .. ' est inférieur au seuil défini ('..settings.low_current_usage..'). Valeur : '..tostring(domoticz.utils.round(device.current, 0))..' A'
                                 --domoticz.log(message, domoticz.LOG_INFO)
-                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                         end
 
@@ -480,7 +484,7 @@ return {
                                 domoticz.log(device.name .. ' a un niveau de ' .. tostring(domoticz.utils.round(device.current, 0)), domoticz.LOG_INFO)
                                 message = 'Le niveau '.. device.name .. ' est superieur au seuil défini ('..settings.high_current_usage..'). Valeur : '..tostring(domoticz.utils.round(device.current, 0))..' A'
                                 --domoticz.log(message, domoticz.LOG_INFO)
-                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                         end
                         if device.state == 'Off' or device.state == 'Close' then
@@ -489,7 +493,7 @@ return {
                             if settings.time_inactive_notification ~= nil and device.lastUpdate.minutesAgo >= settings.time_inactive_notification then
                                 domoticz.log(device.name .. ' est inactif depuis ' .. device.lastUpdate.minutesAgo .. ' minutes. Le délai est fixé à '.. settings.time_inactive_notification.. ' minutes.', domoticz.LOG_INFO)
                                 message = 'Le délai d\'inactivité fixé à '.. settings.time_inactive_notification .. ' minutes pour '.. device.name .. ' est dépassé'
-                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
 
                         elseif device.temperature ~= nil or device.humidity ~= nil then
@@ -514,7 +518,7 @@ return {
                                         domoticz.data.managedValue.add(settings.low_threshold_temp)
                                         domoticz.data.managedId.add(device.id)
                                     end
-                                    domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                                    domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                                 end
                                 if settings.high_threshold_temp ~= nil and device.temperature > settings.high_threshold_temp and test_high_threshold == true then  -- seuil haut température
                                     domoticz.log(device.name .. ' a un seuil temperature haute défini à  ' .. settings.high_threshold_temp..'°C', domoticz.LOG_INFO)
@@ -523,7 +527,7 @@ return {
                                         domoticz.data.managedValue.add(settings.high_threshold_temp)
                                         domoticz.data.managedId.add(device.id)
                                     end
-                                    domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                                    domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                                 end
                             end
                         -- alarme hygrométrie
@@ -548,7 +552,7 @@ return {
                                         domoticz.data.managedValue.add(settings.low_threshold_hr)
                                         domoticz.data.managedId.add(device.id)
                                     end
-                                    domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                                    domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                                 end
                                 if settings.high_threshold_hr and device.humidity > settings.high_threshold_hr and test_high_threshold == true then -- seuil haut hygrométrie
                                     domoticz.log(device.name .. ' a un seuil hygrometrie haute défini à  ' .. settings.high_threshold_hr..'%hr', domoticz.LOG_INFO)
@@ -557,7 +561,7 @@ return {
                                         domoticz.data.managedValue.add(settings.high_threshold_hr)
                                         domoticz.data.managedId.add(device.id)
                                     end
-                                    domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                                    domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                                 end
                             end
 
@@ -567,7 +571,7 @@ return {
                             if settings.time_active_notification ~= nil and device.lastUpdate.minutesAgo >= settings.time_active_notification then
                                 domoticz.log(device.name .. ' est actif depuis ' .. device.lastUpdate.minutesAgo .. ' minutes. Le délai est fixé à '.. settings.time_active_notification.. ' minutes.', domoticz.LOG_INFO)
                                 message = 'Le délai fixé à '.. settings.time_active_notification .. ' minutes pour '.. device.name .. ' est dépassé'
-                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                         -- auto on
                             if settings.auto_on_minutes ~= nil and device.lastUpdate.minutesAgo >= settings.auto_on_minutes then
@@ -607,12 +611,12 @@ return {
                             if settings.low_threshold_custom ~= nil and tonumber(device.state) < settings.low_threshold_custom then -- seuil bas %
                                 domoticz.log(device.name .. ' a un seuil bas défini à  ' .. settings.low_threshold_custom..device.sensorUnit, domoticz.LOG_INFO)
                                 message = 'La valeur mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_custom..device.sensorUnit..'). Valeur : '..tostring(domoticz.utils.round(device.state, 1))..device.sensorUnit
-                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                             if settings.high_threshold_custom ~= nil and tonumber(device.state) > settings.high_threshold_custom then -- seuil haut %
                                 domoticz.log(device.name .. ' a un seuil haut défini à  ' .. settings.high_threshold_custom..device.sensorUnit, domoticz.LOG_INFO)
                                 message = 'La valeur mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_custom..device.sensorUnit..'). Valeur : '..tostring(domoticz.utils.round(device.state, 1))..device.sensorUnit
-                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
 
                         elseif device.percentage ~= nil and (settings.high_threshold_percent ~= nil or settings.low_threshold_percent ~= nil)  then
@@ -636,7 +640,7 @@ return {
                                     domoticz.data.managedValue.add(settings.low_threshold_percent)
                                     domoticz.data.managedId.add(device.id)
                                 end
-                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                             if settings.high_threshold_percent ~= nil and device.percentage > settings.high_threshold_percent and test_high_threshold == true then  -- seuil haut %
                                 domoticz.log(device.name .. ' a un seuil % haut défini à  ' .. settings.high_threshold_percent..'%', domoticz.LOG_INFO)
@@ -646,14 +650,14 @@ return {
                                     domoticz.data.managedValue.add(settings.high_threshold_percent)
                                     domoticz.data.managedId.add(device.id)
                                 end
-                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                                domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
 
                         elseif device.color ~= nil and settings.high_threshold_color ~= nil and device.color > settings.high_threshold_color then
                             -- notification alerte
                             domoticz.log('Le seuil d\'alerte de '.. device.name .. ' est de  ' .. tostring(device.color), domoticz.LOG_INFO)
                             message = 'Le seuil d\'alerte de  '.. device.name ..' est supérieur au seuil défini ('..settings.high_threshold_color..'). Valeur : '.. tostring(device.color) ..' alerte : '.. tostring(device.text)
-                            domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(settings.subsystems), frequency_notifications , quiet_hours)
+                            domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
             end
                         else
                             domoticz.log( 'la description de '.. device.name ..' n\'est pas au format json. Ignorer cet appareil.', domoticz.LOG_ERROR)
