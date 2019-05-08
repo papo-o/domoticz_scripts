@@ -82,7 +82,7 @@ local ReceiveBlocks = nil  -- Nom du capteur Incremental Counter ReceiveBlocks, 
 local fetchIntervalMins = 1 --  intervalle de mise à jour.
 
 local scriptName = 'Livebox'
-local scriptVersion = '1.14'
+local scriptVersion = '1.15'
 
 return {
     active = true,
