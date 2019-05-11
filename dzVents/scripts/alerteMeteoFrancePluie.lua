@@ -1,14 +1,16 @@
 --[[
 alerteMeteoFrancePluie.lua
 author/auteur = papoo
-update/mise à jour = 28/04/2019
+update/mise à jour = 11/05/2019
 création = 09/03/2019
 https://pon.fr/dzvents-alerte-previsions-de-pluie-prochaines-60-minutes
 https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/alerteMeteoFrancePluie.lua
-https://easydomoticz.com/forum/viewtopic.php
+https://easydomoticz.com/forum/viewtopic.php?f=17&t=5492
 
 Principe : récupérer via l'API non documentée de météo France 
 les informations de précipitation de votre commune sur un device alert et/ou text
+la carte des départements couverts par ce service (ils ne le sont pas tous)
+http://www.meteofrance.com/previsions-meteo-france/previsions-pluie
 
 --]]
 --------------------------------------------
@@ -22,7 +24,7 @@ local text_alert    = "Info Du Jour"
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local scriptName        = 'météo France alerte pluie'
-local scriptVersion     = '3.02'
+local scriptVersion     = '3.03'
 local response = "meteoFrance_response"
 return {
     on =        {       timer           =   { "every 5 minutes" },
