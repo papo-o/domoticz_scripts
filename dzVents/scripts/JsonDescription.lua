@@ -245,33 +245,8 @@ Exemple 17 : être averti si le périphérique est éteint depuis x minutes
 
 --]]
 
---permet de lire les valeurs des périphériques avec "duration_exceeded_temp", "low_threshold_hr", "high_threshold_hr" ou  "duration_exceeded_hr"
-function managed(dz, id, duration_exceeded, high_threshold, low_threshold)
-    test_high_threshold = true
-    test_low_threshold = true
-    x = 0
-    dz.data.managedId.forEach(
-        function(item)
-            x = x + 1
-            if item.data == id then
-                timeNotif = tonumber(item.time.minutesAgo)
-                local value = dz.data.managedValue.get(x)
-                if timeNotif < duration_exceeded then -- on test si l'ancienneté de la valeur est < à la valeur duration_exceeded_temp
-                    if high_threshold ~= nil then -- si la value est < à la valeur de ref, on passe la variable à false => pas d'envoi de notification
-                        if value.data <= high_threshold then test_high_threshold = false end
-                    end
-                    if low_threshold ~= nil then -- si la value est > à la valeur de ref, on passe la variable à false => pas d'envoi de notification
-                        if value.data >= low_threshold then test_low_threshold = false end
-                    end
-                end
-            end
-        end
-    )
-    return test_high_threshold, test_low_threshold
-
-end
 local scriptName = 'Json Description'
-local scriptVersion = '1.01'
+local scriptVersion = '1.03'
 
 return {
     active = true,
@@ -299,6 +274,32 @@ return {
     execute = function(domoticz, triggeredItem, info)
         local cnt = 0
 
+        --permet de lire les valeurs des périphériques avec "duration_exceeded_temp", "low_threshold_hr", "high_threshold_hr" ou  "duration_exceeded_hr"
+        function managed(domoticz, id, duration_exceeded, high_threshold, low_threshold)
+            test_high_threshold = true
+            test_low_threshold = true
+            x = 0
+            domoticz.data.managedId.forEach(
+                function(item)
+                    x = x + 1
+                    if item.data == id then
+                        timeNotif = tonumber(item.time.minutesAgo)
+                        local value = domoticz.data.managedValue.get(x)
+                        if timeNotif < duration_exceeded then -- on test si l'ancienneté de la valeur est < à la valeur duration_exceeded_temp
+                            if high_threshold ~= nil then -- si la value est < à la valeur de ref, on passe la variable à false => pas d'envoi de notification
+                                if value.data <= high_threshold then test_high_threshold = false end
+                            end
+                            if low_threshold ~= nil then -- si la value est > à la valeur de ref, on passe la variable à false => pas d'envoi de notification
+                                if value.data >= low_threshold then test_low_threshold = false end
+                            end
+                        end
+                    end
+                end
+            )
+            return test_high_threshold, test_low_threshold
+
+        end
+        
         function split(s, delimiter)
         if s ~= nil then
             result = {};
@@ -350,69 +351,88 @@ return {
 
                         if settings.subsystems ~= nil then -- systeme(s) de notification
                             subSystems = settings.subsystems
-                            domoticz.log('le(s) systeme(s) de notification pour '.. device.name .. ' est(sont)  ' .. subSystems, domoticz.LOG_INFO)
+                            domoticz.log('le(s) systeme(s) de notification pour '.. device.name .. ' est(sont)  ' .. subSystems, domoticz.LOG_DEBUG)
                         end
 
 
                         if settings.frequency_notifications ~= nil then -- fréquence de notification
                             frequency_notifications = settings.frequency_notifications
-                            domoticz.log('la fréquence de notification pour '.. device.name .. ' est de  ' .. settings.frequency_notifications.." minutes", domoticz.LOG_INFO)
+                            domoticz.log('la fréquence de notification pour '.. device.name .. ' est de  ' .. settings.frequency_notifications.." minutes", domoticz.LOG_DEBUG)
                         end
 
                         if settings.quiet_hours ~= nil then -- période silencieuse
                             quiet_hours = settings.quiet_hours
-                            domoticz.log('la période silencieuse de notification pour '.. device.name .. ' est définie entre  ' .. quiet_hours, domoticz.LOG_INFO)
+                            domoticz.log('la période silencieuse de notification pour '.. device.name .. ' est définie entre  ' .. quiet_hours, domoticz.LOG_DEBUG)
+                        end
+                        
+                        if settings.auto_off_motion_device ~= nil then -- 
+                            domoticz.log(device.name .. ' AutoOff type : ' .. type(settings.auto_off_motion_device), domoticz.LOG_DEBUG)
+                            if type(settings.auto_off_motion_device) == "string" then
+                                domoticz.log(device.name .. ' est asservie au device : ' .. settings.auto_off_motion_device, domoticz.LOG_DEBUG)
+                            elseif type(settings.auto_off_motion_device) == "table" then
+                                domoticz.log(device.name .. ' AutoOff type : ' .. type(settings.auto_off_motion_device), domoticz.LOG_DEBUG)
+                                local devices = ""
+                                local types = ""
+                                for i,v in pairs(settings.auto_off_motion_device) do
+                                    
+                                devices = devices .. v ..", "
+                                types = types .. i ..", "
+                                
+                                end
+                                domoticz.log(device.name .. ' est asservie aux devices : ' .. devices, domoticz.LOG_DEBUG)
+                                domoticz.log('de type : ' .. types, domoticz.LOG_DEBUG)
+                            end
                         end
 
                         if device.temperature ~= nil and settings.high_threshold_temp ~= nil then  -- seuil haut température
-                            domoticz.log(device.name .. ' a un seuil temperature haute défini à  ' .. settings.high_threshold_temp..'°C', domoticz.LOG_INFO)
+                            domoticz.log(device.name .. ' a un seuil temperature haute défini à  ' .. settings.high_threshold_temp..'°C', domoticz.LOG_DEBUG)
                         end
 
                         if device.temperature ~= nil and settings.low_threshold_temp ~= nil then  -- seuil bas température
-                            domoticz.log(device.name .. ' a un seuil temperature basse défini à  ' .. settings.low_threshold_temp..'°C', domoticz.LOG_INFO)
+                            domoticz.log(device.name .. ' a un seuil temperature basse défini à  ' .. settings.low_threshold_temp..'°C', domoticz.LOG_DEBUG)
                         end
 
                         if device.percentage ~= nil and settings.high_threshold_percent ~= nil then  -- seuil haut %
-                            domoticz.log(device.name .. ' a un seuil % haut défini à  ' .. settings.high_threshold_percent..'%', domoticz.LOG_INFO)
+                            domoticz.log(device.name .. ' a un seuil % haut défini à  ' .. settings.high_threshold_percent..'%', domoticz.LOG_DEBUG)
                         end
 
                         if device.percentage ~= nil and settings.low_threshold_percent ~= nil then  -- seuil bas %
-                            domoticz.log(device.name .. ' a un seuil % bas défini à  ' .. settings.low_threshold_percent..'%', domoticz.LOG_INFO)
+                            domoticz.log(device.name .. ' a un seuil % bas défini à  ' .. settings.low_threshold_percent..'%', domoticz.LOG_DEBUG)
                         end
 
                         --sensorType
                         if device.sensorType ~= nil and settings.high_threshold_custom ~= nil then  -- seuil haut sensorType
-                            domoticz.log(device.name .. ' a un seuil haut défini à  ' .. settings.high_threshold_custom..' '..device.sensorUnit, domoticz.LOG_INFO)
+                            domoticz.log(device.name .. ' a un seuil haut défini à  ' .. settings.high_threshold_custom..' '..device.sensorUnit, domoticz.LOG_DEBUG)
                         end
 
                         if device.sensorType ~= nil and settings.low_threshold_custom ~= nil then  -- seuil bas sensorType
-                            domoticz.log(device.name .. ' a un seuil bas défini à  ' .. settings.low_threshold_custom..' '..device.sensorUnit, domoticz.LOG_INFO)
+                            domoticz.log(device.name .. ' a un seuil bas défini à  ' .. settings.low_threshold_custom..' '..device.sensorUnit, domoticz.LOG_DEBUG)
                         end
 
                         --low_watt_usage
                         if device.WhActual ~= nil and settings.low_watt_usage ~= nil then  -- seuil bas sensorType
-                            domoticz.log(device.name .. ' a un seuil bas défini à  ' .. settings.low_watt_usage..' Wh', domoticz.LOG_INFO)
+                            domoticz.log(device.name .. ' a un seuil bas défini à  ' .. settings.low_watt_usage..' Wh', domoticz.LOG_DEBUG)
                         end
 
                         if device.WhActual ~= nil and settings.high_watt_usage ~= nil then  -- seuil bas sensorType
-                            domoticz.log(device.name .. ' a un seuil haut défini à  ' .. settings.high_watt_usage..' Wh', domoticz.LOG_INFO)
+                            domoticz.log(device.name .. ' a un seuil haut défini à  ' .. settings.high_watt_usage..' Wh', domoticz.LOG_DEBUG)
                         end
 
                         if device.current ~= nil and settings.low_current_usage ~= nil then  -- seuil bas sensorType
-                            domoticz.log(device.name .. ' a un seuil bas défini à  ' .. settings.low_current_usage..' A', domoticz.LOG_INFO)
+                            domoticz.log(device.name .. ' a un seuil bas défini à  ' .. settings.low_current_usage..' A', domoticz.LOG_DEBUG)
                         end
 
                         if device.current ~= nil and settings.high_current_usage ~= nil then  -- seuil bas sensorType
-                            domoticz.log(device.name .. ' a un seuil haut défini à  ' .. settings.high_current_usage..' A', domoticz.LOG_INFO)
+                            domoticz.log(device.name .. ' a un seuil haut défini à  ' .. settings.high_current_usage..' A', domoticz.LOG_DEBUG)
                         end
 
                         if device.state == 'Off' or device.state == 'Close' then    -- Alarme dispositif inactif
                             if settings.time_active_notification ~= nil then
-                                domoticz.log('Le délai est fixé à '.. settings.time_active_notification.. ' minutes.', domoticz.LOG_INFO)
+                                domoticz.log('Le délai est fixé à '.. settings.time_active_notification.. ' minutes.', domoticz.LOG_DEBUG)
                             end
                         elseif device.state == 'On' or device.state == 'Open' then   -- Alarme dispositif actif
                             if settings.time_inactive_notification ~= nil then
-                                domoticz.log('Le délai est fixé à '.. settings.time_inactive_notification.. ' minutes.', domoticz.LOG_INFO)
+                                domoticz.log('Le délai est fixé à '.. settings.time_inactive_notification.. ' minutes.', domoticz.LOG_DEBUG)
                             end
                         end
 
@@ -507,13 +527,12 @@ return {
                                     domoticz.data.managedId.add(device.id)
                                     if settings.high_threshold_temp ~= nil then high_threshold_temp = settings.high_threshold_temp else high_threshold_temp = nil end
                                     if settings.low_threshold_temp ~= nil then low_threshold_temp = settings.low_threshold_temp else low_threshold_temp = nil end
-                                    --test_high_threshold, test_low_threshold = managed(dz, id, duration_exceeded, high_threshold, low_threshold)
                                     test_high_threshold, test_low_threshold = managed(domoticz, device.id, settings.duration_exceeded_temp, high_threshold_temp, low_threshold_temp)
                                 end
                                 domoticz.log('La température mesurée par '.. device.name .. ' est de  ' .. tostring(domoticz.utils.round(device.temperature, 1)) ..'°C', domoticz.LOG_INFO)
                                 if settings.low_threshold_temp ~= nil and device.temperature < settings.low_threshold_temp and test_low_threshold == true then  -- seuil bas température
                                     domoticz.log(device.name .. ' a un seuil temperature basse défini à  ' .. settings.low_threshold_temp..'°C', domoticz.LOG_INFO)
-                                    message = 'La température mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_temp..'°C). Valeur : '..tostring(domoticz.utils.round(device.temperature, 1)) ..'°C'
+                                    message = 'La température mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_temp..'°C)' --. Valeur : '..tostring(domoticz.utils.round(device.temperature, 1)) ..'°C'
                                     if settings.duration_exceeded_temp ~= nil then
                                         domoticz.data.managedValue.add(settings.low_threshold_temp)
                                         domoticz.data.managedId.add(device.id)
@@ -522,7 +541,7 @@ return {
                                 end
                                 if settings.high_threshold_temp ~= nil and device.temperature > settings.high_threshold_temp and test_high_threshold == true then  -- seuil haut température
                                     domoticz.log(device.name .. ' a un seuil temperature haute défini à  ' .. settings.high_threshold_temp..'°C', domoticz.LOG_INFO)
-                                    message = 'La température mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_temp..'°C). Valeur : '..tostring(domoticz.utils.round(device.temperature, 1)) ..'°C'
+                                    message = 'La température mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_temp..'°C)' --. Valeur : '..tostring(domoticz.utils.round(device.temperature, 1)) ..'°C'
                                     if settings.duration_exceeded_temp ~= nil then
                                         domoticz.data.managedValue.add(settings.high_threshold_temp)
                                         domoticz.data.managedId.add(device.id)
@@ -538,16 +557,14 @@ return {
                                 if settings.duration_exceeded_hr ~= nil then
                                     domoticz.data.managedValue.add(device.humidity)
                                     domoticz.data.managedId.add(device.id)
-
                                     if settings.high_threshold_hr ~= nil then high_threshold_hr = settings.high_threshold_hr else high_threshold_hr = nil end
                                     if settings.low_threshold_hr ~= nil then low_threshold_hr = settings.low_threshold_hr else low_threshold_hr = nil end
-                                    --test_high_threshold, test_low_threshold = managed(dz, id, duration_exceeded, high_threshold, low_threshold)
                                     test_high_threshold, test_low_threshold = managed(domoticz, device.id, settings.duration_exceeded_hr, high_threshold_hr, low_threshold_hr)
                                 end
                                 domoticz.log('L\'hygrometrie mesurée par '.. device.name .. ' est de  ' .. tostring(device.humidity)..'%hr', domoticz.LOG_INFO)
                                 if settings.low_threshold_hr ~= nil and device.humidity < settings.low_threshold_hr and test_low_threshold == true then -- seuil bas hygrométrie
                                     domoticz.log(device.name .. ' a un seuil hygrometrie bassse défini à  ' .. settings.low_threshold_hr..'%hr', domoticz.LOG_INFO)
-                                    message = 'L\'humidité mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_hr..'%hr). Valeur : '..tostring(device.humidity)..'%hr'
+                                    message = 'L\'humidité mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_hr..'%hr).' -- Valeur : '..tostring(device.humidity)..'%hr'
                                     if settings.duration_exceeded_hr ~= nil then
                                         domoticz.data.managedValue.add(settings.low_threshold_hr)
                                         domoticz.data.managedId.add(device.id)
@@ -556,7 +573,7 @@ return {
                                 end
                                 if settings.high_threshold_hr and device.humidity > settings.high_threshold_hr and test_high_threshold == true then -- seuil haut hygrométrie
                                     domoticz.log(device.name .. ' a un seuil hygrometrie haute défini à  ' .. settings.high_threshold_hr..'%hr', domoticz.LOG_INFO)
-                                    message = 'L\'humidité mesurée par '.. device.name .. ' est supérieure au seuil défini ('..settings.high_threshold_hr..'%hr). Valeur : '..tostring(device.humidity)..'%hr'
+                                    message = 'L\'humidité mesurée par '.. device.name .. ' est supérieure au seuil défini ('..settings.high_threshold_hr..'%hr).' -- Valeur : '..tostring(device.humidity)..'%hr'
                                     if settings.duration_exceeded_hr ~= nil then
                                         domoticz.data.managedValue.add(settings.high_threshold_hr)
                                         domoticz.data.managedId.add(device.id)
@@ -581,6 +598,7 @@ return {
                                 end
                             end
                             --auto off
+
                             if settings.auto_off_minutes ~= nil and device.lastUpdate.minutesAgo >= settings.auto_off_minutes then
                                 if settings.auto_off_motion_device == nil then
                                     domoticz.log('Extinction de '..device.name .. ' car actif depuis ' .. settings.auto_off_minutes .. ' minutes.', domoticz.LOG_INFO)
@@ -593,8 +611,11 @@ return {
                                     end
                                 elseif type(settings.auto_off_motion_device) == "table" then
                                     local off = true
-                                    for i,v in ipairs(settings.auto_off_motion_device) do
-                                        if domoticz.devices(v).state ~= 'Off' then
+                                    for i,v in pairs(settings.auto_off_motion_device) do
+                                        --domoticz.log("l'état de " .. domoticz.devices(v) .. ' est à : ' .. domoticz.devices(v).state, domoticz.LOG_DEBUG)
+                                        if domoticz.devices(v).state ~= 'Off' and i == "restartTimer" and domoticz.devices(v).lastUpdate.minutesAgo >= settings.auto_off_minutes then
+                                            off = false
+                                        elseif domoticz.devices(v).state ~= 'Off' and i ~= "restartTimer" then
                                             off = false
                                         end
                                     end
@@ -610,12 +631,12 @@ return {
                             domoticz.log('La valeur mesurée par '.. device.name .. ' est de  ' .. tostring(domoticz.utils.round(device.state, 1)) .. device.sensorUnit, domoticz.LOG_INFO)
                             if settings.low_threshold_custom ~= nil and tonumber(device.state) < settings.low_threshold_custom then -- seuil bas %
                                 domoticz.log(device.name .. ' a un seuil bas défini à  ' .. settings.low_threshold_custom..device.sensorUnit, domoticz.LOG_INFO)
-                                message = 'La valeur mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_custom..device.sensorUnit..'). Valeur : '..tostring(domoticz.utils.round(device.state, 1))..device.sensorUnit
+                                message = 'La valeur mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_custom..device.sensorUnit..').' -- Valeur : '..tostring(domoticz.utils.round(device.state, 1))..device.sensorUnit
                                 domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                             if settings.high_threshold_custom ~= nil and tonumber(device.state) > settings.high_threshold_custom then -- seuil haut %
                                 domoticz.log(device.name .. ' a un seuil haut défini à  ' .. settings.high_threshold_custom..device.sensorUnit, domoticz.LOG_INFO)
-                                message = 'La valeur mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_custom..device.sensorUnit..'). Valeur : '..tostring(domoticz.utils.round(device.state, 1))..device.sensorUnit
+                                message = 'La valeur mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_custom..device.sensorUnit..').' -- Valeur : '..tostring(domoticz.utils.round(device.state, 1))..device.sensorUnit
                                 domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
 
@@ -635,7 +656,7 @@ return {
                             domoticz.log('La valeur mesurée par '.. device.name .. ' est de  ' .. tostring(domoticz.utils.round(device.percentage, 1)) ..'%', domoticz.LOG_INFO)
                             if settings.low_threshold_percent ~= nil and device.percentage < settings.low_threshold_percent and test_low_threshold == true then  -- seuil bas %
                                 domoticz.log(device.name .. ' a un seuil % bas défini à  ' .. settings.low_threshold_percent..'%', domoticz.LOG_INFO)
-                                message = 'La valeur mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_percent..'%). Valeur : '.. tostring(domoticz.utils.round(device.percentage, 1)) ..'%'
+                                message = 'La valeur mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_percent..'%).' -- Valeur : '.. tostring(domoticz.utils.round(device.percentage, 1)) ..'%'
                                 if settings.duration_exceeded_percent ~= nil then
                                     domoticz.data.managedValue.add(settings.low_threshold_percent)
                                     domoticz.data.managedId.add(device.id)
@@ -644,7 +665,7 @@ return {
                             end
                             if settings.high_threshold_percent ~= nil and device.percentage > settings.high_threshold_percent and test_high_threshold == true then  -- seuil haut %
                                 domoticz.log(device.name .. ' a un seuil % haut défini à  ' .. settings.high_threshold_percent..'%', domoticz.LOG_INFO)
-                                message = 'La valeur mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_percent..'%). Valeur : '.. tostring(domoticz.utils.round(device.percentage, 1)) ..'%'
+                                message = 'La valeur mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_percent..'%).' -- Valeur : '.. tostring(domoticz.utils.round(device.percentage, 1)) ..'%'
 
                                 if settings.duration_exceeded_percent ~= nil then
                                     domoticz.data.managedValue.add(settings.high_threshold_percent)
