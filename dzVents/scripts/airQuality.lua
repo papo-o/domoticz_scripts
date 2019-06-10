@@ -12,7 +12,7 @@ An API key is required and can be aquired here ==> http://aqicn.org/data-platfor
 
 
 https://pon.fr/dzvents-qualite-de-lair-et-donnees-meteorologiques
-
+https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/airQuality.lua
 v1.x : https://pon.fr/qualite-de-lair-dans-le-monde/
 ]]--
 local token_aqicn = 'api_aqicn'-- aqicn token chaine user variable name. if you don't want to use a user variable, change the value of the apiKey variable
