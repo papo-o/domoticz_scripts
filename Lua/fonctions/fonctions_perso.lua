@@ -1,45 +1,46 @@
---[[ 
-version 1.6
+--[[
+version 1.7
+MAJ = 14/07/2019
 appel de ces fonctions :
 package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"
 ou
-package.path = package.path..";"..debug.getinfo(1).source:match("@?(.*/)").."?.lua"	-- linux
+package.path = package.path..";"..debug.getinfo(1).source:match("@?(.*/)").."?.lua"    -- linux
 
 require('fonctions_perso')
-ou 
+ou
 dofile('home/pi/domoticz/scripts/lua/fonctions/fonctions_perso.lua')
-]]-- Certaines fonctions sont les miennes 
--- d'autres proviennent du forums officiel https://www.domoticz.com/forum/viewtopic.php?f=23&t=7642&p=87659 
+]]-- Certaines fonctions sont les miennes
+-- d'autres proviennent du forums officiel https://www.domoticz.com/forum/viewtopic.php?f=23&t=7642&p=87659
 -- d'autres encore de vil1driver https://raw.githubusercontent.com/vil1driver/lua/master/modules.lua
 
 domoticzIP = '127.0.0.1'
 domoticzPORT = '8080'
-domoticzUSER = ''		-- nom d'utilisateur
-domoticzPSWD = ''		-- mot de pass
-domoticzPASSCODE = ''	-- pour interrupteur protégés
+domoticzUSER = ''        -- nom d'utilisateur
+domoticzPSWD = ''        -- mot de pass
+domoticzPASSCODE = ''    -- pour interrupteur protégés
 domoticzURL = 'http://'..domoticzIP..':'..domoticzPORT
 -- chemin vers le dossier lua
 if (package.config:sub(1,1) == '/') then
-	luaDir = debug.getinfo(1).source:match("@?(.*/)")
+    luaDir = debug.getinfo(1).source:match("@?(.*/)")
 else
     luaDir = string.gsub(debug.getinfo(1).source:match("@?(.*\\)"),'\\','\\\\')
 end
-curl = '/usr/bin/curl -m 8 -u domoticzUSER:domoticzPSWD '		 	-- ne pas oublier l'espace à la fin
-json = assert(loadfile(luaDir..'JSON.lua'))()						-- chargement du fichier JSON.lua
+curl = '/usr/bin/curl -m 8 -u domoticzUSER:domoticzPSWD '             -- ne pas oublier l'espace à la fin
+json = assert(loadfile(luaDir..'JSON.lua'))()                        -- chargement du fichier JSON.lua
 
 --------------------------------------------
 -------------Fonctions----------------------
--------------------------------------------- 
+--------------------------------------------
 function voir_les_logs (s, debugging) -- nécessite la variable local debugging
-    if (debugging) then 
-		if s ~= nil then
+    if (debugging) then
+        if s ~= nil then
         print (s)
-		else
-		print ("aucune valeur affichable")
-		end
+        else
+        print ("aucune valeur affichable")
+        end
     end
-end	-- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
--------------------------------------------- 
+end    -- usage voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
+--------------------------------------------
 function format(str)
    if (str) then
       str = string.gsub (str, "De", "De ")
@@ -49,9 +50,9 @@ function format(str)
       str = string.gsub (str, "Précipitations&nbsp;modérées", "<font color='#fb8a21'>Précipitations&nbsp;modérées</font>")
       str = string.gsub (str, "Précipitations&nbsp;fortes", "<font color='#f3031d'>Précipitations&nbsp;fortes</font>")
    end
-   return str   
+   return str
 end
--------------------------------------------- 
+--------------------------------------------
 function print_r ( t )  -- afficher le contenu d'un tableau
     local print_r_cache={}
     local function sub_print_r(t,indent)
@@ -85,8 +86,8 @@ function print_r ( t )  -- afficher le contenu d'un tableau
     end
     print()
 end
--------------------------------------------- 
-function url_encode(str) -- encode la chaine str pour la passer dans une url 
+--------------------------------------------
+function url_encode(str) -- encode la chaine str pour la passer dans une url
    if (str) then
    str = string.gsub (str, "\n", "\r\n")
    str = string.gsub (str, "([^%w ])",
@@ -94,14 +95,14 @@ function url_encode(str) -- encode la chaine str pour la passer dans une url
    str = string.gsub (str, " ", "+")
    end
    return str
-end 
--------------------------------------------- 
+end
+--------------------------------------------
 function sans_accent(str) -- supprime les accents de la chaîne str
     if (str) then
-	str = string.gsub (str,"Ç", "C")
-	str = string.gsub (str,"ç", "c")
+    str = string.gsub (str,"Ç", "C")
+    str = string.gsub (str,"ç", "c")
     str = string.gsub (str,"[-èéêë']+", "e")
-	str = string.gsub (str,"[-ÈÉÊË']+", "E")
+    str = string.gsub (str,"[-ÈÉÊË']+", "E")
     str = string.gsub (str,"[-àáâãäå']+", "a")
     str = string.gsub (str,"[-@ÀÁÂÃÄÅ']+", "A")
     str = string.gsub (str,"[-ìíîï']+", "i")
@@ -115,26 +116,26 @@ function sans_accent(str) -- supprime les accents de la chaîne str
      end
     return (str)
 end
--------------------------------------------- 
-function accent_html(str) --remplace les caractères accentués par le code html 
+--------------------------------------------
+function accent_html(str) --remplace les caractères accentués par le code html
     if (str) then
-	str = string.gsub(str, "'", "&apos;")
-	str = string.gsub(str, "â",	"&acirc;")
-	str = string.gsub(str, "à",	"&agrave;")
-	str = string.gsub(str, "é",	"&eacute;")
-	str = string.gsub(str, "ê",	"&ecirc;")
-	str = string.gsub(str, "è",	"&egrave;")
-	str = string.gsub(str, "ë",	"&euml;")
-	str = string.gsub(str, "î",	"&icirc;")
-	str = string.gsub(str, "ï",	"&iuml;")
-    str = string.gsub(str, "ô",	"&ocirc;")
-	str = string.gsub(str, "ö",	"&ouml;")
-	str = string.gsub(str, "œ",	"&oelig;")
-	str = string.gsub(str, "û",	"&ucirc;")
-	str = string.gsub(str, "ù",	"&ugrave;")
-	str = string.gsub(str, "ü",	"&uuml;")
-	str = string.gsub(str, "ç",	"&ccedil;")
-	str = string.gsub(str, "[-ÈÉÊË']+", "E")
+    str = string.gsub(str, "'", "&apos;")
+    str = string.gsub(str, "â",    "&acirc;")
+    str = string.gsub(str, "à",    "&agrave;")
+    str = string.gsub(str, "é",    "&eacute;")
+    str = string.gsub(str, "ê",    "&ecirc;")
+    str = string.gsub(str, "è",    "&egrave;")
+    str = string.gsub(str, "ë",    "&euml;")
+    str = string.gsub(str, "î",    "&icirc;")
+    str = string.gsub(str, "ï",    "&iuml;")
+    str = string.gsub(str, "ô",    "&ocirc;")
+    str = string.gsub(str, "ö",    "&ouml;")
+    str = string.gsub(str, "œ",    "&oelig;")
+    str = string.gsub(str, "û",    "&ucirc;")
+    str = string.gsub(str, "ù",    "&ugrave;")
+    str = string.gsub(str, "ü",    "&uuml;")
+    str = string.gsub(str, "ç",    "&ccedil;")
+    str = string.gsub(str, "[-ÈÉÊË']+", "E")
     str = string.gsub(str, "[-@ÀÁÂÃÄÅ']+", "A")
     str = string.gsub(str, "[-ÌÍÎÏ']+", "I")
     str = string.gsub(str, "[-ÒÓÔÕÖ']+", "O")
@@ -144,8 +145,8 @@ function accent_html(str) --remplace les caractères accentués par le code html
     return (str)
 end
 --------------------------------------------
-function unescape(str)--remplace le code html 
-    if (str) then    
+function unescape(str)--remplace le code html
+    if (str) then
     str = string.gsub( str, '&nbsp;', ' ')
     str = string.gsub( str, '&iexcl;', '¡')
     str = string.gsub( str, '&cent;', '¢')
@@ -250,66 +251,85 @@ function unescape(str)--remplace le code html
     return (str)
 end
 --------------------------------------------
-   function GetUserVar(UserVar) -- Get UserVar and Print when missing
-      variable=uservariables[UserVar]
-      if variable==nil then
-         print(".  User variable not set for : " .. UserVar)
-         UserVarErr=UserVarErr+1
-      end
-      return variable
-	  
-	  --[[
+function GetUserVar(UserVar) -- Get UserVar and Print when missing
+    variable=uservariables[UserVar]
+    if variable==nil then
+        print(".  User variable not set for : " .. UserVar)
+        UserVarErr=UserVarErr+1
+    end
+    return variable
+
+      --[[
 Get value of a user variable, but when the user variable not exist the function prints print (". User variable not set for : " .. UserVar) to the log.
 When you use this function for all the variables users who copy your script gets in logging a message which variables they must make.]]--
-   end
--------------------------------------------- 
-   function File_exists(file)  --Check if file exist
-     local f = io.open(file, "rb")
-     if f then f:close() end
-     return f ~= nil
-	--   if not File_exists(LogFile) then
-   end
--------------------------------------------- 
-function round(value, digits)
-	if not value or not digits then
-		return nil
-	end
-		local precision = 10^digits
-        return (value >= 0) and
-		  (math.floor(value * precision + 0.5) / precision) or
-		  (math.ceil(value * precision - 0.5) / precision)
 end
--------------------------------------------- 
-function fahrenheit_to_celsius(fahrenheit, digits) 
+--------------------------------------------
+function File_exists(file)  --Check if file exist
+    local f = io.open(file, "rb")
+    if f then f:close() end
+    return f ~= nil
+    --   if not File_exists(LogFile) then
+end
+--------------------------------------------
+function round(value, digits)
+    if not value or not digits then
+        return nil
+    end
+    local precision = 10^digits
+    return (value >= 0) and
+      (math.floor(value * precision + 0.5) / precision) or
+      (math.ceil(value * precision - 0.5) / precision)
+end
+--------------------------------------------
+function fahrenheit_to_celsius(fahrenheit, digits)
     return round((5/9) * (fahrenheit - 32), digits or 2)
 end
--------------------------------------------- 
-function miles_to_km(miles, digits) 
+--------------------------------------------
+function celsiusToFahrenheit(c)
+    return c * 9 / 5 + 32
+end
+--------------------------------------------
+function miles_to_km(miles, digits)
     return round((miles * 1.609344), digits or 2)
 end
--------------------------------------------- 
+
+function km_to_miles(km, digits)
+    return round((km * 0.62137119223733), digits or 2)
+end
+--------------------------------------------
+local function quadrants(degrees)
+    local quadrants = {"NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"}
+
+        if degrees > 348.75 or degrees <= 11.25 then
+            return "N"
+        else
+            local index = tonumber(math.floor((degrees - 11.25) / 22.5)+1)
+            return quadrants[index]
+        end
+end
+--------------------------------------------
    function GetValue(Text, GetNr)  -- Get the X value of a device
-      Part=1	 --[[5 in this example can you change in the number of the value.
+      Part=1     --[[5 in this example can you change in the number of the value.
 my Wind meter gives: 207.00;SSW;9;18;16.4;16.4 so I need fift value for temperature]] --
-      for match in (Text..';'):gmatch("(.-)"..';') do
-         if Part==GetNr then MyValue = tonumber(match) end
-         Part=Part+1
-      end
-      return MyValue
--- Variable      = GetValue(otherdevices_svalues[DeviceName],5)  
+    for match in (Text..';'):gmatch("(.-)"..';') do
+        if Part==GetNr then MyValue = tonumber(match) end
+            Part=Part+1
+        end
+    return MyValue
+    -- Variable      = GetValue(otherdevices_svalues[DeviceName],5)
    end
---------------------------------------------   
-   function EnumClear(Text)   -- replace the last character
-      a=string.len(Text)
-      b=string.sub(Text,a,a)
-      if b=="," or b==" " then Text=string.sub(Text,1,a-1) end
-      a=string.len(Text)
-      b=string.sub(Text,a,a)
-      if b=="," or b==" " then Text=string.sub(Text,1,a-1) end
-      return Text
-   end
---------------------------------------------   
- function XML_Capture(cmd,flatten)
+--------------------------------------------
+function EnumClear(Text)   -- replace the last character
+    a=string.len(Text)
+    b=string.sub(Text,a,a)
+    if b=="," or b==" " then Text=string.sub(Text,1,a-1) end
+    a=string.len(Text)
+    b=string.sub(Text,a,a)
+    if b=="," or b==" " then Text=string.sub(Text,1,a-1) end
+    return Text
+end
+--------------------------------------------
+function XML_Capture(cmd,flatten)
    local f = assert(io.popen(cmd, 'r'))
    local s = assert(f:read('*a'))
    f:close()
@@ -319,18 +339,18 @@ my Wind meter gives: 207.00;SSW;9;18;16.4;16.4 so I need fift value for temperat
       s = string.gsub(s, '[\n\r]+', ' ')
    end
    return s
-end  
+end
 
 --notification pushbullet
 function pushbullet(title,body)
---	local settings = assert(io.popen(curl..'-u '..domoticzUSER..':'..domoticzPSWD..' "'..domoticzURL..'/json.htm?type=settings"'))
-	local settings = assert(io.popen(curl..'-u "'..domoticzURL..'/json.htm?type=settings"'))    
-	local list = settings:read('*all')
-	settings:close()
-	local pushbullet_key = json:decode(list).PushbulletAPI
-	os.execute(curl..'-H \'Access-Token:'..pushbullet_key..'\' -H \'Content-Type:application/json\' --data-binary \'{"title":"'..title..'","body":"'..body..'","type":"note"}\' -X POST "https://api.pushbullet.com/v2/pushes"')
+--    local settings = assert(io.popen(curl..'-u '..domoticzUSER..':'..domoticzPSWD..' "'..domoticzURL..'/json.htm?type=settings"'))
+    local settings = assert(io.popen(curl..'-u "'..domoticzURL..'/json.htm?type=settings"'))
+    local list = settings:read('*all')
+    settings:close()
+    local pushbullet_key = json:decode(list).PushbulletAPI
+    os.execute(curl..'-H \'Access-Token:'..pushbullet_key..'\' -H \'Content-Type:application/json\' --data-binary \'{"title":"'..title..'","body":"'..body..'","type":"note"}\' -X POST "https://api.pushbullet.com/v2/pushes"')
 end--usage: pushbullet('test','ceci est un message test')
--------------------------------------------- 
+--------------------------------------------
 function split(inputstr, sep)
         if sep == nil then
                 sep = "%s"
@@ -352,26 +372,26 @@ end -- usage : valeurs = split(variable,";")
     -- end
     -- return result;
 -- end -- usage : valeurs = split(variable,";")
--------------------------------------------- 
+--------------------------------------------
 function calc_wind_chill(temperature, wind_speed)-- Calculate wind chill.
 -- If temperature is low but it's windy, the temperature
 -- feels lower than the actual measured temperature. Wind chill formula from
 -- <a href="http://www.nws.noaa.gov/om/windchill/">http://www.nws.noaa.gov/om/windchill/</a>.
 -- @param temperature Temperature in Fahrenheit, must be 50 or less
 -- @param wind_speed Wind speed in miles per hour
--- @return Wind chill of the given conditions, or nil if invalid input received	
-	local apparent = nil
-	if (temperature ~= nil and wind_speed ~= nil and temperature <= 50) then
-		if (wind_speed > 3) then
-			local v = math.pow(wind_speed, 0.16)
-			apparent = 35.74 + 0.6215 * temperature - 35.75 * v + 0.4275 * temperature * v
-		elseif (wind_speed >= 0) then
-			apparent = temperature
-		end
-	end
-	return apparent
+-- @return Wind chill of the given conditions, or nil if invalid input received
+    local apparent = nil
+    if (temperature ~= nil and wind_speed ~= nil and temperature <= 50) then
+        if (wind_speed > 3) then
+            local v = math.pow(wind_speed, 0.16)
+            apparent = 35.74 + 0.6215 * temperature - 35.75 * v + 0.4275 * temperature * v
+        elseif (wind_speed >= 0) then
+            apparent = temperature
+        end
+    end
+    return apparent
 end
--------------------------------------------- 
+--------------------------------------------
 function calc_heat_index(temperature, humidity)-- Calculate heat index.
 -- If it's hot and humidity is high,
 -- temperature feels higher than what it actually is. Heat index is
@@ -382,31 +402,31 @@ function calc_heat_index(temperature, humidity)-- Calculate heat index.
 -- @param humidity Relative humidity as a percentage value between 40 and 100
 -- @return Heat index of the given conditions, or nil if invalid input received
 local apparent = nil
-	if (temperature ~= nil and humidity ~= nil and temperature >= 80 and humidity >= 40) then
-		local t2 = temperature * temperature
-		local t3 = t2 * temperature
-		local h2 = humidity * humidity
-		local h3 = h2 * temperature
+    if (temperature ~= nil and humidity ~= nil and temperature >= 80 and humidity >= 40) then
+        local t2 = temperature * temperature
+        local t3 = t2 * temperature
+        local h2 = humidity * humidity
+        local h3 = h2 * temperature
 
-		apparent = 16.923
-		+ 0.185212 * temperature
-		+ 5.37941 * humidity
-		- 0.100254 * temperature * humidity
-		+ 9.41695e-3 * t2
-		+ 7.28898e-3 * h2
-		+ 3.45372e-4 * t2 * humidity
-		- 8.14971e-4 * temperature * h2
-		+ 1.02102e-5 * t2 * h2
-		- 3.8646e-5 * t3
-		+ 2.91583e-5 * h3
-		+ 1.42721e-6 * t3 * humidity
-		+ 1.97483e-7 * temperature * h3
-		- 2.18429e-8 * t3 * h2
-		+ 8.43296e-10 * t2 * h3
-		- 4.81975e-11 * t3 * h3
-	end
+        apparent = 16.923
+        + 0.185212 * temperature
+        + 5.37941 * humidity
+        - 0.100254 * temperature * humidity
+        + 9.41695e-3 * t2
+        + 7.28898e-3 * h2
+        + 3.45372e-4 * t2 * humidity
+        - 8.14971e-4 * temperature * h2
+        + 1.02102e-5 * t2 * h2
+        - 3.8646e-5 * t3
+        + 2.91583e-5 * h3
+        + 1.42721e-6 * t3 * humidity
+        + 1.97483e-7 * temperature * h3
+        - 2.18429e-8 * t3 * h2
+        + 8.43296e-10 * t2 * h3
+        - 4.81975e-11 * t3 * h3
+    end
 
-	return apparent
+    return apparent
 end
 --------------------------------------------
 function calc_apparent_temperature(temperature, wind_speed, humidity) -- Calculate wind chill or heat index corrected temperature
@@ -415,36 +435,36 @@ function calc_apparent_temperature(temperature, wind_speed, humidity) -- Calcula
 -- @param humidity Relative humidity as a percentage value between 0 and 100
 -- @return Apparent temperature given the weather conditions
 -- @see calc_wind_chill
--- @see calc_heat_index	
-	-- Wind chill
-	if (temperature ~= nil and wind_speed ~= nil and temperature <= 50) then
-		return calc_wind_chill(temperature, wind_speed)
-	-- Head index
-	elseif (temperature ~= nil and humidity ~= nil and temperature >= 80 and humidity >= 40) then
-		return calc_heat_index(temperature, humidity)
-	end
+-- @see calc_heat_index
+    -- Wind chill
+    if (temperature ~= nil and wind_speed ~= nil and temperature <= 50) then
+        return calc_wind_chill(temperature, wind_speed)
+    -- Head index
+    elseif (temperature ~= nil and humidity ~= nil and temperature >= 80 and humidity >= 40) then
+        return calc_heat_index(temperature, humidity)
+    end
 
-	return temperature
+    return temperature
 end
--------------------------------------------- 
-function ConvTime(timestamp) -- convertir un timestamp 
+--------------------------------------------
+function ConvTime(timestamp) -- convertir un timestamp
    y, m, d, H, M, S = timestamp:match("(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)")
    return os.time{year=y, month=m, day=d, hour=H, min=M, sec=S}
 end
--------------------------------------------- 
-function timeDiff(dName,dType) -- retourne le temps en seconde depuis la dernière maj du périphérique (Variable 'v' ou Device 'd' 
-        if dType == 'v' then 
+--------------------------------------------
+function timeDiff(dName,dType) -- retourne le temps en seconde depuis la dernière maj du périphérique (Variable 'v' ou Device 'd'
+        if dType == 'v' then
            updTime = uservariables_lastupdate[dName]
         elseif dType == 'd' then
            updTime = otherdevices_lastupdate[dName]
-        end 
+        end
         t1 = os.time()
-	y, m, d, H, M, S = updTime:match("(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)")	
+    y, m, d, H, M, S = updTime:match("(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)")
     t2 = os.time{year=y, month=m, day=d, hour=H, min=M, sec=S}
         tDiff = os.difftime(t1,t2)
         return tDiff
     end -- usage: timeDiff(name,'v|d')
- --------------------------------------------    
+ --------------------------------------------
 function timedifference(s)
    year = string.sub(s, 1, 4)
    month = string.sub(s, 6, 7)
@@ -457,24 +477,24 @@ function timedifference(s)
    difference = os.difftime (t1, t2)
    return difference  --le résultat retourné est en secondes
 end
---[[ usage : 
+--[[ usage :
         DATE = "2018-04-29 16:57:18"
-        print(timedifference(DATE)) 
+        print(timedifference(DATE))
 --]]
 --------------------------------------------
 function year_difference(s)
     return tostring(os.date("%Y")) - tostring(s)
 end
--------------------------------------------- 
-function TimeDiff2(Time1,Time2)  --gave to difference between now and the time that a devices is last changed in minutes 
+--------------------------------------------
+function TimeDiff2(Time1,Time2)  --gave to difference between now and the time that a devices is last changed in minutes
       if string.len(Time1)>12 then Time1 = ConvTime(Time1) end
-      if string.len(Time2)>12 then Time2 = ConvTime(Time2) end   
+      if string.len(Time2)>12 then Time2 = ConvTime(Time2) end
       ResTime=os.difftime (Time1,Time2)
       return ResTime
 --usage : TDiff = Round(TimeDiff(os.time(),otherdevices_lastupdate[DeviceManual])/60,0)
    end
--------------------------------------------- 
-function TronquerTexte(texte, nb)  -- texte à tronquer, Nb maximum de caractère 
+--------------------------------------------
+function TronquerTexte(texte, nb)  -- texte à tronquer, Nb maximum de caractère
 local sep ="[?;!.]"
 local DernierIndex = nil
 texte = string.sub(texte, 1, nb)
@@ -488,11 +508,11 @@ while p do
 end
 return(string.sub(texte, 1, DernierIndex))
 end
--------------------------------------------- 
+--------------------------------------------
 function creaVar(vname,vtype,vvalue) -- pour créer une variable de type 2 nommée toto comprenant la valeur 10
-	os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=command&param=saveuservariable&vname='..url_encode(vname)..'&vtype='..vtype..'&vvalue='..url_encode(vvalue)..'" &')
+    os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=command&param=saveuservariable&vname='..url_encode(vname)..'&vtype='..vtype..'&vvalue='..url_encode(vvalue)..'" &')
 end -- usage :  creaVar('toto','2','10')
--------------------------------------------- 
+--------------------------------------------
 function typeof(var) -- retourne le type de la variable 'string' ou 'number'
     local _type = type(var);
     if(_type ~= "table" and _type ~= "userdata") then
@@ -505,11 +525,11 @@ function typeof(var) -- retourne le type de la variable 'string' ou 'number'
         return _type;
     end
 end
--------------------------------------------- 
+--------------------------------------------
 function speak(TTSDeviceName,txt) -- envoie dans un capteur text une chaîne de caractères qui sera interceptée et lue par la custom page grâce à sa fonction MQTT
-	commandArray['OpenURL'] = domoticzIP..":"..domoticzPORT..'/json.htm?type=command&param=udevice&idx='..otherdevices_idx[TTSDeviceName]..'&nvalue=0&svalue='..url_encode(txt)
+    commandArray['OpenURL'] = domoticzIP..":"..domoticzPORT..'/json.htm?type=command&param=udevice&idx='..otherdevices_idx[TTSDeviceName]..'&nvalue=0&svalue='..url_encode(txt)
 end -- usage: speak('tts','bonjour nous sommes dimanche')
--------------------------------------------- 
+--------------------------------------------
 local BinaryFormat = package.cpath:match("%p[\\|/]?%p(%a+)")
 --print(BinaryFormat)
 if BinaryFormat == "dll" then
@@ -540,7 +560,7 @@ function GetDeviceNameByIDX(deviceIDX) -- source https://www.domoticz.com/forum/
 end -- exemple usage = commandArray[GetDeviceNameByIDX(383)] = 'On'
 --------------------------------------------
 -- Obtenir l'idx d'un device via son nom
--- function GetDeviceIdxByName(deviceName) 
+-- function GetDeviceIdxByName(deviceName)
    -- for i, v in pairs(otherdevices_idx) do
       -- if i == deviceName then
          -- return v
@@ -583,25 +603,25 @@ function hhmm(minute)
     return heures, minutes
 end
 --------------------------------------------
-function DeviceInfos(device)  
-    
+function DeviceInfos(device)
+
     -- inspiré de  http://www.domoticz.com/forum/viewtopic.php?f=61&t=15556&p=115795&hilit=otherdevices_SwitchTypeVal&sid=dda0949f5f3d71cb296b865a14827a34#p115795
     -- Attributs disponibles :
-    -- AddjMulti; AddjMulti2; AddjValue; AddjValue2; BatteryLevel; CustomImage; Data; Description; Favorite; 
-    -- HardwareID; HardwareName; HardwareType; HardwareTypeVal; HaveDimmer; HaveGroupCmd; HaveTimeout; ID; 
-    -- Image; IsSubDevice; LastUpdate; Level; LevelInt; MaxDimLevel; Name; Notifications; PlanID; PlanIDs; 
-    -- Protected; ShowNotifications; SignalLevel; Status; StrParam1; StrParam2; SubType; SwitchType; 
+    -- AddjMulti; AddjMulti2; AddjValue; AddjValue2; BatteryLevel; CustomImage; Data; Description; Favorite;
+    -- HardwareID; HardwareName; HardwareType; HardwareTypeVal; HaveDimmer; HaveGroupCmd; HaveTimeout; ID;
+    -- Image; IsSubDevice; LastUpdate; Level; LevelInt; MaxDimLevel; Name; Notifications; PlanID; PlanIDs;
+    -- Protected; ShowNotifications; SignalLevel; Status; StrParam1; StrParam2; SubType; SwitchType;
     -- SwitchTypeVal; Timers; Type; TypeImg; Unit; Used; UsedByCamera; XOffset; YOffset; idx
-    
+
     config = assert(io.popen(curl..'"'.. domoticzURL ..'/json.htm?type=devices&rid='..otherdevices_idx[device]..'"'))
     blocjson = config:read('*all')
     config:close()
     jsonValeur = json:decode(blocjson)
     if jsonValeur ~= nil then
-        return json:decode(blocjson).result[1]    
-    end       
-end 
-    -- usage : 
+        return json:decode(blocjson).result[1]
+    end
+end
+    -- usage :
         -- local attribut = DeviceInfos(cpt_djc)
         -- if attribut.SwitchTypeVal == 0 then    end
 --------------------------------------------
@@ -615,9 +635,9 @@ function CreateVirtualSensor(dname, sensortype)
        for Index, Value in pairs( jsonValeur.result ) do
            if Value.Type == 15 then -- hardware dummy = 15
               voir_les_logs("--- --- --- idx hardware dummy  : ".. Value.idx .." --- --- ---",debugging)
-              voir_les_logs("--- --- --- Nom hardware dummy  : ".. Value.Name .." --- --- ---",debugging)                  
+              voir_les_logs("--- --- --- Nom hardware dummy  : ".. Value.Name .." --- --- ---",debugging)
               id = Value.idx
-           end  
+           end
        end
     end
 
@@ -626,13 +646,13 @@ function CreateVirtualSensor(dname, sensortype)
         voir_les_logs(curl..'"'.. domoticzURL ..'/json.htm?type=createvirtualsensor&idx='..id..'&sensorname='..url_encode(dname)..'&sensortype='..sensortype..'"',debugging)
         os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=createvirtualsensor&idx='..id..'&sensorname='..url_encode(dname)..'&sensortype='..sensortype..'"')
 
-        voir_les_logs("--- --- --- device   : ".. dname .. " créé --- --- ---",debugging)         
+        voir_les_logs("--- --- --- device   : ".. dname .. " créé --- --- ---",debugging)
     end
-    -- else     
+    -- else
         -- local attribut = DeviceInfos(dname)
         -- if attribut then
             -- if attribut.SwitchTypeVal == 0 then
-                -- voir_les_logs("--- --- --- modification du device RFXMeter  : ".. dname .. " en compteur de type 3  --- --- ---",debugging) 
+                -- voir_les_logs("--- --- --- modification du device RFXMeter  : ".. dname .. " en compteur de type 3  --- --- ---",debugging)
                 -- os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=setused&idx='..otherdevices_idx[dname]..'&name='..url_encode(dname)..'&switchtype=3&used=true"')
             -- end
         -- else
@@ -640,19 +660,19 @@ function CreateVirtualSensor(dname, sensortype)
         -- end
 --https://github.com/domoticz/domoticz/blob/development/hardware/hardwaretypes.h
 
-end        
+end
 --------------------------------------------
 function ConvertCounter(devicename)
 local attribut = DeviceInfos(devicename)
     if attribut then
         if attribut.SwitchTypeVal == 0 then
-            voir_les_logs("--- --- --- modification du device RFXMeter  : ".. devicename .. " en compteur de type 3  --- --- ---",debugging) 
+            voir_les_logs("--- --- --- modification du device RFXMeter  : ".. devicename .. " en compteur de type 3  --- --- ---",debugging)
             os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=setused&idx='..otherdevices_idx[devicename]..'&name='..url_encode(devicename)..'&switchtype=3&used=true"')
         end
     else
         voir_les_logs("--- --- --- impossible d\'extraire les caractéristiques du compteur ".. devicename .."  --- --- ---",debugging)
     end
-end 
+end
 --------------------------------------------
 function validMACaddress(s)
     mac = s:match("(%w+:%w+:%w+:%w+:%w+:%w+)")
@@ -661,22 +681,22 @@ end
 --------------------------------------------
 function date_en_francais(str)
     if (str) then
-	str = string.gsub(str, "January", "Janvier;");
-	str = string.gsub(str, "February",	"Février")
-	str = string.gsub(str, "March",	"Mars")
-	str = string.gsub(str, "April",	"Avril")
-	str = string.gsub(str, "May",	"Mai")
-	str = string.gsub(str, "June",	"Juin")
-	str = string.gsub(str, "July",	"Juillet")
-	str = string.gsub(str, "August",	"Août")
-	str = string.gsub(str, "september",	"Septembre")
-	str = string.gsub(str, "October",	"Octobre")
-	str = string.gsub(str, "November",	"Novembre")
-	str = string.gsub(str, "December",	"Décembre")
-	str = string.gsub(str, "Monday",	"Lundi")
-	str = string.gsub(str, "Tuesday",	"Mardi")
-	str = string.gsub(str, "Wednesday",	"Mercredi")
-	str = string.gsub(str, "Thursday", "Jeudi")
+    str = string.gsub(str, "January", "Janvier");
+    str = string.gsub(str, "February",    "Février")
+    str = string.gsub(str, "March",    "Mars")
+    str = string.gsub(str, "April",    "Avril")
+    str = string.gsub(str, "May",    "Mai")
+    str = string.gsub(str, "June",    "Juin")
+    str = string.gsub(str, "July",    "Juillet")
+    str = string.gsub(str, "August",    "Août")
+    str = string.gsub(str, "september",    "Septembre")
+    str = string.gsub(str, "October",    "Octobre")
+    str = string.gsub(str, "November",    "Novembre")
+    str = string.gsub(str, "December",    "Décembre")
+    str = string.gsub(str, "Monday",    "Lundi")
+    str = string.gsub(str, "Tuesday",    "Mardi")
+    str = string.gsub(str, "Wednesday",    "Mercredi")
+    str = string.gsub(str, "Thursday", "Jeudi")
     str = string.gsub(str, "Friday", "Vendredi")
     str = string.gsub(str, "Saturday", "Samedi")
     str = string.gsub(str, "Sunday", "Dimanche")
