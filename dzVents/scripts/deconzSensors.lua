@@ -10,13 +10,13 @@ https://easydomoticz.com/forum/viewtopic.php?f=15&t=7593&p=69089#p69089
 how does this script work :
 DCONZ plugin generates 3 devices for each xiaomi aqara sensor which we will name for the example, shower
 shower temperature
-shower hygrometry
-shower Barometer
+shower humidity
+shower barometer
 
 we rename them 
 $temperature shower
-$hygrometry shower
-$Barometer shower
+$humidity shower
+$barometer shower
 
 Create a dummy Temp + Humidity + Baro device
 
