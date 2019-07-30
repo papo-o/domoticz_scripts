@@ -1,9 +1,9 @@
---[[
-moonSelectorIcons.lua
+--[[ moonSelectorIcons.lua
 source : https://www.domoticz.com/forum/viewtopic.php?f=59&t=27501&p=210819&hilit=seticon#p210819
+https://pon.fr/ddzvents-darksky-probabilite-de-vent-et-phases-lunaires/
 https://easydomoticz.com/forum/viewtopic.php?f=10&t=8758&p=71951#p71951
-https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/moonSelectorIcons.lua.lua
-update/mise à jour = 29/07/2019
+icones : https://github.com/papo-o/domoticz_scripts/tree/master/Icons/MoonPhases
+ update/mise à jour = 29/07/2019
 --]]
 local scriptName        = 'moonSelectorIcons'
 local scriptVersion     = ' 1.0'
@@ -25,7 +25,7 @@ return  {
         local function logWrite(str,level)
             domoticz.log(tostring(str),level or domoticz.LOG_DEBUG)
         end
-        local icons =     { -- level = iconNumber 
+        local icons =     { 
                             [10] = 129,-- level correspondant à Nouvelle lune
                             [20] = 130,-- level correspondant à Premier croissant
                             [30] = 131,-- level correspondant à Premier quartier
@@ -34,7 +34,6 @@ return  {
                             [60] = 134,-- level correspondant à Gibbeuse décroissante
                             [70] = 135,-- level correspondant à Dernier quartier
                             [80] = 136,-- level correspondant à Dernier croissant
-                            --[80] = 137,
                         }
         
         local function setIcon(iconNumber) 
