@@ -3,7 +3,7 @@
 author/auteur = papoo
 update/mise à jour = 29/07/2019
 creation = 15/09/2018
-https://pon.fr/dzvents-darksky-et-probabilite-de-pluie/
+https://pon.fr/ddzvents-darksky-probabilite-de-vent-et-phases-lunaires/
 https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/darksky.lua
 https://www.domoticz.com/forum/viewtopic.php?f=59&t=24928
 https://easydomoticz.com/forum/viewtopic.php?f=17&t=7136&p=58822#p58822
@@ -109,28 +109,20 @@ return {
                 end
         end
         local function levelMoonhase(moonphase)
-            local moonPhase = "Nouvelle lune"
             local level = 10 -- level correspondant à Nouvelle lune
             if(moonphase > 0.0 and moonphase < 0.13) then
-                --moonPhase = "Premier croissant"
                 level = 20 -- level correspondant à Premier croissant
             elseif(moonphase > 0.12 and moonphase < 0.25) then
-                --moonPhase = "Premier quartier"
                 level = 30 -- level correspondant à Premier quartier
             elseif(moonphase > 0.24 and moonphase < 0.5) then
-                --moonPhase = "Gibbeuse croissante"
                 level = 40  -- level correspondant à Gibbeuse croissante
             elseif(moonphase > 0.49 and moonphase < 0.63) then
-                --moonPhase = "Pleine lune"
                 level = 50 -- level correspondant à Pleine lune
             elseif(moonphase > 0.62 and moonphase < 0.75) then
-                --moonPhase = "Gibbeuse décroissante"
                 level = 60 -- level correspondant à Gibbeuse décroissante
             elseif(moonphase > 0.74 and moonphase < 0.88) then
-                --moonPhase = "Dernier quartier"
                 level = 70 -- level correspondant à Dernier quartier
             elseif(moonphase > 0.87 and moonphase < 1.00) then
-                --moonPhase = "Dernier croissant"
                 level = 80 -- level correspondant à Dernier croissant
             end
             --end
