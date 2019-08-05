@@ -1,7 +1,7 @@
 --[[ darksky.lua for [ dzVents >= 2.4.14 (domoticz >= V4.10444)]
 
 author/auteur = papoo
-update/mise à jour = 29/07/2019
+update/mise à jour = 05/08/2019
 creation = 15/09/2018
 https://pon.fr/ddzvents-darksky-probabilite-de-vent-et-phases-lunaires/
 https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/darksky.lua
@@ -41,7 +41,7 @@ script dzvents à placer dans le répertoire /domoticz/scripts/dzVents/scripts/
     enfin vous pouvez choisir le niveau de "verbiage" des logs, seulement un niveau peut être actif; commenter les autres dans la section logging
 --]]
 local scriptName        = 'Darksky forecast'
-local scriptVersion     = ' 1.2'
+local scriptVersion     = ' 1.21'
 local proba_pluie_h     = {}
 local prev_wind_h       = {}
 local MoonPhaseSelect   = {}
@@ -110,22 +110,21 @@ return {
         end
         local function levelMoonhase(moonphase)
             local level = 10 -- level correspondant à Nouvelle lune
-            if(moonphase > 0.0 and moonphase < 0.13) then
+            if(moonphase > 0.05 and moonphase < 0.245) then
                 level = 20 -- level correspondant à Premier croissant
-            elseif(moonphase > 0.12 and moonphase < 0.25) then
+            elseif(moonphase > 0.244 and moonphase < 0.255) then 
                 level = 30 -- level correspondant à Premier quartier
-            elseif(moonphase > 0.24 and moonphase < 0.5) then
+            elseif(moonphase > 0.255 and moonphase < 0.495) then
                 level = 40  -- level correspondant à Gibbeuse croissante
-            elseif(moonphase > 0.49 and moonphase < 0.63) then
+            elseif(moonphase > 0.495 and moonphase < 0.55) then
                 level = 50 -- level correspondant à Pleine lune
-            elseif(moonphase > 0.62 and moonphase < 0.75) then
+            elseif(moonphase > 0.55 and moonphase < 0.745) then
                 level = 60 -- level correspondant à Gibbeuse décroissante
-            elseif(moonphase > 0.74 and moonphase < 0.88) then
+            elseif(moonphase > 0.745 and moonphase < 0.755) then
                 level = 70 -- level correspondant à Dernier quartier
-            elseif(moonphase > 0.87 and moonphase < 1.00) then
+            elseif(moonphase > 0.755 and moonphase < 1.00) then
                 level = 80 -- level correspondant à Dernier croissant
             end
-            --end
             return level--moonPhase, 
         end
         local DarkSkyAPIkey = domoticz.variables('api_forecast_io').value
