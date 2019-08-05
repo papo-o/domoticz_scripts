@@ -7,7 +7,7 @@ source https://github.com/JamesSherburne/MoonPhasesLua/blob/master/main.lua
 
 local scriptName        = 'moon phase'
 local scriptVersion     = '1.0'
-local MoonPhaseSelector = nil --2479
+local MoonPhaseSelector = 2479
 
     --local Waning_Crescent = "Waning Crescent"     -- level 80 MoonPhase Selector switch
     local Waning_Crescent = "Dernier croissant"     -- level 80 MoonPhase Selector switch
