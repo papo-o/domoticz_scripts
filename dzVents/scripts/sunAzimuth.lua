@@ -8,6 +8,7 @@ place this DZvents script in /domoticz/scripts/dzVents/scripts/ directory
 script dzvents à placer dans le répertoire /domoticz/scripts/dzVents/scripts/
 https://pon.fr/dzvents-altitude-et-azimut-du-soleil-sans-api/
 https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/sunAzimuth.lua
+https://easydomoticz.com/forum/viewtopic.php?f=17&t=8787
 --]]
 
 
