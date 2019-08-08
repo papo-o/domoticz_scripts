@@ -31,7 +31,7 @@ local MoonPhaseSelector = 2479--nil --
 
 return {
     active = true,
-    on = { timer =   {'every minute'}},
+    on = { timer =   {'every hour'}},
     logging =   {    level    =   domoticz.LOG_DEBUG,
                     -- level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
                     -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others
