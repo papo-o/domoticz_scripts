@@ -1,13 +1,16 @@
 --[[
 author/auteur = papoo
-update/mise à jour = 04/08/2019
+update/mise à jour = 08/08/2019
 creation = 04/08/2019
 source https://github.com/JamesSherburne/MoonPhasesLua/blob/master/main.lua
+https://pon.fr/dzvents-phases-lunaires-sans-api
+https://easydomoticz.com/forum/viewtopic.php?f=17&t=8789
+
 --]]
 
 local scriptName        = 'moon phase'
-local scriptVersion     = '1.0'
-local MoonPhaseSelector = 2479
+local scriptVersion     = '1.01'
+local MoonPhaseSelector = 2479--nil --
 
     --local Waning_Crescent = "Waning Crescent"     -- level 80 MoonPhase Selector switch
     local Waning_Crescent = "Dernier croissant"     -- level 80 MoonPhase Selector switch
@@ -28,7 +31,7 @@ local MoonPhaseSelector = 2479
 
 return {
     active = true,
-    on = { timer =   {'every hour'}},
+    on = { timer =   {'every minute'}},
     logging =   {    level    =   domoticz.LOG_DEBUG,
                     -- level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
                     -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others
@@ -107,16 +110,21 @@ return {
         level       = 10
     end
 
-    logWrite(moonText)
-    logWrite(level)
+    logWrite("moon text : "..moonText)
+    logWrite("level : "..level)
 
     if (MoonPhaseSelector) then
+        logWrite("switch selector name : "..domoticz.devices(MoonPhaseSelector).name)
+        logWrite("switch selector id : "..domoticz.devices(MoonPhaseSelector).id)
+        logWrite("last level switch selector : "..domoticz.devices(MoonPhaseSelector).lastLevel)
         if (domoticz.devices(MoonPhaseSelector).lastLevel ~= level) then
             domoticz.devices(MoonPhaseSelector).switchSelector(level)
             logWrite("update selector device")
         else
             logWrite("no update needed")
         end
+        logWrite("level switch selector : "..domoticz.devices(MoonPhaseSelector).level)
+        logWrite("level name switch selector : "..domoticz.devices(MoonPhaseSelector).levelName)
     end
 
     end -- execute function
