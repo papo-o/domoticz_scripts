@@ -9,7 +9,7 @@ https://easydomoticz.com/forum/
 
 Principe :
  ce script permet de simuler un troisième bouton "STOP" sur une télécommande 2 boutons,
- si un deuxième appui sur le même bouton est effectué en moins d'une minute.
+ si un deuxième appui sur le même bouton est effectué en moins de 30 secondes.
  Associé à un boitier VRT pour la commande de deux volets roulants, ce script permettra l'arrêt du volet concerné
 --]]
 
