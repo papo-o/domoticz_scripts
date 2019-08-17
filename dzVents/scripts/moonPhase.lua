@@ -1,6 +1,6 @@
 --[[
 author/auteur = papoo
-update/mise à jour = 08/08/2019
+update/mise à jour = 17/08/2019
 creation = 04/08/2019
 source https://github.com/JamesSherburne/MoonPhasesLua/blob/master/main.lua
 https://pon.fr/dzvents-phases-lunaires-sans-api
@@ -9,34 +9,34 @@ https://easydomoticz.com/forum/viewtopic.php?f=17&t=8789
 --]]
 
 local scriptName        = 'moon phase'
-local scriptVersion     = '1.01'
-local MoonPhaseSelector = 2479--nil --
+local scriptVersion     = '1.02'
+local MoonPhaseSelector = 2479 --nil 
 
-    --local Waning_Crescent = "Waning Crescent"     -- level 80 MoonPhase Selector switch
-    local Waning_Crescent = "Dernier croissant"     -- level 80 MoonPhase Selector switch
-    --local Last_Quarter = "Last Quarter"           -- level 70 MoonPhase Selector switch
-    local Last_Quarter = "Dernier quartier"         -- level 70 MoonPhase Selector switch
-    --local Waning gibbous = "Waning gibbous"       -- level 60 MoonPhase Selector switch
-    local Waning gibbous = "gibbeuse décroissante"  -- level 60 MoonPhase Selector switch
-    --local Full_Moon = "Full Moon"                 -- level 50 MoonPhase Selector switch
-    local Full_Moon = "Pleine une"                  -- level 50 MoonPhase Selector switch
-    --local Waxing_gibbous = "Waxing gibbous"       -- level 40 MoonPhase Selector switch
-    local Waxing_gibbous = "Gibbeuse croissante"    -- level 40 MoonPhase Selector switch
-    --local First_Moon = "First Moon"               -- level 30 MoonPhase Selector switch
-    local First_Moon = "Premier quartier"           -- level 30 MoonPhase Selector switch
-    --local Waxing_crescent = "Waxing crescent"     -- level 20 MoonPhase Selector switch
-    local Waxing_crescent = "Premier croissant"     -- level 20 MoonPhase Selector switch
-    --local New_Moon = "New Moon"                   -- level 10 MoonPhase Selector switch
-    local New_Moon = "Nouvelle lune"                -- level 10 MoonPhase Selector switch
+--local Waning_Crescent = "Waning Crescent"     -- level 80 MoonPhase Selector switch
+local Waning_Crescent = "Dernier croissant"     -- level 80 MoonPhase Selector switch
+--local Last_Quarter = "Last Quarter"           -- level 70 MoonPhase Selector switch
+local Last_Quarter = "Dernier quartier"         -- level 70 MoonPhase Selector switch
+--local Waning gibbous = "Waning gibbous"       -- level 60 MoonPhase Selector switch
+local Waning_Gibbous = "Gibbeuse décroissante"  -- level 60 MoonPhase Selector switch
+--local Full_Moon = "Full Moon"                 -- level 50 MoonPhase Selector switch
+local Full_Moon = "Pleine une"                  -- level 50 MoonPhase Selector switch
+--local Waxing_gibbous = "Waxing gibbous"       -- level 40 MoonPhase Selector switch
+local Waxing_Gibbous = "Gibbeuse croissante"    -- level 40 MoonPhase Selector switch
+--local First_Moon = "First Moon"               -- level 30 MoonPhase Selector switch
+local First_Moon = "Premier quartier"           -- level 30 MoonPhase Selector switch
+--local Waxing_crescent = "Waxing crescent"     -- level 20 MoonPhase Selector switch
+local Waxing_Crescent = "Premier croissant"     -- level 20 MoonPhase Selector switch
+--local New_Moon = "New Moon"                   -- level 10 MoonPhase Selector switch
+local New_Moon = "Nouvelle lune"                -- level 10 MoonPhase Selector switch
 
 return {
     active = true,
-    on = { timer =   {'every hour'}},
-    logging =   {    level    =   domoticz.LOG_DEBUG,
-                    -- level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
-                    -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others
-                    -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
-                marker = scriptName..' v'..scriptVersion },
+    on = { timer =   {'every 30 minutes'}},
+    -- logging =   {    level    =   domoticz.LOG_DEBUG,
+                    -- -- level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
+                    -- -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others
+                    -- -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
+                -- marker = scriptName..' v'..scriptVersion },
 
     execute = function(domoticz)
             local function logWrite(str,level)             -- Support function for shorthand debug log statements
@@ -79,39 +79,24 @@ return {
     local year = os.date("%Y")
 
     local theMoon = moonAge(day,month,year)
-    logWrite(theMoon)
+    logWrite("theMoon : "..theMoon)
 
-    if  theMoon >=  29  then
-        moonText    = New_Moon
-        level       = 10
-    elseif theMoon < 29 and theMoon > 23 then
-        moonText    = Waning_Crescent
-        level       = 80
-    elseif theMoon < 23 and theMoon > 22 then
-        moonText    = Last_Quarter
-        level       = 70
-    elseif theMoon < 22 and theMoon > 15 then
-        moonText = Waning_gibbous
-        level       = 60
-    elseif theMoon < 15 and theMoon > 13 then
-        moonText = Full_Moon
-        level       = 50
-    elseif theMoon < 13 and theMoon > 8 then
-        moonText = Waxing_gibbous
-        level       = 40
-    elseif theMoon < 8 and theMoon > 6 then
-        moonText = First_Moon
-        level       = 30
-    elseif theMoon < 6 and theMoon > 1 then
-        moonText = Waxing_crescent
-        level       = 20
-    else
-        moonText = New_Moon
-        level       = 10
+    local moonText  = nil
+    local level     = nil
+
+    if     theMoon > 29   then moonText, level = New_Moon,          10 --Nouvelle Lune, New_Moon                > 27.65625
+    elseif theMoon > 23   then moonText, level = Waning_Crescent,   80 --Dernier croissant, Waning_Crescent     > 23.96875
+    elseif theMoon > 22   then moonText, level = Third_Quarter,     70 --Dernier quartier, Third_Quarter        > 20.28125
+    elseif theMoon > 15   then moonText, level = Waning_Gibbous,    60 --Gibbeuse décroissante, Waning_Gibbous  > 16.59375
+    elseif theMoon > 13   then moonText, level = Full_Moon,         50 --Pleine lune, Full_Moon                 > 12.90625
+    elseif theMoon > 8    then moonText, level = Waxing_Gibbous,    40 --Gibbeuse croissante, Waxing_Gibbous    > 9.21875
+    elseif theMoon > 6    then moonText, level = First_Quarter,     30 --Premier Quartier, First_Quarter        > 5.53125
+    elseif theMoon > 1    then moonText, level = Waxing_Crescent,   20 --Premier croissant, Waxing_Crescent     > 1.84375
+    else                       moonText, level = New_Moon,          10 --Nouvelle Lune, New_Moon
     end
 
-    logWrite("moon text : "..moonText)
-    logWrite("level : "..level)
+    logWrite("moon text : "..tostring(moonText))
+    logWrite("level : "..tostring(level))
 
     if (MoonPhaseSelector) then
         logWrite("switch selector name : "..domoticz.devices(MoonPhaseSelector).name)
