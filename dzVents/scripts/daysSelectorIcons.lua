@@ -1,6 +1,6 @@
 --[[ daysSelectorIcons.lua
 source : https://www.domoticz.com/forum/viewtopic.php?f=59&t=27501&p=210819&hilit=seticon#p210819
-https://pon.fr/
+https://pon.fr/dzvents-afficher-le-jour-de-la-semaine-sous-forme-d-icone/
 https://easydomoticz.com/forum/
 icones : https://github.com/papo-o/domoticz_scripts/tree/master/Icons/Days
  update/mise à jour = 29/07/2019
