@@ -1,6 +1,6 @@
 --[[ UValert.lua 
 author/auteur = papoo
-update/mise à jour = 31/08/2019
+update/mise à jour = 01/09/2019
 création = 31/08/2019
 https://pon.fr/dzvents-alerte-uv-et-temps-dexposition-en-toute-securite
 https://github.com/papo-o/domoticz_scripts/blob/master/domoticzVents/scripts/UValert.lua
@@ -37,12 +37,12 @@ local UValertDevice = 'Alerte UV'   -- Alert device name
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local scriptName        = 'Alerte aux UV'
-local scriptVersion     = '1.0'
+local scriptVersion     = '1.01'
 return {
     active  = true,
-    on      =   {
-                    devices = {UVdevice}
-                },
+        on      =   {
+                        devices = {UVdevice}
+                    },
         -- on  =   {
                     -- timer           =   { "every minutes" },
                 -- },
@@ -54,6 +54,8 @@ return {
                     marker  =   scriptName..' v'..scriptVersion },
 
     execute = function(domoticz, device)
+        local round = domoticz.utils.round
+        local UV_AlertText
         local function logWrite(str,level)             -- Support function for shorthand debug log statements
             domoticz.log(tostring(str),level or domoticz.LOG_DEBUG)
         end
@@ -81,7 +83,7 @@ return {
             return  time2Burn
         end
         -- -- on device trigger
-             local UVindex = device.uv 
+        local UVindex = device.uv 
 
         -- --on timer trigger
         --local UVindex = domoticz.devices(UVdevice).uv
@@ -89,8 +91,19 @@ return {
         logWrite('UV index : '..UVindex)
         logWrite('safeTimeExposure : '..safeTimeExposure(UVindex,skinType)..' minutes')
 
-        -- Construct Alertlevel and text and update UV alert device (type = Alert)
-            local UV_AlertText = 'Exposition maximale : '..safeTimeExposure(UVindex,skinType)..' mn (peau type ' .. skinType ..')'
-            if UValertDevice   ~= nil then domoticz.devices(UValertDevice).updateAlertSensor(UV_Index2Alert(UVindex), UV_AlertText) end
+    -- Construct Alertlevel and text and update UV alert device (type = Alert)
+        if UVindex > 0 then 
+            UV_AlertText = 'Exposition maximale : '..safeTimeExposure(UVindex,skinType)..' mn (peau type ' .. skinType ..')'
+        else
+            UV_AlertText = 'Exposition maximale : Pas de limite, index UV : '..UVindex
+        end
+        if UValertDevice ~= nil then
+            if (domoticz.devices(UValertDevice).color ~= UV_Index2Alert(UVindex) or domoticz.devices(UValertDevice).lastUpdate.minutesAgo > 1440) then 
+                domoticz.devices(UValertDevice).updateAlertSensor(UV_Index2Alert(UVindex), UV_AlertText) 
+                logWrite('update alert device')
+            else
+                logWrite('no update needed')
+            end
+        end
     end
 }
