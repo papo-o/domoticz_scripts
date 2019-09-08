@@ -310,7 +310,7 @@ return {
 
         end
         
-        loca lfunction split(s, delimiter)
+        local function split(s, delimiter)
         if s ~= nil then
             result = {};
             for match in (s..delimiter):gmatch("(.-)"..delimiter) do
