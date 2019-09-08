@@ -2,7 +2,7 @@
 --[[
 original script by rrozema Generic auto-off : https://www.domoticz.com/forum/viewtopic.php?f=72&t=23717&p=205159&hilit=auto+off#p201976
 author = papoo
-maj : 06/05/2019
+maj : 08/09/2019
 this version need a waaren script, Universal function notification :
 https://www.domoticz.com/forum/viewtopic.php?f=59&t=26542#p204958
 https://pon.fr/dzvents-fonction-de-notification-universelle/
@@ -243,10 +243,16 @@ Exemple 17 : être averti si le périphérique est éteint depuis x minutes
  "quiet_hours":"23:00-07:15"
   }
 
+  Example 18 : dim a light at define level(s) and time(s) 
+  exemple 18  : moduler une lumière à niveau(x) et heure(s) définis
+  {
+  "dimTo" : {"level" : 50, "hour" : "16:01", "level" : 0, "hour" : "16:05", "level" : 75, "hour" : "16:07"}
+  }
+  
 --]]
 
 local scriptName = 'Json Description'
-local scriptVersion = '1.03'
+local scriptVersion = '1.04'
 
 return {
     active = true,
@@ -261,7 +267,7 @@ return {
     -- custom logging level for this script
     logging = {
                 -- level    =   domoticz.LOG_DEBUG,
-                -- level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
+                 level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
                 -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others
                 -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
                 marker = scriptName..' v'..scriptVersion
@@ -273,9 +279,13 @@ return {
     },
     execute = function(domoticz, triggeredItem, info)
         local cnt = 0
+        local now = domoticz.time
+        local minute
+        if string.len(now.min) == 1 then minute = '0'..now.min else minute = now.min end
+        local Time = now.hour..":"..minute
 
         --permet de lire les valeurs des périphériques avec "duration_exceeded_temp", "low_threshold_hr", "high_threshold_hr" ou  "duration_exceeded_hr"
-        function managed(domoticz, id, duration_exceeded, high_threshold, low_threshold)
+        local function managed(domoticz, id, duration_exceeded, high_threshold, low_threshold)
             test_high_threshold = true
             test_low_threshold = true
             x = 0
@@ -300,7 +310,7 @@ return {
 
         end
         
-        function split(s, delimiter)
+        loca lfunction split(s, delimiter)
         if s ~= nil then
             result = {};
             for match in (s..delimiter):gmatch("(.-)"..delimiter) do
@@ -312,7 +322,7 @@ return {
         return result;
         end
 
-        function notificationTable(str)
+        local function notificationTable(str)
         --NSS_GOOGLE_CLOUD_MESSAGING, NSS_HTTP, NSS_KODI, NSS_LOGITECH_MEDIASERVER, NSS_NMA,NSS_PROWL, NSS_PUSHALOT, NSS_PUSHBULLET, NSS_PUSHOVER, NSS_PUSHSAFER, NSS_TELEGRAM
             if (str) then
             str = string.gsub (str,"GCM", domoticz.NSS_GOOGLE_CLOUD_MESSAGING)
@@ -331,7 +341,7 @@ return {
         return (split(str,','))
         end
 
-        local subject               = "/!\\ Attention /!\\"           -- sujet des notifications
+        local subject               = "\xE2\x9A\xA0 /!\\ Attention /!\\ \xE2\x9A\xA0"           -- sujet des notifications
 
         domoticz.devices().forEach(
             function(device)
@@ -384,6 +394,24 @@ return {
                             end
                         end
 
+                        if settings.dimTo ~= nil then -- 
+                            if type(settings.dimTo) == "string" then
+                                domoticz.log(device.name .. ' impossible de traiter la fonction dimTo manque un élément', domoticz.LOG_DEBUG)
+                            elseif type(settings.dimTo) == "table" then
+
+                                local params = ""
+                                local types = ""
+                                for i,v in pairs(settings.dimTo) do
+                                    
+                                params = params .. v ..", "
+                                types = types .. i ..", "
+                                
+                                end
+                                domoticz.log(device.name .. ' a pour paramètres : ' .. params, domoticz.LOG_DEBUG)
+                                domoticz.log('de type : ' .. types, domoticz.LOG_DEBUG)
+                            end
+                        end
+
                         if device.temperature ~= nil and settings.high_threshold_temp ~= nil then  -- seuil haut température
                             domoticz.log(device.name .. ' a un seuil temperature haute défini à  ' .. settings.high_threshold_temp..'°C', domoticz.LOG_DEBUG)
                         end
@@ -425,6 +453,11 @@ return {
                         if device.current ~= nil and settings.high_current_usage ~= nil then  -- seuil bas sensorType
                             domoticz.log(device.name .. ' a un seuil haut défini à  ' .. settings.high_current_usage..' A', domoticz.LOG_DEBUG)
                         end
+                        --=========================================================================================================================
+                        if device.level ~= nil and settings.dimToLevel ~= nil and settings.dimToHour ~= nil then  -- seuil bas sensorType
+                            domoticz.log(device.name .. ' a un changement de luminosité défini à  ' .. settings.dimToLevel..' a '..settings.dimToHour, domoticz.LOG_DEBUG)
+                        end
+                        --=========================================================================================================================
 
                         if device.state == 'Off' or device.state == 'Close' then    -- Alarme dispositif inactif
                             if settings.time_active_notification ~= nil then
@@ -499,7 +532,7 @@ return {
 
                         --current
                         if device.current ~= nil and settings.high_current_usage ~= nil then
-                            domoticz.log('Le niveau de '.. device.name .. ' est de  ' .. tostring(domoticz.utils.round(device.current, 0))..' A', domoticz.LOG_INFO)
+                            
                             if settings.high_current_usage ~= nil and device.current > settings.high_current_usage then  -- seuil haut intensite
                                 domoticz.log(device.name .. ' a un niveau de ' .. tostring(domoticz.utils.round(device.current, 0)), domoticz.LOG_INFO)
                                 message = 'Le niveau '.. device.name .. ' est superieur au seuil défini ('..settings.high_current_usage..'). Valeur : '..tostring(domoticz.utils.round(device.current, 0))..' A'
@@ -507,6 +540,23 @@ return {
                                 domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                         end
+
+                        --dimTo
+                        if device.level ~= nil and settings.dimTo ~= nil then 
+                            local dimToLevel
+                            local dimToHour
+                            if type(settings.dimTo) == "table" then
+                                for i,v in pairs(settings.dimTo) do
+                                    if i == "hour" then dimToHour = v 
+                                    domoticz.log(device.name .. ' a une heure de variation fixée à : ' .. dimToHour, domoticz.LOG_INFO)
+                                    elseif i == "level" then dimToLevel = v
+                                    domoticz.log(device.name .. ' a une niveau de variation fixée à : ' .. dimToLevel, domoticz.LOG_INFO)
+                                    end
+                                    if Time == dimToHour and dimToLevel ~= nil then device.dimTo(dimToLevel) end
+                                end
+                            end
+                        end
+
                         if device.state == 'Off' or device.state == 'Close' then
                          -- Alarme dispositif inactif
                             domoticz.log(device.name .. ' est à l\'état ' .. device.state, domoticz.LOG_INFO)
@@ -549,6 +599,7 @@ return {
                                     domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                                 end
                             end
+
                         -- alarme hygrométrie
                             if device.humidity ~= nil and (settings.low_threshold_hr ~= nil or settings.high_threshold_hr ~= nil)  then
                                 --test settings.duration_exceeded_hr
@@ -590,6 +641,7 @@ return {
                                 message = 'Le délai fixé à '.. settings.time_active_notification .. ' minutes pour '.. device.name .. ' est dépassé'
                                 domoticz.helpers.managedNotify(domoticz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
+
                         -- auto on
                             if settings.auto_on_minutes ~= nil and device.lastUpdate.minutesAgo >= settings.auto_on_minutes then
                                 if settings.state == 'Off' then
