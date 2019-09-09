@@ -2,7 +2,7 @@
 --[[
 original script by rrozema Generic auto-off : https://www.domoticz.com/forum/viewtopic.php?f=72&t=23717&p=205159&hilit=auto+off#p201976
 author = papoo
-maj : 08/09/2019
+maj : 09/09/2019
 this version need a waaren script, Universal function notification :
 https://www.domoticz.com/forum/viewtopic.php?f=59&t=26542#p204958
 https://pon.fr/dzvents-fonction-de-notification-universelle/
@@ -245,14 +245,18 @@ Exemple 17 : être averti si le périphérique est éteint depuis x minutes
 
   Example 18 : dim a light at define level(s) and time(s) 
   exemple 18  : moduler une lumière à niveau(x) et heure(s) définis
-  {
-  "dimTo" : {"level" : 50, "hour" : "16:01", "level" : 0, "hour" : "16:05", "level" : 75, "hour" : "16:07"}
+{
+  "dimTo" : 
+    {
+        "1":{"level" : 75, "hour" : "23:11"},
+        "2":{"level" : 0, "hour" : "23:12"}
+    }
   }
   
 --]]
 
 local scriptName = 'Json Description'
-local scriptVersion = '1.04'
+local scriptVersion = '1.05'
 
 return {
     active = true,
@@ -394,24 +398,6 @@ return {
                             end
                         end
 
-                        if settings.dimTo ~= nil then -- 
-                            if type(settings.dimTo) == "string" then
-                                domoticz.log(device.name .. ' impossible de traiter la fonction dimTo manque un élément', domoticz.LOG_DEBUG)
-                            elseif type(settings.dimTo) == "table" then
-
-                                local params = ""
-                                local types = ""
-                                for i,v in pairs(settings.dimTo) do
-                                    
-                                params = params .. v ..", "
-                                types = types .. i ..", "
-                                
-                                end
-                                domoticz.log(device.name .. ' a pour paramètres : ' .. params, domoticz.LOG_DEBUG)
-                                domoticz.log('de type : ' .. types, domoticz.LOG_DEBUG)
-                            end
-                        end
-
                         if device.temperature ~= nil and settings.high_threshold_temp ~= nil then  -- seuil haut température
                             domoticz.log(device.name .. ' a un seuil temperature haute défini à  ' .. settings.high_threshold_temp..'°C', domoticz.LOG_DEBUG)
                         end
@@ -546,14 +532,18 @@ return {
                             local dimToLevel
                             local dimToHour
                             if type(settings.dimTo) == "table" then
-                                for i,v in pairs(settings.dimTo) do
-                                    if i == "hour" then dimToHour = v 
-                                    domoticz.log(device.name .. ' a une heure de variation fixée à : ' .. dimToHour, domoticz.LOG_INFO)
-                                    elseif i == "level" then dimToLevel = v
-                                    domoticz.log(device.name .. ' a une niveau de variation fixée à : ' .. dimToLevel, domoticz.LOG_INFO)
+                                for h,u in pairs(settings.dimTo) do
+                                    for i,v in pairs(u) do
+                                        if i == "hour" then dimToHour = v 
+                                        domoticz.log(device.name .. ' a une heure de variation fixée à : ' .. dimToHour, domoticz.LOG_INFO)
+                                        elseif i == "level" then dimToLevel = v
+                                        domoticz.log(device.name .. ' a une niveau de variation fixée à : ' .. dimToLevel, domoticz.LOG_INFO)
+                                        end
+                                        if Time == dimToHour and dimToLevel ~= nil then device.dimTo(dimToLevel) return end
                                     end
-                                    if Time == dimToHour and dimToLevel ~= nil then device.dimTo(dimToLevel) end
                                 end
+                            else 
+                                domoticz.log(device.name .. ' impossible de traiter la fonction dimTo, manque un élément', domoticz.LOG_DEBUG)
                             end
                         end
 
