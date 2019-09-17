@@ -2,7 +2,7 @@
 name : script_time_liveboxTV.lua
 auteur : papoo
 date de création : 21/01/2018
-Date de mise à jour : 26/01/2018
+Date de mise à jour : 17/09/2019
 Principe : Via l'api de la livebox TV, connaitre son état et afficher la chaine en cours de diffusion
 Les device_chaine et livebox_tv, s'ils sont utilisés, ne sont mis à jour que si vous changez de chaîne (pour device_chaine), allumez/éteignez le player (pour livebox_tv) afin de ne pas remplir les log
 n'hésitez pas à proposer l'ajout de vos chaines préférés
@@ -12,13 +12,13 @@ https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_liveboxTV
 ]]--
 --------------------------------------------
 ------------ Variables à éditer ------------
--------------------------------------------- 
+--------------------------------------------
 
-local debugging = false  			            -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
+local debugging = true                          -- true pour voir les logs dans la console log Dz ou false pour ne pas les voir
 local script_actif = true                       -- active (true) ou désactive (false) ce script simplement
 local device_chaine = "Chaine Livebox"          -- nom du  dummy text affichant la chaine en cours de lecture
 local livebox_tv = "Livebox TV"                 -- nom du  dummy interrupteur pour connaitre l'état de la livebox TV, nil si inutilisé
-local liveboxtv_ip = "http://192.168.1.12:8080" -- adresse ip de la livebox TV
+local liveboxtv_ip = "http://192.168.1.129:8080" -- adresse ip de la livebox TV
 local domoticzURL = "127.0.0.1:8080"
 --------------------------------------------
 ----------- Fin variables à éditer ---------
@@ -27,7 +27,7 @@ local domoticzURL = "127.0.0.1:8080"
 ------------- Autres Variables -------------
 --------------------------------------------
 local nom_script = 'Chaine liveboxTV'
-local version = '0.4'
+local version = '0.5'
 local les_chaines = {}
 les_chaines[#les_chaines+1] = {canal="0", nom="Mosaic", id="4294967295"}
 les_chaines[#les_chaines+1] = {canal="1", nom="TF1", id="192"}
@@ -98,19 +98,19 @@ les_chaines[#les_chaines+1] = {canal="86", nom="Disney Channel", id="58"}
 les_chaines[#les_chaines+1] = {canal="9", nom="W9", id="119"}
 --------------------------------------------
 ----------- Fin Autres Variables -----------
---------------------------------------------	
+--------------------------------------------
 --------------------------------------------
 ---------------- Fonctions -----------------
--------------------------------------------- 
+--------------------------------------------
 
-	-- chemin vers le dossier lua
-	if (package.config:sub(1,1) == '/') then
-		 luaDir = debug.getinfo(1).source:match("@?(.*/)")
-	else
-		 luaDir = string.gsub(debug.getinfo(1).source:match("@?(.*\\)"),'\\','\\\\')
-	end
-	 curl = '/usr/bin/curl -m 5 -u domoticzUSER:domoticzPSWD '		 	-- ne pas oublier l'espace à la fin
-	 json = assert(loadfile(luaDir..'JSON.lua'))()						-- chargement du fichier JSON.lua
+    -- chemin vers le dossier lua
+    if (package.config:sub(1,1) == '/') then
+         luaDir = debug.getinfo(1).source:match("@?(.*/)")
+    else
+         luaDir = string.gsub(debug.getinfo(1).source:match("@?(.*\\)"),'\\','\\\\')
+    end
+     curl = '/usr/bin/curl -m 5 -u domoticzUSER:domoticzPSWD '             -- ne pas oublier l'espace à la fin
+     json = assert(loadfile(luaDir..'JSON.lua'))()                        -- chargement du fichier JSON.lua
 --------------------------------------------
 package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"   -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
 require('fonctions_perso')                                                      -- ligne à commenter en cas d'utilisation des fonctions directement dans ce script
@@ -118,15 +118,15 @@ require('fonctions_perso')                                                      
 -- ci-dessous les lignes à décommenter en cas d'utilisation des fonctions directement dans ce script( supprimer --[[ et --]])
 --[[
 function voir_les_logs (s, debugging)
-    if (debugging) then 
-		if s ~= nil then
-        print ("<font color='#f3031d'>".. s .."</font>")
-		else
-		print ("<font color='#f3031d'>aucune valeur affichable</font>")
-		end
+    if (debugging) then
+        if s ~= nil then
+        print (s)
+        else
+        print ("aucune valeur affichable")
+        end
     end
-end	
--------------------------------------------- 
+end
+--------------------------------------------
 --]]
 --------------------------------------------
 -------------- Fin Fonctions ---------------
@@ -137,58 +137,62 @@ if script_actif == true then
 voir_les_logs("=========== ".. nom_script .." (v".. version ..") ===========",debugging)
 
 --=========== Lecture json livebox TV ===============--
-  local config = assert(io.popen(curl..' "'.. liveboxtv_ip ..'/remoteControl/cmd?operation=10"'))           
+  local config = assert(io.popen(curl..' "'.. liveboxtv_ip ..'/remoteControl/cmd?operation=10"'))
   local blocjson = config:read('*all')
   config:close()
   local jsonValeur = json:decode(blocjson)
 
   local etat = jsonValeur.result.data.activeStandbyState
   voir_les_logs('--- --- --- etat livebox tv '..etat,debugging)
- 
+
 --=========== Vérification état Livebox TV ===============--
-    if etat == '1'then 
-    --commandArray[#commandArray+1]={['UpdateDevice'] = idx..'|0|'..'Arret' }
-    voir_les_logs('--- --- --- Livebox TV Éteinte',debugging)
-        if  otherdevices[livebox_tv] ~= nil  then    
+    if etat == '1' then
+        --commandArray[#commandArray+1]={['UpdateDevice'] = idx..'|0|'..'Arret' }
+        voir_les_logs('--- --- --- Livebox TV Éteinte',debugging)
+        if  otherdevices[livebox_tv] ~= nil  then
             if ( otherdevices[livebox_tv] == 'On') then
                 commandArray[livebox_tv]='Off'
                 voir_les_logs('--- --- --- Mise à l\'arrêt Livebox tv',debugging)
             end
             if ( otherdevices[device_chaine] ~= "Livebox TV Éteinte")  then -- si la livebox TV est éteinte on efface la dernière chaine lue et on affiche l'état Livebox
-                commandArray[#commandArray + 1] = { ['UpdateDevice'] = otherdevices_idx[device_chaine]..'|0|Livebox TV Éteinte' }                            
+                commandArray[#commandArray + 1] = { ['UpdateDevice'] = otherdevices_idx[device_chaine]..'|0|Livebox TV Éteinte' }
             end
         end
-    end
-  --
-    if etat == '0' then
-        voir_les_logs('--- --- --- Livebox tv en marche',debugging)    
-        if  otherdevices[livebox_tv] ~= nil  then 
+    elseif etat == '0' then
+        voir_les_logs('--- --- --- Livebox tv en marche',debugging)
+        if  otherdevices[livebox_tv] ~= nil  then
             if ( otherdevices[livebox_tv] == 'Off') then
                 commandArray[livebox_tv]='On'
                 voir_les_logs('--- --- --- Mise en marche Livebox tv',debugging)
             end
         end
-        chaine = jsonValeur.result.data.playedMediaId
-        if  chaine ~= nil  then 
+        local chaine = jsonValeur.result.data.playedMediaId
+        if  chaine ~= nil and chaine ~= "" then
             voir_les_logs('--- --- --- Livebox tv en marche chaine (id) '..chaine,debugging)
             for k,v in pairs(les_chaines) do-- On parcourt chaque chaine
                 if tonumber(v.id) == tonumber(chaine) then
                     voir_les_logs('--- --- --- Livebox tv en marche chaine '..v.nom,debugging)
                     if device_chaine ~= nil then
                         if ( otherdevices[device_chaine] ~= v.nom)  then
-                        commandArray[#commandArray + 1] = { ['UpdateDevice'] = otherdevices_idx[device_chaine]..'|0|'..v.nom }                        
+                        commandArray[#commandArray + 1] = { ['UpdateDevice'] = otherdevices_idx[device_chaine]..'|0|'..v.nom }
                         voir_les_logs('--- --- --- idx du device chaine '..otherdevices_idx[device_chaine],debugging)
-                        voir_les_logs('--- --- --- Mise à jour chaine '..v.nom,debugging)    
+                        voir_les_logs('--- --- --- Mise à jour chaine '..v.nom,debugging)
                         end
-                    end 
+                    end
                 end
-            end    
-        else
-          local osdContext = jsonValeur.result.data.osdContext
-          voir_les_logs('--- --- --- livebox tv sur '..osdContext,debugging)        
+            end
+        else -- si aucune chaine on affiche le contenu d'osdContext
+            local osdContext = jsonValeur.result.data.osdContext
+            voir_les_logs('--- --- --- livebox tv sur '..osdContext,debugging)
+            if device_chaine ~= nil then
+                if ( otherdevices[device_chaine] ~= osdContext)  then
+                    commandArray[#commandArray + 1] = { ['UpdateDevice'] = otherdevices_idx[device_chaine]..'|0|'..osdContext }
+                end
+            end
         end
+
     end
--- ====================================================================================================================	
+-- ====================================================================================================================
 
 voir_les_logs("========= Fin ".. nom_script .." (v".. version ..") =========",debugging)
 end -- if script_actif
