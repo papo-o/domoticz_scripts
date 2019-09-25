@@ -2,7 +2,7 @@
 --[[
 original script by rrozema Generic auto-off : https://www.domoticz.com/forum/viewtopic.php?f=72&t=23717&p=205159&hilit=auto+off#p201976
 author = papoo
-maj : 24/09/2019
+maj : 25/09/2019
 this version need a waaren script, Universal function notification :
 https://www.domoticz.com/forum/viewtopic.php?f=59&t=26542#p204958
 https://pon.fr/dzvents-fonction-de-notification-universelle/
@@ -260,7 +260,7 @@ Exemple 17 : être averti si le périphérique est éteint depuis x minutes
 --]]
 
 local scriptName = 'Json Description'
-local scriptVersion = '1.06'
+local scriptVersion = '1.07'
 
 return {
     active = true,
@@ -537,6 +537,7 @@ return {
                             local dimToLevel
                             local dimToHour
                             local silent
+                            local dimDayWeek = true
                             if type(settings.dimTo) == "table" then
                                 for h,u in pairs(settings.dimTo) do
                                     for i,v in pairs(u) do
