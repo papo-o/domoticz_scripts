@@ -252,7 +252,7 @@ Exemple 17 : être averti si le périphérique est éteint depuis x minutes
     {
         "1":{"level" : 75, "day" : "mon-tue-wed-thu-fri-sat", "hour" : "7:15"},
         "2":{"level" : 0,  "day" : "mon-tue-wed-thu-fri-sat", "hour" : "7:18"}
-        "3":{"level" : 25,  "day" : "mon-tue-wed-thu-fri-sat", "hour" : "22:15", "silent" : true}
+        "3":{"level" : 25,  "day" : "mon-tue-wed-thu-fri-sat", "hour" : "22:15", "silent" : true},
         "4":{"level" : 100,  "day" : "mon-tue-wed-thu-fri-sat", "hour" : "08:00", "silent" : true}
     }
 }
