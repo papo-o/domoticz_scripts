@@ -1,7 +1,7 @@
 --[[
-vacancesScolaires.lua
+/home/pi/domoticz/scripts/dzVents/scripts/vacancesScolaires.lua
 author/auteur = papoo
-update/mise à jour = 02/11/2019
+update/mise à jour = 10/11/2019
 création = 05/08/2017
 https://pon.fr/
 https://github.com/papo-o/dz_scripts/blob/master/dzVents/scripts/
@@ -17,20 +17,23 @@ les informations de vacances scolaires pour une date, une zone et une academie
 ------------ Variables à éditer ------------
 --------------------------------------------
 
-local zone = "A"                              		--Indiquer ici la zone (A, B ou C)
-local location = "Limoges"                    		--Indiquer ici l'academie (https://fr.wikipedia.org/wiki/Acad%C3%A9mie_(%C3%A9ducation_en_France))
-local holidayNow = "Vacances Scolaires" 			-- Indiquer ici le nom du device vacances aujourd'hui de type switch nil si inutilisé 
-local holidayTomorrow = "Vacances Scolaires Demain" -- Indiquer ici le nom du device vacances demain de type switch nil si inutilisé 
+local zone 				= 'A'                           -- Indiquer ici la zone (A, B ou C)
+local location 			= 'Limoges'                    	-- Indiquer ici l'academie (https://fr.wikipedia.org/wiki/Acad%C3%A9mie_(%C3%A9ducation_en_France))
+local holidayNow 		= 'Vacances Scolaires' 			-- Indiquer ici le nom du device vacances aujourd'hui de type switch nil si inutilisé 
+local holidayTomorrow 	= 'Vacances Scolaires Demain'   -- Indiquer ici le nom du device vacances demain de type switch nil si inutilisé 
 
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
+
 local scriptName        = 'Vacances Scolaires'
-local scriptVersion     = '2.0'
-local response = "dataEducation_response"
+local scriptVersion     = '2.01'
+local response 			= 'dataEducation_response'
+
 return {
     active = true,
-    on =        {       timer           =   { "at 00:11" }, --{ "every minutes" },
+    on =        {       timer           =   { 'at 00:11' },
+						--timer           =   { "every minute" },
                         httpResponses   =   {  response } },
 
     logging =   {   level    =   domoticz.LOG_DEBUG,
@@ -53,7 +56,7 @@ return {
 		end
         
 		local Timestamp = dz.time.dDate
-		--local Timestamp = date2timestamp("2019-11-04") -- pour test
+		--local Timestamp = date2timestamp("2019-12-20") -- pour test (uniquement sur l'année en cours)
 		
         if (item.isHTTPResponse and item.trigger == response) then
             if (not item.isJSON) then
@@ -83,20 +86,31 @@ return {
 							H1 = 1
 						end
                     end
-					logWrite("H0 : "..tostring(H0))
-					logWrite("H1 : "..tostring(H1))
-					
-					if holidayNow ~= nil and H0 == 1 then 
-						dz.devices(holidayNow).switchOn().checkFirst() 
-					elseif holidayNow ~= nil and H0 == 0 then 
-						dz.devices(holidayNow).switchOff().checkFirst()				
+					logWrite('H0 : '..tostring(H0))
+					if holidayNow ~= nil then 
+						if H0 == 1 then 
+							dz.devices(holidayNow).switchOn().checkFirst() 
+							logWrite('Device '..holidayNow..' sur ON')
+						else
+							dz.devices(holidayNow).switchOff().checkFirst()	
+							logWrite('Device '..holidayNow..' sur OFF')
+						end
+					else
+						logWrite('pas de device pour les vacances du jour')
 					end	
 					
-					if holidayTomorrow ~= nil and H1 == 1 then 
-						dz.devices(holidayTomorrow).switchOn().checkFirst()
-					elseif HolidayTomorrow ~= nil and H1 == 0 then 
-						dz.devices(holidayTomorrow).switchOff().checkFirst()				
-					end
+					logWrite('H1 : '..tostring(H1))					
+					if holidayTomorrow ~= nil then
+						if H1 == 1 then 
+							dz.devices(holidayTomorrow).switchOn().checkFirst()
+							logWrite('Device '..holidayTomorrow..' sur ON')
+						else
+							dz.devices(holidayTomorrow).switchOff().checkFirst()
+							logWrite('Device '..holidayTomorrow..' sur OFF')
+						end
+					else 
+						logWrite('pas de device pour les vacances de demain')
+					end	
                 end
             end
 
