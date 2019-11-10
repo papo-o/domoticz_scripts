@@ -1,11 +1,11 @@
 --[[
 previsionMeteo.lua
 author/auteur = papoo
-update/mise à jour = 18/08/2019
+update/mise à jour = 04/10/2019
 création = 18/08/2019
 https://pon.fr/dzvents-mise-en-cache-des-donnees-de-lapi-prevision_meteo-ch
-https://github.com/papo-o/domoticz_scripts/blob/master/domoticzVents/scripts/previsionMeteo.lua
-https://easydomoticz.com/forum/
+https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/previsionMeteo.lua
+https://easydomoticz.com/forum/viewtopic.php?f=17&t=8865
 
 Principe : Le site prevision-meteo.ch subit de nombreux ralentissements, rendant aléatoire l'affichage des prévisions météo sur monitor
 https://pon.fr/prevision-meteo-a-3-jours/
@@ -48,23 +48,26 @@ https://www.prevision-meteo.ch/style/images/icon/neige-forte.png
 https://www.prevision-meteo.ch/style/images/icon/pluie-et-neige-melee-faible.png
 https://www.prevision-meteo.ch/style/images/icon/pluie-et-neige-melee-moderee.png
 https://www.prevision-meteo.ch/style/images/icon/pluie-et-neige-melee-forte.png
+
+
+
 --]]
 --------------------------------------------
 ------------ Variables à éditer ------------
 --------------------------------------------
 
 local jsonFile      = '/home/pi/domoticz/www/monitor/prevision-meteo.json' -- nom du fichier (et son chemin complet) contenant les données de l'API
-local iconsPath     = 'http://192.168.10.204:8080/monitor/icons/prevision-meteo/' -- adresse local où sont stockés les icones
+local iconsPath     = 'http://192.168.1.24:8080/monitor/icons/prevision-meteo/' -- adresse local où sont stockés les icones
 
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local scriptName        = 'Extraction prévisions météo'
-local scriptVersion     = '1.0'
+local scriptVersion     = '1.01'
 local response = "prevision-meteo_response"
 return {
     active = true,
-    on =        {       timer           =   { "every hour" },
+    on =        {       timer           =   { "every 6 minutes" },
                         httpResponses   =   {  response } },
 
     -- logging =   {    level    =   domoticz.LOG_DEBUG,
@@ -122,20 +125,20 @@ return {
                 if contents then
                     file = io.open(jsonFile, "w+")
                     file:write( contents )
-                    --io.close( file )
-                    file:close()
+                    io.close( file )
+                    --file:close()
                     logWrite('ecriture des données dans le fichier '..jsonFile)
                 end
             end
 
         else
             local latitude  = domoticz.settings.location.latitude
-                -- local latitude  = '46.85160'
+                -- local latitude  = '45.85860'
                 logWrite('latitude : '..latitude)
                 local longitude = domoticz.settings.location.longitude
-                -- local longitude = '1.35690'
+                -- local longitude = '1.23190'
                 logWrite('longitude : '..longitude)
-            local url = "http://www.prevision-meteo.ch/services/json/lat="..latitude.."lng="..longitude
+            local url = "https://www.prevision-meteo.ch/services/json/lat="..latitude.."lng="..longitude
 
             domoticz.openURL({
                   url = url,
