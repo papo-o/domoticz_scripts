@@ -3,9 +3,9 @@
 author/auteur = papoo
 update/mise à jour = 10/11/2019
 création = 05/08/2017
-https://pon.fr/
-https://github.com/papo-o/dz_scripts/blob/master/dzVents/scripts/
-https://easydz.com/forum/
+https://pon.fr/dzvents-vacances-scolaires-par-zone-et-academie/
+https://github.com/papo-o/dz_scripts/blob/master/dzVents/scripts/vacancesScolaires.lua
+https://easydomoticz.com/forum/viewtopic.php?f=17&t=9126
 
 V1.xx  : https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_vacances_scolaires.lua
 
