@@ -1,0 +1,177 @@
+#ls_meteo1, #ls_meteo2, #ls_meteo3, #ls_meteo25, #ls_meteo4, #ls_meteo5,
+#ls_meteo6, #ls_meteo7, #ls_meteo8, #ls_meteo9, #ls_meteo10, #ls_meteo11
+{
+	font-family: arimo;
+	font-weight: normal;
+	color: #999;
+	font-size: 12px;
+	margin-top: -20px;
+	height: 20px;
+	line-height: 65px;
+	text-shadow: 1px 1px 5px black;
+	
+}
+
+#desc_meteo1, #desc_meteo2, #desc_meteo3, #desc_meteo25, #desc_meteo4, #desc_meteo5,
+#desc_meteo6, #desc_meteo7, #desc_meteo8, #desc_meteo9, #desc_meteo10, #desc_meteo11
+{
+	font-family: arimo;
+	font-weight: normal;
+/*	color: #999; */
+	color: #F2DDB3;
+	font-size: 17px;
+	margin-top: -20px;
+	height: 25px;
+	line-height: 15px;
+	text-shadow: 1px 1px 4px black;
+	
+}
+
+#meteo3, #meteo25, #moon
+{
+	font-family: arimo;
+	font-weight: bold;
+	/*width: 277px;*/
+	width: 252px;
+	padding: 5px;
+/*	border: 1px solid #1E1E1F; */
+	border: 1px solid transparent;
+	border-radius: 0px;
+	height: 152.5px;	
+	line-height: 170px; 
+	font-size: 100px;	
+	color: #999;
+	margin: 0px ;
+	text-shadow: 1px 1px 4px black;
+	
+}
+#moontxt
+{
+	font-family: arimo;
+	font-weight: normal;
+	color: #F2DDB3;
+	font-size: 14px;
+	margin-top: -20px;
+	height: 25px;
+	line-height: 15px;
+	text-shadow: 1px 1px 4px black;
+
+}
+#meteo1, #meteo2, #meteo4, #meteo5, 
+#meteo6, #meteo7, #meteo8, #meteo9, #meteo10, #meteo11
+{
+	font-family: arimo;
+	font-weight: bold;
+	/*width: 162px;*/
+	width: 152px;
+	padding: 10px;
+/*	border: 1px solid #1E1E1F; */
+	border: 1px solid transparent;
+	border-radius: 0px;
+	height: 58px;
+	line-height: 55px; 		
+	color: #999;
+	font-size:40px;
+	text-shadow: 1px 1px 4px black;
+	
+}
+
+#meteo7, #meteo8, #meteo9, #meteo10
+{ 
+	/*width: 114px; */
+	width: 123px; 
+}
+
+#meteo6, #meteo11
+{ 
+	/*width: 115px; */
+	width: 122px; 
+}
+
+
+#desc_jour0, #desc_jour1, #desc_jour2, #desc_jour3, 
+#temp_day_0_1H00, #temp_day_0_3H00, #temp_day_0_5H00, #temp_day_0_7H00, #temp_day_0_9H00, #temp_day_0_11H00, 
+#temp_day_0_13H00, #temp_day_0_15H00, #temp_day_0_17H00, #temp_day_0_19H00, #temp_day_0_21H00, #temp_day_0_23H00,
+#temp_day_1_1H00, #temp_day_1_3H00, #temp_day_1_5H00, #temp_day_1_7H00, #temp_day_1_9H00, #temp_day_1_11H00, 
+#temp_day_1_13H00, #temp_day_1_15H00, #temp_day_1_17H00, #temp_day_1_19H00, #temp_day_1_21H00, #temp_day_1_23H00,
+#temp_day_2_1H00, #temp_day_2_3H00, #temp_day_2_5H00, #temp_day_2_7H00, #temp_day_2_9H00, #temp_day_2_11H00, 
+#temp_day_2_13H00, #temp_day_2_15H00, #temp_day_2_17H00, #temp_day_2_19H00, #temp_day_2_21H00, #temp_day_2_23H00,
+#temp_day_3_1H00, #temp_day_3_3H00, #temp_day_3_5H00, #temp_day_3_7H00, #temp_day_3_9H00, #temp_day_3_11H00, 
+#temp_day_3_13H00, #temp_day_3_15H00, #temp_day_3_17H00, #temp_day_3_19H00, #temp_day_3_21H00, #temp_day_3_23H00
+{
+	font-family: arimo;
+	font-weight: normal;
+/*	color: #999; */
+	color: #F2DDB3;
+	font-size: 20px;
+	margin-top: -20px;
+	height: 25px;
+	line-height: 15px;
+	text-shadow: 1px 1px 4px black;
+
+}
+
+.ghost
+{
+	opacity: 0.3;
+}
+
+#jour0, #jour1, #jour2, #jour3, 
+#day_0_1H00, #day_0_3H00, #day_0_5H00, #day_0_7H00, #day_0_9H00, #day_0_11H00, 
+#day_0_13H00, #day_0_15H00, #day_0_17H00, #day_0_19H00, #day_0_21H00, #day_0_23H00,
+#day_1_1H00, #day_1_3H00, #day_1_5H00, #day_1_7H00, #day_1_9H00, #day_1_11H00,
+#day_1_13H00, #day_1_15H00, #day_1_17H00, #day_1_19H00, #day_1_21H00, #day_1_23H00,
+#day_2_1H00, #day_2_3H00, #day_2_5H00, #day_2_7H00, #day_2_9H00, #day_2_11H00,
+#day_2_13H00, #day_2_15H00, #day_2_17H00, #day_2_19H00, #day_2_21H00, #day_2_23H00,
+#day_3_1H00, #day_3_3H00, #day_3_5H00, #day_3_7H00, #day_3_9H00, #day_3_11H00,
+#day_3_13H00, #day_3_15H00, #day_3_17H00, #day_3_19H00, #day_3_21H00, #day_3_23H00
+{
+	font-family: arimo;
+	font-weight: bold;
+	/*width: 46px;*/
+	width: 41.6px;
+	padding: 10px;
+/*	border: 1px solid #1E1E1F; */
+	border: 1px solid transparent;
+	border-radius: 0px;
+	height: 58px;
+	line-height: 55px; 		
+	color: #999;
+	font-size:40px;
+	text-shadow: 1px 1px 4px black;
+}
+
+#jour0, #jour1, #jour2, #jour3
+{
+	/*width: 55px;*/
+	width: 55px;
+	font-size:27px;
+	color:#F2DDB3;
+	text-align: left;
+	margin-top: -5px;
+}
+#jour0
+{
+width: 53px;
+}
+#sep
+{
+  position: absolute;
+  margin-top: -40px;
+  margin-left: 0px;
+  border : 0;
+  height : 160px;
+  width : 1px;
+  background-image: -webkit-linear-gradient(top, transparent, #F2DDB3, transparent);
+  background-image: -moz-linear-gradient(top, transparent, #F2DDB3, transparent);
+  background-image: -ms-linear-gradient(top, transparent, #F2DDB3, transparent);
+  background-image: -o-linear-gradient(top, transparent, #F2DDB3, transparent);
+  background-image: linear-gradient(top, transparent, #F2DDB3, transparent);
+}
+
+@media screen and (min-height: 610px) {
+    #sep
+	{
+	height : 250px;
+	}	
+}
