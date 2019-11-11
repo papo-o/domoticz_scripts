@@ -1,0 +1,397 @@
+<!-- load page stylesheet -->
+<script>
+$('head').append('<link rel="stylesheet" href="css/meteo_perso.css">');
+</script>
+
+<script>
+var maintenant=new Date();
+//console.log( " Maintenant : " + maintenant )
+var jour = maintenant.getDay();
+var day = maintenant.getDate();
+//console.log( " jour : " + jour )
+//console.log( " day : " + day )
+var tab_jour = new Array("Dim.", "Lun.", "Mar.", "Mer.", "Jeu.", "Ven.", "Sam.");
+$( "#jour0").append( tab_jour[jour] );
+jour = jour == 6 ? 0 : jour +1;
+$( "#jour1").append( tab_jour[jour] );
+jour = jour == 6 ? 0 : jour +1;
+$( "#jour2").append( tab_jour[jour] );
+jour = jour == 6 ? 0 : jour +1;
+$( "#jour3").append( tab_jour[jour] );
+mois = maintenant.getMonth()+1;
+//console.log( " mois : " + mois )
+annee = maintenant.getFullYear();
+//console.log( " annee : " + annee )
+
+//var JsonAddress = "http://www.prevision-meteo.ch/services/json/"+city;
+var JsonAddress = "http://192.168.1.24:8080/monitor/prevision-meteo.json";
+
+function color(temp) {
+    var vtemp = 'T00';
+    if (parseInt(temp, 10) >= 35) {
+      vtemp = 'T35';
+    }
+    else if (parseInt(temp, 10) >= 0) {
+      vtemp = ['T'+parseInt(temp, 10)];
+    }
+    return '<span class="'+vtemp+'">'+temp;
+}
+
+
+$.getJSON(JsonAddress, function (json) {
+
+     $.each(json.fcst_day_0.hourly_data, function( index, value ) {
+//console.log( index + ": " + value.day_short );
+$( "#day_0_" + index ).append( "<img src=\"" + value.ICON + "\" alt=\"\" />" );
+$( "#temp_day_0_" + index ).append( color(value.TMP2m) + '<sup style="font-size:50%;" >&#8451;</sup></span>' );
+//console.log( "#issnow_" + index + ": " + value.ISSNOW );
+//$( "#issnow_" + index ).append( value.ISSNOW );
+//var issnow = issnow + value.ISSNOW;
+//console.log( issnow );
+});
+    $.each(json.fcst_day_1.hourly_data, function( index, value ) {
+//console.log( index + ": " + value.ICON );
+$( "#day_1_" + index ).append( "<img src=\"" + value.ICON + "\" alt=\"\" />" )
+$( "#temp_day_1_" + index ).append( color(value.TMP2m) + '<sup style="font-size:50%;" >&#8451;</sup></span>' );
+});
+    $.each(json.fcst_day_2.hourly_data, function( index, value ) {
+//console.log( index + ": " + value.ICON );
+$( "#day_2_" + index ).append( "<img src=\"" + value.ICON + "\" alt=\"\" />" )
+$( "#temp_day_2_" + index ).append( color(value.TMP2m) + '<sup style="font-size:50%;" >&#8451;</sup></span>' );
+});
+    $.each(json.fcst_day_3.hourly_data, function( index, value ) {
+//console.log( index + ": " + value.ICON );
+$( "#day_3_" + index ).append( "<img src=\"" + value.ICON + "\" alt=\"\" />" )
+$( "#temp_day_3_" + index ).append( color(value.TMP2m) + '<sup style="font-size:50%;" >&#8451;</sup></span>' );
+});
+
+});
+
+
+function ghost(){
+
+    for (i = 1, hour = new Date().getHours() ; i < hour ; i=i+2) {
+
+        if (!$("#day_0_"+i+"H00").hasClass('ghost')) {
+            $("#day_0_"+i+"H00").addClass('ghost');
+        }
+        if (!$("#temp_day_0_"+i+"H00").hasClass('ghost')) {
+            $("#temp_day_0_"+i+"H00").addClass('ghost');
+        }
+    }
+}
+
+$(ghost);
+setInterval( ghost, 5*60*1000);
+//============= phases lunaire ========================
+//source https://forums.coronalabs.com/topic/54547-source-for-moon-cycles-phases/
+    function julianDate(d, m, y) {
+
+       var yy = y - Math.floor((12 - m) / 10);
+        var mm = m + 9;
+        if (mm >= 12) {
+            mm = mm - 12
+        }
+       var k1 = Math.floor(365.25 * (yy + 4712));
+       var k2 = Math.floor(30.6001 * mm + 0.5);
+       var k3 = Math.floor(Math.floor((yy / 100) + 49) * 0.75) - 38;
+       var j = k1 + k2 + d + 59;
+        if (j > 2299160) {
+            j = j - k3
+	//console.log( " Julian Date : " + j )
+        }
+        return j
+    }
+
+    function  moonAge(d, m, y){
+
+        var j = julianDate(d, m, y);
+        var ip = (j + 4.867) / 29.53059;
+         ip = ip - Math.floor(ip);
+        if (ip < 0.5) {
+            var ag = ip * 29.53059 + 29.53059 / 2;
+        } else {
+           var ag = ip * 29.53059 - 29.53059 / 2;
+        }
+         console.log( " moonAge : " + ag  ) 
+
+    return Math.round(ag)
+
+    }
+	console.log( "  Day : " + day )
+	<!-- console.log( "  Month : " + month ) -->
+	<!-- console.log( "  Year : " + year ) -->
+var theMoon = moonAge(day, mois, annee)
+	console.log( "  RoundMoonAge : " + theMoon )
+    if      (theMoon > 28) {
+        moonText = "Nouvelle Lune";
+        moonPNG = "moon/moon0.png";
+    } else if (theMoon > 23) {
+        moonText = "Dernier croissant";
+        moonPNG = "moon/moon7.png";
+    } else if (theMoon > 20) {
+        moonText = "Dernier quartier";
+        moonPNG = "moon/moon6.png";
+    } else if (theMoon > 15) {
+        moonText = "Gibbeuse décroissante";
+        moonPNG = "moon/moon5.png";
+    } else if (theMoon > 13) {
+        moonText = "Pleine lune";
+        moonPNG = "moon/moon4.png";
+    } else if (theMoon > 8) {
+        moonText = "Gibbeuse croissante";
+        moonPNG = "moon/moon3.png";
+    } else if (theMoon > 6) {
+        moonText = "Premier Quartier";
+        moonPNG = "moon/moon2.png";
+    } else if (theMoon > 1) {
+        moonText = "Premier croissant";
+        moonPNG = "moon/moon1.png";
+    } else {
+        moonText = "Nouvelle Lune";
+        moonPNG = "moon/moon0.png";
+    }
+
+
+
+$( "#moontxt").append(  moonText  );
+$( "#moon").append("<img src=\"./icons/meteo/" + moonPNG + "\" alt=\"\" />");
+</script>
+
+<!-- Page -->
+<div class="cnt v-wrap">
+<div class="v-box">
+<!-- contenu -->
+
+<!--
+le contenu de votre page ne doit pas dépasser les dimensions suivantes
+largeur: 962px
+hauteur: 541px
+-->
+
+
+<div>
+<div class="frame">
+    <div id="ls_meteo1"></div><div id="meteo1">--</div><div id="desc_meteo1">meteo1</div>
+    <div id="ls_meteo2"></div><div id="meteo2">--</div><div id="desc_meteo2">meteo2</div>
+</div>
+<div class="frame">
+    <div id="ls_meteo3"></div><div id="meteo3">--</div><div id="desc_meteo3">meteo3</div>
+</div>
+<div class="frame">
+    <div id="ls_meteo_25"></div><div id="moon"></div><div id="moontxt"></div>
+</div>
+<!-- <div class="frame">
+    <div id="ls_meteo25"></div><div id="meteo25">--</div><div id="desc_meteo25">meteo25</div>
+</div> -->
+<div class="frame">
+    <div id="ls_meteo4"></div><div id="meteo4">--</div><div id="desc_meteo4">meteo4</div>
+    <div id="ls_meteo5"></div><div id="meteo5">--</div><div id="desc_meteo5">meteo5</div>
+</div>
+</div>
+
+
+<!-- ================================================================================================== -->
+
+<div class="stage">
+</div>
+<div>
+<div class="frame">
+            <div id="desc_jour0"></div><div id="jour0"></div>
+</div>
+</div>
+<div class="frame">
+            <div id="day_0_1H00"></div><div id="temp_day_0_1H00"></div>
+</div>
+<div class="frame">
+            <div id="day_0_3H00"></div><div id="temp_day_0_3H00"></div>
+</div>
+<div class="frame">
+            <div id="day_0_5H00"></div><div id="temp_day_0_5H00"></div>
+</div>
+<div class="frame">
+            <div id="day_0_7H00"></div><div id="temp_day_0_7H00"></div>
+</div>
+<div class="frame">
+            <div id="day_0_9H00"></div><div id="temp_day_0_9H00"></div><div id="sep"></div>
+</div>
+<div class="frame">
+            <div id="day_0_11H00"></div><div id="temp_day_0_11H00"></div>
+</div>
+<div class="frame">
+            <div id="day_0_13H00"></div><div id="temp_day_0_13H00"></div>
+</div>
+<div class="frame">
+            <div id="day_0_15H00"></div><div id="temp_day_0_15H00"></div>
+</div>
+<div class="frame">
+            <div id="day_0_17H00"></div><div id="temp_day_0_17H00"></div>
+</div>
+<div class="frame">
+            <div id="day_0_19H00"></div><div id="temp_day_0_19H00"></div><div id="sep"></div>
+</div>
+<div class="frame">
+            <div id="day_0_21H00"></div><div id="temp_day_0_21H00"></div>
+</div>
+<div class="frame">
+            <div id="day_0_23H00"></div><div id="temp_day_0_23H00"></div>
+</div>
+</div>
+
+<div class="stage">
+</div>
+<div>
+<div class="frame">
+            <div id="desc_jour1"></div><div id="jour1"></div>
+</div>
+<div class="frame">
+            <div id="day_1_1H00"></div><div id="temp_day_1_1H00"></div>
+</div>
+<div class="frame">
+            <div id="day_1_3H00"></div><div id="temp_day_1_3H00"></div>
+</div>
+<div class="frame">
+            <div id="day_1_5H00"></div><div id="temp_day_1_5H00"></div>
+</div>
+<div class="frame">
+            <div id="day_1_7H00"></div><div id="temp_day_1_7H00"></div>
+</div>
+<div class="frame">
+            <div id="day_1_9H00"></div><div id="temp_day_1_9H00"></div>
+</div>
+<div class="frame">
+            <div id="day_1_11H00"></div><div id="temp_day_1_11H00"></div>
+</div>
+<div class="frame">
+            <div id="day_1_13H00"></div><div id="temp_day_1_13H00"></div>
+</div>
+<div class="frame">
+            <div id="day_1_15H00"></div><div id="temp_day_1_15H00"></div>
+</div>
+<div class="frame">
+            <div id="day_1_17H00"></div><div id="temp_day_1_17H00"></div>
+</div>
+<div class="frame">
+            <div id="day_1_19H00"></div><div id="temp_day_1_19H00"></div>
+</div>
+<div class="frame">
+            <div id="day_1_21H00"></div><div id="temp_day_1_21H00"></div>
+</div>
+<div class="frame">
+            <div id="day_1_23H00"></div><div id="temp_day_1_23H00"></div>
+</div>
+</div>
+
+<div class="stage">
+</div>
+<div>
+<div class="frame">
+            <div id="desc_jour2"></div><div id="jour2"></div>
+</div>
+<div class="frame">
+            <div id="day_2_1H00"></div><div id="temp_day_2_1H00"></div>
+</div>
+<div class="frame">
+            <div id="day_2_3H00"></div><div id="temp_day_2_3H00"></div>
+</div>
+<div class="frame">
+            <div id="day_2_5H00"></div><div id="temp_day_2_5H00"></div>
+</div>
+<div class="frame">
+            <div id="day_2_7H00"></div><div id="temp_day_2_7H00"></div>
+</div>
+<div class="frame">
+            <div id="day_2_9H00"></div><div id="temp_day_2_9H00"></div>
+</div>
+<div class="frame">
+            <div id="day_2_11H00"></div><div id="temp_day_2_11H00"></div>
+</div>
+<div class="frame">
+            <div id="day_2_13H00"></div><div id="temp_day_2_13H00"></div>
+</div>
+<div class="frame">
+            <div id="day_2_15H00"></div><div id="temp_day_2_15H00"></div>
+</div>
+<div class="frame">
+            <div id="day_2_17H00"></div><div id="temp_day_2_17H00"></div>
+</div>
+<div class="frame">
+            <div id="day_2_19H00"></div><div id="temp_day_2_19H00"></div>
+</div>
+<div class="frame">
+            <div id="day_2_21H00"></div><div id="temp_day_2_21H00"></div>
+</div>
+<div class="frame">
+            <div id="day_2_23H00"></div><div id="temp_day_2_23H00"></div>
+</div>
+</div>
+
+<div class="stage">
+</div>
+<div>
+<div class="frame">
+            <div id="desc_jour3"></div><div id="jour3"></div>
+</div>
+<div class="frame">
+            <div id="day_3_1H00"></div><div id="temp_day_3_1H00"></div>
+</div>
+<div class="frame">
+            <div id="day_3_3H00"></div><div id="temp_day_3_3H00"></div>
+</div>
+<div class="frame">
+            <div id="day_3_5H00"></div><div id="temp_day_3_5H00"></div>
+</div>
+<div class="frame">
+            <div id="day_3_7H00"></div><div id="temp_day_3_7H00"></div>
+</div>
+<div class="frame">
+            <div id="day_3_9H00"></div><div id="temp_day_3_9H00"></div>
+</div>
+<div class="frame">
+            <div id="day_3_11H00"></div><div id="temp_day_3_11H00"></div>
+</div>
+<div class="frame">
+            <div id="day_3_13H00"></div><div id="temp_day_3_13H00"></div>
+</div>
+<div class="frame">
+            <div id="day_3_15H00"></div><div id="temp_day_3_15H00"></div>
+</div>
+<div class="frame">
+            <div id="day_3_17H00"></div><div id="temp_day_3_17H00"></div>
+</div>
+<div class="frame">
+            <div id="day_3_19H00"></div><div id="temp_day_3_19H00"></div>
+</div>
+<div class="frame">
+            <div id="day_3_21H00"></div><div id="temp_day_3_21H00"></div>
+</div>
+<div class="frame">
+            <div id="day_3_23H00"></div><div id="temp_day_3_23H00"></div>
+</div>
+</div>
+
+<div class="autoHide">
+<div class="frame">
+    <div id="ls_meteo6"></div><div id="meteo6">--</div><div id="desc_meteo6">meteo6</div>
+</div>
+<div class="frame">
+    <div id="ls_meteo7"></div><div id="meteo7">--</div><div id="desc_meteo7">meteo7</div>
+</div>
+<div class="frame">
+    <div id="ls_meteo8"></div><div id="meteo8">--</div><div id="desc_meteo8">meteo8</div>
+</div>
+<div class="frame">
+    <div id="ls_meteo9"></div><div id="meteo9">--</div><div id="desc_meteo9">meteo9</div>
+</div>
+<div class="frame">
+    <div id="ls_meteo10"></div><div id="meteo10">--</div><div id="desc_meteo10">meteo10</div>
+</div>
+<div class="frame">
+    <div id="ls_meteo11"></div><div id="meteo11">--</div><div id="desc_meteo11">meteo11</div>
+</div>
+</div>
+
+<!-- fin contenu -->
+</div>
+</div>
+<!-- fin page -->
