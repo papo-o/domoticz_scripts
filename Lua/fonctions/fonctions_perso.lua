@@ -1,6 +1,6 @@
 --[[
-version 1.7
-MAJ = 14/07/2019
+version 1.81
+MAJ = 24/11/2019
 appel de ces fonctions :
 package.path = package.path..";/home/pi/domoticz/scripts/lua/fonctions/?.lua"
 ou
@@ -392,6 +392,10 @@ function calc_wind_chill(temperature, wind_speed)-- Calculate wind chill.
     return apparent
 end
 --------------------------------------------
+local function calcWindChillCelsius(wt,wws) --temperature en degres, vitesse en m/s
+    return (wt>10 and wt or wws<3.1 and wt or math.floor(13.12+(0.6215*wt)-(11.37*((wws*1.61)^0.16))+(0.3965*(wt*((wws*1.61)^0.16)))+.5))
+end
+--------------------------------------------
 function calc_heat_index(temperature, humidity)-- Calculate heat index.
 -- If it's hot and humidity is high,
 -- temperature feels higher than what it actually is. Heat index is
@@ -510,7 +514,7 @@ return(string.sub(texte, 1, DernierIndex))
 end
 --------------------------------------------
 function creaVar(vname,vtype,vvalue) -- pour créer une variable de type 2 nommée toto comprenant la valeur 10
-    os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=command&param=saveuservariable&vname='..url_encode(vname)..'&vtype='..vtype..'&vvalue='..url_encode(vvalue)..'" &')
+    os.execute(curl..'"'.. domoticzURL ..'/json.htm?type=command&param=adduservariable&vname='..url_encode(vname)..'&vtype='..vtype..'&vvalue='..url_encode(vvalue)..'" &')
 end -- usage :  creaVar('toto','2','10')
 --------------------------------------------
 function typeof(var) -- retourne le type de la variable 'string' ou 'number'
