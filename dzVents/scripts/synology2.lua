@@ -2,7 +2,7 @@
 name : synology2.lua
 auteur : papoo
 creation : 17/02/2019
-mise à  jour : 05/04/2019
+mise à  jour : 18/12/2019
 
 https://pon.fr/dzvents-supervision-dun-nas-synology-avec-snmp/
 https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/synology2.lua
@@ -90,10 +90,12 @@ end
     local NAS_MEM = "Synology Utilisation RAM"              -- NAS MEM 
     local NAS_HD_SPACE_PERC = "Synology Occupation Disque"  -- NAS HD Space  in %
     local NAS_HD_SPACE = "Synology Espace Disponible"       -- NAS HD Space  in Go (custom sensor)
-    local NAS_HDD1_TEMP = "Synology HDD1 Temp"              -- NAS HD1 Temp, nil si inutilisé 
-    local NAS_HDD2_TEMP = nil                               -- NAS HD2 Temp, nil si inutilisé
-    local NAS_HDD3_TEMP = nil                               -- NAS HD3 Temp, nil si inutilisé
-    local NAS_HDD4_TEMP = nil                               -- NAS HD4 Temp, nil si inutilisé
+    local NAS_HDD1_TEMP = "Synology HDD1 Temp"              -- NAS HD1 Temp, nil if unused 
+    local NAS_HDD2_TEMP = nil                               -- NAS HD2 Temp, nil if unused
+    local NAS_HDD3_TEMP = nil                               -- NAS HD3 Temp, nil if unused
+    local NAS_HDD4_TEMP = nil                               -- NAS HD4 Temp, nil if unused
+	local NAS_UPLOAD    = nil                               -- NAS upload in ko/s, nil if unused
+	local NAS_DOWNLOAD   = nil                               -- NAS download in ko/s, nil if unused
     local OID_NAS_TEMP = '1.3.6.1.4.1.6574.1.2.0'
     local OID_HDUnit = '1.3.6.1.2.1.25.2.3.1.4.51'          -- OID HD Unit Change OID to .38 on DSM 5.1 or .41 on DSM 6.0+ or .51 on my DS218
     local OID_HDTotal = '1.3.6.1.2.1.25.2.3.1.5.51'         -- OID Total space volume in Go Change OID to .38 on DSM 5.1 or .41 on DSM 6.0+ or .51 on my DS218
@@ -108,6 +110,8 @@ end
     local OID_HDtemp2 = '1.3.6.1.4.1.6574.2.1.1.6.1'        -- OID Temperature HDD2 
     local OID_HDtemp3 = '1.3.6.1.4.1.6574.2.1.1.6.2'        -- OID Temperature HDD3
     local OID_HDtemp4 = '1.3.6.1.4.1.6574.2.1.1.6.3'        -- OID Temperature HDD4
+	local OID_ifHCOutOctets = '1.3.6.1.2.1.2.2.1.16.3'		-- OID ifHCOutOctets if not work try 1.3.6.1.2.1.2.2.1.16.1 or 1.3.6.1.2.1.2.2.1.16.2
+	local OID_ifHCInOctets = '1.3.6.1.2.1.2.2.1.10.3'		-- OID ifHCInOctets if not work try 1.3.6.1.2.1.2.2.1.10.1 or 1.3.6.1.2.1.2.2.1.10.2
     --local OID_Raid_Status = '1.3.6.1.4.1.6574.3.1.1.3.0'        -- OID Raid Status
     --local OID_Physical_Memory_Units = '1.3.6.1.2.1.25.2.3.1.4.1'
     --local OID_Physical_Memory_Size = '1.3.6.1.2.1.25.2.3.1.5.1'
@@ -125,16 +129,36 @@ return {
     },    
    -- on = { devices = { "your trigger device" }},
         
-  logging =   {   level    =   domoticz.LOG_DEBUG,                                             -- Seulement un niveau peut être actif; commenter les autres
+  logging =   {    level    =    domoticz.LOG_DEBUG,                                             -- Seulement un niveau peut être actif; commenter les autres
                 -- level    =   domoticz.LOG_INFO,                                            -- Only one level can be active; comment others
                 -- level    =   domoticz.LOG_ERROR,
                 -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
-                marker    =   "Synology Monitor v1.35 "      },
-    
+                   marker    =   "Synology Monitor v1.41 "      },
+ 	data = {
+ 		ifHCInOctets =  { history = true, maxItems = 2 },
+		ifHCOutOctets = { history = true, maxItems = 2 },
+	},
     execute = function(dz)
-        local i = 0
-        local results = {}
-        local command = 'snmpget -v 2c -c '..CommunityPassword..' -O qv '..NasIp..' '..OID_NAS_TEMP..' '..OID_HDUnit..' '..OID_HDTotal..' '..OID_HDUsed..' '..OID_CpuUser..' '..OID_CpuSystem..' '..OID_MemAvailable ..' '.. OID_MemTotalSwap ..' '..OID_MemTotalReal..' '..OID_MemTotalFree..' '..OID_HDtemp1..' '..OID_HDtemp2..' '..OID_HDtemp3..' '..OID_HDtemp4--..' '..OID_Physical_Memory_Units ..' '..OID_Physical_Memory_Used..' '..OID_Physical_Memory_Size ..' '..OID_system_memory_total ..' '..OID_system_memory_free ..' '.. OID_system_vsmemory_shared ..' '.. OID_system_vsmemory_buffer 
+		local i, lastIfHCInOctets, lastIfHCOutOctets, ifHCInSecondsAgo, IfHCOutSecondsAgo, upload, download, round, results = 0, 0, 0, 0, 0, 0, 0, dz.utils.round, {}
+		dz.data.ifHCOutOctets.add('0')
+		dz.data.ifHCInOctets.add('0')
+	
+		if dz.data.ifHCOutOctets.getOldest() ~= nil then 
+			lastIfHCOutOctets = dz.data.ifHCOutOctets.getOldest().data 
+			ifHCOutSecondsAgo = dz.data.ifHCOutOctets.getOldest().time.secondsAgo
+		end
+		if dz.data.ifHCInOctets.getOldest() ~= nil then 
+			lastIfHCInOctets = dz.data.ifHCInOctets.getOldest().data
+			ifHCInSecondsAgo = dz.data.ifHCInOctets.getOldest().time.secondsAgo 
+		end	
+		dz.log("last ifHCOutOctets : "..tostring(lastIfHCOutOctets).." at "..tostring(ifHCOutSecondsAgo).." seconds ago",dz.LOG_DEBUG) 	
+		dz.log("last ifHCInOctets : "..tostring(lastIfHCInOctets).." at "..tostring(ifHCInSecondsAgo).." seconds ago",dz.LOG_DEBUG) 
+		
+		
+		
+        local command = 'snmpget -v 2c -c '..CommunityPassword..' -O qv '..NasIp..' '..OID_NAS_TEMP..' '..OID_HDUnit..' '..OID_HDTotal..' '..OID_HDUsed..' '..OID_CpuUser..' '..OID_CpuSystem..' '
+			..OID_MemAvailable ..' '.. OID_MemTotalSwap ..' '..OID_MemTotalReal..' '..OID_MemTotalFree..' '..OID_HDtemp1..' '..OID_HDtemp2..' '..OID_HDtemp3..' '..OID_HDtemp4..' '..OID_ifHCOutOctets..' '
+			..OID_ifHCInOctets --..' '..OID_Physical_Memory_Units ..' '..OID_Physical_Memory_Used..' '..OID_Physical_Memory_Size ..' '..OID_system_memory_total ..' '..OID_system_memory_free ..' '.. OID_system_vsmemory_shared ..' '.. OID_system_vsmemory_buffer 
         local handle = assert(io.popen(command))
         for line in handle:lines() do
             results[i] =  format(line)
@@ -216,6 +240,22 @@ return {
             dz.log("HDTemp4 : "..tostring(results[13]),dz.LOG_DEBUG) 
             if NAS_HDD4_TEMP ~= nil then dz.devices(NAS_HDD4_TEMP).update(0,results[13]) end
         end
+
+        if results[14] then 
+            dz.log("ifHCOutOctets : "..tostring(results[14]),dz.LOG_DEBUG) 
+			dz.data.ifHCOutOctets.add(tostring(results[14]))
+			if tonumber(lastIfHCOutOctets) > 0 and tonumber(results[14]) > tonumber(lastIfHCOutOctets) then upload = round(((tonumber(results[14]) - tonumber(lastIfHCOutOctets)) / tonumber(ifHCOutSecondsAgo) / 1024)) end
+			if NAS_UPLOAD ~= nil then dz.devices(NAS_UPLOAD).update(0,tostring(upload)) end
+		end
+        if results[15] then 
+            dz.log("ifHCInOctets : "..tostring(results[15]),dz.LOG_DEBUG) 
+			dz.data.ifHCInOctets.add(tostring(results[15]))	
+			if tonumber(lastIfHCInOctets) > 0 and tonumber(results[15]) > tonumber(lastIfHCInOctets) then download = round(((tonumber(results[15]) - tonumber(lastIfHCInOctets)) / tonumber(ifHCInSecondsAgo) / 1024)) end
+			if NAS_DOWNLOAD ~= nil then dz.devices(NAS_DOWNLOAD).update(0,tostring(download)) end		
+		end
+
+		dz.log("Upload : "..tostring(upload).."ko/s, Download : "..tostring(download).."ko/s",dz.LOG_DEBUG) 
+
 
         if results[0] and results[5] and results[6] then
                 dz.log("Requete SNMP correcte ",dz.LOG_DEBUG)
