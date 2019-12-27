@@ -2,7 +2,7 @@
 --[[
 original script by rrozema Generic auto-off : https://www.domoticz.com/forum/viewtopic.php?f=72&t=23717&p=205159&hilit=auto+off#p201976
 author = papoo
-maj : 26/12/2019
+maj : 27/12/2019
 this version need a waaren script, Universal function notification :
 https://www.domoticz.com/forum/viewtopic.php?f=59&t=26542#p204958
 https://pon.fr/dzvents-fonction-de-notification-universelle/
@@ -273,7 +273,7 @@ Fonctionnalité proposée par Anthony72
 --]]
 
 local scriptName = 'Json Description'
-local scriptVersion = '1.09'
+local scriptVersion = '1.10'
 
 return {
     active = true,
