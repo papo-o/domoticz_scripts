@@ -1,5 +1,5 @@
 --[[ moonSelectorIcons.lua
-update/mise à jour = 15/10/2019
+update/mise à jour = 27/12/2019
 source : https://www.domoticz.com/forum/viewtopic.php?f=59&t=27501&p=210819&hilit=seticon#p210819
 https://pon.fr/ddzvents-darksky-probabilite-de-vent-et-phases-lunaires/
 https://easydomoticz.com/forum/viewtopic.php?f=10&t=8758&p=71951#p71951
@@ -13,17 +13,17 @@ ainsi que la (es) référence(s) au(x) device(s) selector (dans l'exemple ci des
  
 --]]
 local scriptName        = 'moonSelectorIcons'
-local scriptVersion     = ' 1.01'
+local scriptVersion     = ' 1.02'
 return  {   
         active = true,
         on =    {  
                        devices         = {2479}, -- change to your device(s) separated by a comma like {2479,2480} 
                     },
 
-   logging =   {  level    =   domoticz.LOG_DEBUG,                                             -- Seulement un niveau peut être actif; commenter les autres
-                -- -- level    =   domoticz.LOG_INFO,                                            -- Only one level can be active; comment others
-                -- -- level    =   domoticz.LOG_ERROR,
-                -- -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
+  logging =   {  level    =   domoticz.LOG_DEBUG,                                             -- Seulement un niveau peut être actif; commenter les autres
+                -- level    =   domoticz.LOG_INFO,                                            -- Only one level can be active; comment others
+                -- level    =   domoticz.LOG_ERROR,
+                -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
                 marker = scriptName..' v'..scriptVersion
                 },
 
@@ -42,22 +42,13 @@ return  {
                             [70] = 135,-- level correspondant à Dernier quartier MoonPhases7LQ
                             [80] = 136,-- level correspondant à Dernier croissant MoonPhases8WC
 				}
-        
-        local function setIcon(iconNumber) 
-            local url = dz.settings['Domoticz url'] .. '/json.htm?type=setused&used=true&name=' .. dz.utils.urlEncode(item.name) ..
-            '&description=' .. dz.utils.urlEncode(item.description) .. -- Required. If not set it will be blanked out.
-            '&idx=' .. item.id .. 
-            '&switchtype=' .. item.switchTypeValue ..
-            '&customimage=' .. iconNumber
-            logWrite(url)
-            return dz.openURL(url)
-        end    
+		
         logWrite('lastLevel'.. tostring(item.lastLevel))
         logWrite('level'.. tostring(item.level))
         if item.level ~= item.lastLevel then 
-            setIcon(icons[item.level])
+            item.setIcon(icons[item.level])
         else
-            dz.log('No Icon change necessary' .. item.id,dz.LOG_DEBUG)
+            logWrite('No Icon change necessary' .. item.id)
         end
     end
 }
