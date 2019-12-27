@@ -2,7 +2,7 @@
 --[[
 original script by rrozema Generic auto-off : https://www.domoticz.com/forum/viewtopic.php?f=72&t=23717&p=205159&hilit=auto+off#p201976
 author = papoo
-maj : 25/09/2019
+maj : 26/12/2019
 this version need a waaren script, Universal function notification :
 https://www.domoticz.com/forum/viewtopic.php?f=59&t=26542#p204958
 https://pon.fr/dzvents-fonction-de-notification-universelle/
@@ -45,13 +45,13 @@ Exemple 2 : éteindre l'appareil lorsqu'il est allumé depuis 5 minutes et qu'au
 }
 
 Example 3: turn off the device when it has been on for 2 minutes and no motion has been detected by
-    either of the "Overloop: Motion" or the "Trap: Motion" devices:
+    either of the "Motion1" or the "Motion2" Devicex:
 exemple 3: éteindre l'appareil lorsqu'il est allumé depuis 2 minutes et qu'aucun mouvement n'a été détecté par
-    l’un des dispositifs "Overloop: Motion" ou "Trap: Motion":
+    l’un des dispositifs "Motion1" ou "Motion2":
 
 {
 "auto_off_minutes": 2,
-"auto_off_motion_device": {"Overloop": "Motion", "Trap": "Motion"}
+"auto_off_motion_device": {"Device1": "Motion1", "Device2": "Motion2"}
 }
 
 With this new version you can :
@@ -248,19 +248,32 @@ Exemple 17 : être averti si le périphérique est éteint depuis x minutes
   exemple 18  : moduler une lumière à niveau(x), jour(s) et heure(s) définis
     si "silent" : true permet de mettre à jour le niveau d'un device sans action
 {
-  "dimTo" : 
-    {
-        "1":{"level" : 75, "day" : "mon-tue-wed-thu-fri-sat", "hour" : "7:15"},
-        "2":{"level" : 0,  "day" : "mon-tue-wed-thu-fri-sat", "hour" : "7:18"}
-        "3":{"level" : 25,  "day" : "mon-tue-wed-thu-fri-sat", "hour" : "22:15", "silent" : true},
-        "4":{"level" : 100,  "day" : "mon-tue-wed-thu-fri-sat", "hour" : "08:00", "silent" : true}
-    }
+	"dimTo" : 
+		{
+			"1":{"level" : 75, "day" : "mon-tue-wed-thu-fri-sat", "hour" : "7:15"},
+			"2":{"level" : 0,  "day" : "mon-tue-wed-thu-fri-sat", "hour" : "7:18"},
+			"3":{"level" : 25,  "day" : "mon-tue-wed-thu-fri-sat", "hour" : "22:15", "silent" : true},
+			"4":{"level" : 100,  "day" : "mon-tue-wed-thu-fri-sat", "hour" : "08:00", "silent" : true}
+		}
 }
+ 
+Fonctionnalité proposée par Anthony72
+
+  Example 19 : automatically change the custom icon of a selector switch
+  syntax 
+  "levelNumber" : "iconNumber",
   
+  Exemple 19 : changer automatiquement l'icone personnalisé d'un switch selecteur
+  syntaxe
+  "levelNumber" : "iconNumber",
+  
+{"selectorIcons":{"10":"129","20":"130","30":"131","40":"132","50":"133","60":"134","70":"135","80":"136"}}
+
+	
 --]]
 
 local scriptName = 'Json Description'
-local scriptVersion = '1.07'
+local scriptVersion = '1.09'
 
 return {
     active = true,
@@ -275,7 +288,7 @@ return {
     -- custom logging level for this script
     logging = {
                 -- level    =   domoticz.LOG_DEBUG,
-                 level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
+                level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
                 -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others
                 -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
                 marker = scriptName..' v'..scriptVersion
@@ -292,6 +305,11 @@ return {
         if string.len(now.min) == 1 then minute = '0'..now.min else minute = now.min end
         local Time = now.hour..":"..minute
         local dayWeek = dz.time.dayAbbrOfWeek
+
+		
+        local function logWrite(str,level)
+            dz.log(tostring(str),level or dz.LOG_DEBUG)
+        end
 
         --permet de lire les valeurs des périphériques avec "duration_exceeded_temp", "low_threshold_hr", "high_threshold_hr" ou  "duration_exceeded_hr"
         local function managed(dz, id, duration_exceeded, high_threshold, low_threshold)
@@ -320,16 +338,17 @@ return {
         end
         
         local function split(s, delimiter)
-        if s ~= nil then
-            result = {};
-            for match in (s..delimiter):gmatch("(.-)"..delimiter) do
-                table.insert(result, match);
-            end
-        else
-            result = {""};
+			if s ~= nil then
+				result = {};
+				for match in (s..delimiter):gmatch("(.-)"..delimiter) do
+					table.insert(result, match);
+				end
+			else
+				result = {""};
+			end
+			return result;
         end
-        return result;
-        end
+
 
         local function notificationTable(str)
         --NSS_GOOGLE_CLOUD_MESSAGING, NSS_HTTP, NSS_KODI, NSS_LOGITECH_MEDIASERVER, NSS_NMA,NSS_PROWL, NSS_PUSHALOT, NSS_PUSHBULLET, NSS_PUSHOVER, NSS_PUSHSAFER, NSS_TELEGRAM
@@ -347,8 +366,19 @@ return {
             str = string.gsub (str,"PUSHBULLET", dz.NSS_PUSHBULLET)
             str = string.gsub (str,"TELEGRAM", dz.NSS_TELEGRAM)
             end
-        return (split(str,','))
+			return (split(str,','))
         end
+		
+        -- local function setIcon(device, iconNumber) 
+            -- local url = dz.settings['Domoticz url'] .. '/json.htm?type=setused&used=true&name=' .. dz.utils.urlEncode(device.name) ..
+            -- '&description=' .. dz.utils.urlEncode(device.description) .. -- Required. If not set it will be blanked out.
+            -- '&idx=' .. device.id .. 
+            -- '&switchtype=' .. device.switchTypeValue ..
+            -- '&customimage=' .. iconNumber
+            -- --logWrite(url)
+            -- return dz.openURL(url)
+        -- end
+
 
         local subject               = "\xE2\x9A\xA0 /!\\ Attention /!\\ \xE2\x9A\xA0"           -- sujet des notifications
 
@@ -370,26 +400,26 @@ return {
 
                         if settings.subsystems ~= nil then -- systeme(s) de notification
                             subSystems = settings.subsystems
-                            dz.log('le(s) systeme(s) de notification pour '.. device.name .. ' est(sont)  ' .. subSystems, dz.LOG_DEBUG)
+                            logWrite('le(s) systeme(s) de notification pour '.. device.name .. ' est(sont)  ' .. subSystems)
                         end
 
 
                         if settings.frequency_notifications ~= nil then -- fréquence de notification
                             frequency_notifications = settings.frequency_notifications
-                            dz.log('la fréquence de notification pour '.. device.name .. ' est de  ' .. settings.frequency_notifications.." minutes", dz.LOG_DEBUG)
+                            dz.log('la fréquence de notification pour '.. device.name .. ' est de  ' .. settings.frequency_notifications.." minutes")
                         end
 
                         if settings.quiet_hours ~= nil then -- période silencieuse
                             quiet_hours = settings.quiet_hours
-                            dz.log('la période silencieuse de notification pour '.. device.name .. ' est définie entre  ' .. quiet_hours, dz.LOG_DEBUG)
+                            logWrite('la période silencieuse de notification pour '.. device.name .. ' est définie entre  ' .. quiet_hours)
                         end
                         
                         if settings.auto_off_motion_device ~= nil then -- 
-                            dz.log(device.name .. ' AutoOff type : ' .. type(settings.auto_off_motion_device), dz.LOG_DEBUG)
+                            logWrite(device.name .. ' AutoOff type : ' .. type(settings.auto_off_motion_device))
                             if type(settings.auto_off_motion_device) == "string" then
-                                dz.log(device.name .. ' est asservie au device : ' .. settings.auto_off_motion_device, dz.LOG_DEBUG)
+                                logWrite(device.name .. ' est asservie au device : ' .. settings.auto_off_motion_device)
                             elseif type(settings.auto_off_motion_device) == "table" then
-                                dz.log(device.name .. ' AutoOff type : ' .. type(settings.auto_off_motion_device), dz.LOG_DEBUG)
+                                logWrite(device.name .. ' AutoOff type : ' .. type(settings.auto_off_motion_device))
                                 local devices = ""
                                 local types = ""
                                 for i,v in pairs(settings.auto_off_motion_device) do
@@ -398,125 +428,125 @@ return {
                                 types = types .. i ..", "
                                 
                                 end
-                                dz.log(device.name .. ' est asservie aux devices : ' .. devices, dz.LOG_DEBUG)
-                                dz.log('de type : ' .. types, dz.LOG_DEBUG)
+                                logWrite(device.name .. ' est asservie aux devices : ' .. devices)
+                                logWrite('de type : ' .. types)
                             end
                         end
 
                         if device.temperature ~= nil and settings.high_threshold_temp ~= nil then  -- seuil haut température
-                            dz.log(device.name .. ' a un seuil temperature haute défini à  ' .. settings.high_threshold_temp..'°C', dz.LOG_DEBUG)
+                            logWrite(device.name .. ' a un seuil temperature haute défini à  ' .. settings.high_threshold_temp..'°C')
                         end
 
                         if device.temperature ~= nil and settings.low_threshold_temp ~= nil then  -- seuil bas température
-                            dz.log(device.name .. ' a un seuil temperature basse défini à  ' .. settings.low_threshold_temp..'°C', dz.LOG_DEBUG)
+                            logWrite(device.name .. ' a un seuil temperature basse défini à  ' .. settings.low_threshold_temp..'°C')
                         end
 
                         if device.percentage ~= nil and settings.high_threshold_percent ~= nil then  -- seuil haut %
-                            dz.log(device.name .. ' a un seuil % haut défini à  ' .. settings.high_threshold_percent..'%', dz.LOG_DEBUG)
+                            logWrite(device.name .. ' a un seuil % haut défini à  ' .. settings.high_threshold_percent..'%')
                         end
 
                         if device.percentage ~= nil and settings.low_threshold_percent ~= nil then  -- seuil bas %
-                            dz.log(device.name .. ' a un seuil % bas défini à  ' .. settings.low_threshold_percent..'%', dz.LOG_DEBUG)
+                            logWrite(device.name .. ' a un seuil % bas défini à  ' .. settings.low_threshold_percent..'%')
                         end
 
                         --sensorType
                         if device.sensorType ~= nil and settings.high_threshold_custom ~= nil then  -- seuil haut sensorType
-                            dz.log(device.name .. ' a un seuil haut défini à  ' .. settings.high_threshold_custom..' '..device.sensorUnit, dz.LOG_DEBUG)
+                            logWrite(device.name .. ' a un seuil haut défini à  ' .. settings.high_threshold_custom..' '..device.sensorUnit)
                         end
 
                         if device.sensorType ~= nil and settings.low_threshold_custom ~= nil then  -- seuil bas sensorType
-                            dz.log(device.name .. ' a un seuil bas défini à  ' .. settings.low_threshold_custom..' '..device.sensorUnit, dz.LOG_DEBUG)
+                            logWrite(device.name .. ' a un seuil bas défini à  ' .. settings.low_threshold_custom..' '..device.sensorUnit)
                         end
 
                         --low_watt_usage
                         if device.WhActual ~= nil and settings.low_watt_usage ~= nil then  -- seuil bas sensorType
-                            dz.log(device.name .. ' a un seuil bas défini à  ' .. settings.low_watt_usage..' Wh', dz.LOG_DEBUG)
+                            logWrite(device.name .. ' a un seuil bas défini à  ' .. settings.low_watt_usage..' Wh')
                         end
 
                         if device.WhActual ~= nil and settings.high_watt_usage ~= nil then  -- seuil bas sensorType
-                            dz.log(device.name .. ' a un seuil haut défini à  ' .. settings.high_watt_usage..' Wh', dz.LOG_DEBUG)
+                            logWrite(device.name .. ' a un seuil haut défini à  ' .. settings.high_watt_usage..' Wh')
                         end
 
                         if device.current ~= nil and settings.low_current_usage ~= nil then  -- seuil bas sensorType
-                            dz.log(device.name .. ' a un seuil bas défini à  ' .. settings.low_current_usage..' A', dz.LOG_DEBUG)
+                            logWrite(device.name .. ' a un seuil bas défini à  ' .. settings.low_current_usage..' A')
                         end
 
                         if device.current ~= nil and settings.high_current_usage ~= nil then  -- seuil bas sensorType
-                            dz.log(device.name .. ' a un seuil haut défini à  ' .. settings.high_current_usage..' A', dz.LOG_DEBUG)
+                            logWrite(device.name .. ' a un seuil haut défini à  ' .. settings.high_current_usage..' A')
                         end
                         --=========================================================================================================================
                         if device.level ~= nil and settings.dimToLevel ~= nil and settings.dimToHour ~= nil then  -- seuil bas sensorType
-                            dz.log(device.name .. ' a un changement de luminosité défini à  ' .. settings.dimToLevel..' a '..settings.dimToHour, dz.LOG_DEBUG)
+                            logWrite(device.name .. ' a un changement de luminosité défini à  ' .. settings.dimToLevel..' a '..settings.dimToHour)
                         end
                         --=========================================================================================================================
 
                         if device.state == 'Off' or device.state == 'Close' then    -- Alarme dispositif inactif
                             if settings.time_active_notification ~= nil then
-                                dz.log('Le délai est fixé à '.. settings.time_active_notification.. ' minutes.', dz.LOG_DEBUG)
+                                logWrite('Le délai est fixé à '.. settings.time_active_notification.. ' minutes.')
                             end
                         elseif device.state == 'On' or device.state == 'Open' then   -- Alarme dispositif actif
                             if settings.time_inactive_notification ~= nil then
-                                dz.log('Le délai est fixé à '.. settings.time_inactive_notification.. ' minutes.', dz.LOG_DEBUG)
+                                logWrite('Le délai est fixé à '.. settings.time_inactive_notification.. ' minutes.')
                             end
                         end
 
                         -- Alarme dispositif injoignable
                         if settings.timeout_notification and device.timedOut then
-                            dz.log(device.name .. ' est injoignable. Sa dernière activité remonte à ' .. device.lastUpdate.minutesAgo .. ' minutes.', dz.LOG_INFO)
+                            logWrite(device.name .. ' est injoignable. Sa dernière activité remonte à ' .. device.lastUpdate.minutesAgo .. ' minutes.', dz.LOG_INFO)
                             message = device.name .. ' est injoignable depuis '.. tostring(settings.timeout_notification) ..' minutes'
                             dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                         end
 
                         --batterie
                         if device.batteryLevel ~= nil and device.batteryLevel ~= 255 and settings.low_battery_level ~= nil then
-                            dz.log('Le niveau de batterie de '.. device.name .. ' est de  ' .. device.batteryLevel .. '%', dz.LOG_INFO)
+                            logWrite('Le niveau de batterie de '.. device.name .. ' est de  ' .. device.batteryLevel .. '%', dz.LOG_INFO)
                             if settings.low_battery_level ~= nil and device.batteryLevel < settings.low_battery_level then  -- seuil bas batterie
-                                dz.log(device.name .. ' a un niveau de batterie de ' .. device.batteryLevel..'%', dz.LOG_INFO)
+                                logWrite(device.name .. ' a un niveau de batterie de ' .. device.batteryLevel..'%', dz.LOG_INFO)
                                 message = 'Le niveau de batterie '.. device.name .. ' est inférieur au seuil défini ('..settings.low_battery_level..'%). Valeur : '..tostring(dz.utils.round(device.batteryLevel, 1)) ..'%'
-                                --dz.log(message, dz.LOG_INFO)
+                                --logWrite(message, dz.LOG_INFO)
                                 dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                         end
 
                         --low_signal_level
                         if device.signalLevel ~= nil and settings.low_signal_level ~= nil then
-                            dz.log('Le niveau de signal de '.. device.name .. ' est de  ' .. device.signalLevel, dz.LOG_INFO)
+                            logWrite('Le niveau de signal de '.. device.name .. ' est de  ' .. device.signalLevel, dz.LOG_INFO)
                             if settings.low_signal_level ~= nil and device.signalLevel < settings.low_signal_level then  -- seuil bas signal
-                                dz.log(device.name .. ' a un niveau de signal de ' .. device.signalLevel, dz.LOG_INFO)
+                                logWrite(device.name .. ' a un niveau de signal de ' .. device.signalLevel, dz.LOG_INFO)
                                 message = 'Le niveau de signal '.. device.name .. ' est inférieur au seuil défini ('..settings.low_signal_level..'). Valeur : '..device.signalLevel
-                                --dz.log(message, dz.LOG_INFO)
+                                --logWrite(message, dz.LOG_INFO)
                                 dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                         end
 
                         --low_watt_usage
                         if device.WhActual ~= nil and settings.low_watt_usage ~= nil then
-                            dz.log('Le niveau de puissance de '.. device.name .. ' est de  ' .. device.WhActual..' Wh', dz.LOG_INFO)
+                            logWrite('Le niveau de puissance de '.. device.name .. ' est de  ' .. device.WhActual..' Wh', dz.LOG_INFO)
                             if settings.low_watt_usage ~= nil and device.WhActual < settings.low_watt_usage then  -- seuil bas puissance
-                                dz.log(device.name .. ' a un niveau de puissance de ' .. device.WhActual..' Wh', dz.LOG_INFO)
+                                logWrite(device.name .. ' a un niveau de puissance de ' .. device.WhActual..' Wh', dz.LOG_INFO)
                                 message = 'Le niveau de puissance '.. device.name .. ' est inférieur au seuil défini ('..settings.low_watt_usage..'). Valeur : '..device.WhActual..' Wh'
-                                --dz.log(message, dz.LOG_INFO)
+                                --logWrite(message, dz.LOG_INFO)
                                 dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                         end
 
                         if device.WhActual ~= nil and settings.high_watt_usage ~= nil then
-                            dz.log('Le niveau de puissance de '.. device.name .. ' est de  ' .. device.WhActual..' Wh', dz.LOG_INFO)
+                            logWrite('Le niveau de puissance de '.. device.name .. ' est de  ' .. device.WhActual..' Wh', dz.LOG_INFO)
                             if settings.high_watt_usage ~= nil and device.WhActual > settings.high_watt_usage then  -- seuil haut puissance
-                                dz.log(device.name .. ' a un niveau de puissance de ' .. device.WhActual..' Wh', dz.LOG_INFO)
+                                logWrite(device.name .. ' a un niveau de puissance de ' .. device.WhActual..' Wh', dz.LOG_INFO)
                                 message = 'Le niveau de puissance '.. device.name .. ' est superieur au seuil défini ('..settings.high_watt_usage..'). Valeur : '..device.WhActual..' Wh'
-                                --dz.log(message, dz.LOG_INFO)
+                                --logWrite(message, dz.LOG_INFO)
                                 dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                         end
 
                         --low_current_usage
                         if device.current ~= nil and settings.low_current_usage ~= nil then
-                            dz.log('Le niveau de '.. device.name .. ' est de  ' .. tostring(dz.utils.round(device.current, 0))..' A', dz.LOG_INFO)
+                            logWrite('Le niveau de '.. device.name .. ' est de  ' .. tostring(dz.utils.round(device.current, 0))..' A', dz.LOG_INFO)
                             if settings.low_current_usage ~= nil and device.current < settings.low_current_usage then  -- seuil bas intensite
-                                dz.log(device.name .. ' a un niveau de ' .. tostring(dz.utils.round(device.current, 0)), dz.LOG_INFO)
+                                logWrite(device.name .. ' a un niveau de ' .. tostring(dz.utils.round(device.current, 0)), dz.LOG_INFO)
                                 message = 'Le niveau de '.. device.name .. ' est inférieur au seuil défini ('..settings.low_current_usage..'). Valeur : '..tostring(dz.utils.round(device.current, 0))..' A'
-                                --dz.log(message, dz.LOG_INFO)
+                                --logWrite(message, dz.LOG_INFO)
                                 dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                         end
@@ -525,12 +555,29 @@ return {
                         if device.current ~= nil and settings.high_current_usage ~= nil then
                             
                             if settings.high_current_usage ~= nil and device.current > settings.high_current_usage then  -- seuil haut intensite
-                                dz.log(device.name .. ' a un niveau de ' .. tostring(dz.utils.round(device.current, 0)), dz.LOG_INFO)
+                                logWrite(device.name .. ' a un niveau de ' .. tostring(dz.utils.round(device.current, 0)), dz.LOG_INFO)
                                 message = 'Le niveau '.. device.name .. ' est superieur au seuil défini ('..settings.high_current_usage..'). Valeur : '..tostring(dz.utils.round(device.current, 0))..' A'
-                                --dz.log(message, dz.LOG_INFO)
+                                --logWrite(message, dz.LOG_INFO)
                                 dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                         end
+						
+						-- change selector icons
+						if settings.selectorIcons ~= nil  and device.deviceSubType == 'Selector Switch' then  -- 
+							logWrite(device.name .. ' : deviceType => ' .. tostring(device.deviceType))
+						    logWrite(device.name .. ' : deviceSubType => ' .. tostring(device.deviceSubType))
+							logWrite(device.name .. ' : Level => ' .. tostring(device.rawData[1]))
+							--logWrite(device.name .. '  a pour description ' .. tostring(settings.selectorIcons), dz.LOG_INFO)
+							for i, v in pairs(settings.selectorIcons) do
+								--logWrite('le seuil ' .. i .. '  a pour icone ' .. tostring(v), dz.LOG_INFO)
+								if device.rawData[1] == i and device.lastUpdate.secondsAgo < 70 then 
+									logWrite('le seuil ' .. i .. '  a pour icone ' .. tostring(v), dz.LOG_INFO)
+									device.setIcon(v)
+									logWrite('mise à jour icone ', dz.LOG_INFO)	
+								end
+							
+							end
+						end
 
                         --dimTo
                         if device.level ~= nil and settings.dimTo ~= nil then 
@@ -539,19 +586,19 @@ return {
                             local silent
                             local dimDayWeek = true
                             if type(settings.dimTo) == "table" then
-                                for h,u in pairs(settings.dimTo) do
-                                    for i,v in pairs(u) do
+                                 for h, u in pairs(settings.dimTo) do							 
+                                     for i, v in pairs(u) do
                                         if i == "hour" then dimToHour = v 
-                                            dz.log(device.name .. ' a une heure de variation fixée à : ' .. dimToHour, dz.LOG_INFO)
+                                            logWrite(device.name .. ' a une heure de variation fixée à : ' .. dimToHour, dz.LOG_INFO)
                                         elseif i == "level" then dimToLevel = v
-                                            dz.log(device.name .. ' a une niveau de variation fixée à : ' .. dimToLevel, dz.LOG_INFO)
+                                            logWrite(device.name .. ' a une niveau de variation fixée à : ' .. dimToLevel, dz.LOG_INFO)
                                         elseif i == "silent" then silent = v
-                                            dz.log(device.name .. ' a un paramètre silent parametré à : ' .. tostring(silent), dz.LOG_INFO)
+                                            logWrite(device.name .. ' a un paramètre silent parametré à : ' .. tostring(silent), dz.LOG_INFO)
                                         elseif i == "day" then --"day" : "sun-mon-tue-wed-thu-fri-sat"
                                             --teste si le jour de la semaine correspond au valeur du tableau défini par les jours
                                             testDayWeek = string.find(v, dayWeek)
                                             if testDayWeek == nil then dimDayWeek = false end
-                                            dz.log(device.name .. ' a des jours de variation fixés à : ' .. v, dz.LOG_INFO)
+                                            logWrite(device.name .. ' a des jours de variation fixés à : ' .. v, dz.LOG_INFO)
                                         end
                                         if dimDayWeek == true then
                                             if      Time == dimToHour and dimToLevel ~= nil and silent == true then 
@@ -559,18 +606,18 @@ return {
                                             elseif  Time == dimToHour and dimToLevel ~= nil and silent ~= true then device.dimTo(dimToLevel) return 
                                             end
                                         end
-                                    end
-                                end
+                                     end
+                                 end
                             else 
-                                dz.log(device.name .. ' impossible de traiter la fonction dimTo, manque un élément', dz.LOG_DEBUG)
+                                logWrite(device.name .. ' impossible de traiter la fonction dimTo, manque un élément')
                             end
                         end
 
                         if device.state == 'Off' or device.state == 'Close' then
                          -- Alarme dispositif inactif
-                            dz.log(device.name .. ' est à l\'état ' .. device.state, dz.LOG_INFO)
+                            logWrite(device.name .. ' est à l\'état ' .. device.state, dz.LOG_INFO)
                             if settings.time_inactive_notification ~= nil and device.lastUpdate.minutesAgo >= settings.time_inactive_notification then
-                                dz.log(device.name .. ' est inactif depuis ' .. device.lastUpdate.minutesAgo .. ' minutes. Le délai est fixé à '.. settings.time_inactive_notification.. ' minutes.', dz.LOG_INFO)
+                                logWrite(device.name .. ' est inactif depuis ' .. device.lastUpdate.minutesAgo .. ' minutes. Le délai est fixé à '.. settings.time_inactive_notification.. ' minutes.', dz.LOG_INFO)
                                 message = 'Le délai d\'inactivité fixé à '.. settings.time_inactive_notification .. ' minutes pour '.. device.name .. ' est dépassé'
                                 dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
@@ -588,9 +635,9 @@ return {
                                     if settings.low_threshold_temp ~= nil then low_threshold_temp = settings.low_threshold_temp else low_threshold_temp = nil end
                                     test_high_threshold, test_low_threshold = managed(dz, device.id, settings.duration_exceeded_temp, high_threshold_temp, low_threshold_temp)
                                 end
-                                dz.log('La température mesurée par '.. device.name .. ' est de  ' .. tostring(dz.utils.round(device.temperature, 1)) ..'°C', dz.LOG_INFO)
+                                logWrite('La température mesurée par '.. device.name .. ' est de  ' .. tostring(dz.utils.round(device.temperature, 1)) ..'°C', dz.LOG_INFO)
                                 if settings.low_threshold_temp ~= nil and device.temperature < settings.low_threshold_temp and test_low_threshold == true then  -- seuil bas température
-                                    dz.log(device.name .. ' a un seuil temperature basse défini à  ' .. settings.low_threshold_temp..'°C', dz.LOG_INFO)
+                                    logWrite(device.name .. ' a un seuil temperature basse défini à  ' .. settings.low_threshold_temp..'°C', dz.LOG_INFO)
                                     message = 'La température mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_temp..'°C)' --. Valeur : '..tostring(dz.utils.round(device.temperature, 1)) ..'°C'
                                     if settings.duration_exceeded_temp ~= nil then
                                         dz.data.managedValue.add(settings.low_threshold_temp)
@@ -599,7 +646,7 @@ return {
                                     dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                                 end
                                 if settings.high_threshold_temp ~= nil and device.temperature > settings.high_threshold_temp and test_high_threshold == true then  -- seuil haut température
-                                    dz.log(device.name .. ' a un seuil temperature haute défini à  ' .. settings.high_threshold_temp..'°C', dz.LOG_INFO)
+                                    logWrite(device.name .. ' a un seuil temperature haute défini à  ' .. settings.high_threshold_temp..'°C', dz.LOG_INFO)
                                     message = 'La température mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_temp..'°C)' --. Valeur : '..tostring(dz.utils.round(device.temperature, 1)) ..'°C'
                                     if settings.duration_exceeded_temp ~= nil then
                                         dz.data.managedValue.add(settings.high_threshold_temp)
@@ -621,9 +668,9 @@ return {
                                     if settings.low_threshold_hr ~= nil then low_threshold_hr = settings.low_threshold_hr else low_threshold_hr = nil end
                                     test_high_threshold, test_low_threshold = managed(dz, device.id, settings.duration_exceeded_hr, high_threshold_hr, low_threshold_hr)
                                 end
-                                dz.log('L\'hygrometrie mesurée par '.. device.name .. ' est de  ' .. tostring(device.humidity)..'%hr', dz.LOG_INFO)
+                                logWrite('L\'hygrometrie mesurée par '.. device.name .. ' est de  ' .. tostring(device.humidity)..'%hr', dz.LOG_INFO)
                                 if settings.low_threshold_hr ~= nil and device.humidity < settings.low_threshold_hr and test_low_threshold == true then -- seuil bas hygrométrie
-                                    dz.log(device.name .. ' a un seuil hygrometrie bassse défini à  ' .. settings.low_threshold_hr..'%hr', dz.LOG_INFO)
+                                    logWrite(device.name .. ' a un seuil hygrometrie bassse défini à  ' .. settings.low_threshold_hr..'%hr', dz.LOG_INFO)
                                     message = 'L\'humidité mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_hr..'%hr).' -- Valeur : '..tostring(device.humidity)..'%hr'
                                     if settings.duration_exceeded_hr ~= nil then
                                         dz.data.managedValue.add(settings.low_threshold_hr)
@@ -632,7 +679,7 @@ return {
                                     dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                                 end
                                 if settings.high_threshold_hr and device.humidity > settings.high_threshold_hr and test_high_threshold == true then -- seuil haut hygrométrie
-                                    dz.log(device.name .. ' a un seuil hygrometrie haute défini à  ' .. settings.high_threshold_hr..'%hr', dz.LOG_INFO)
+                                    logWrite(device.name .. ' a un seuil hygrometrie haute défini à  ' .. settings.high_threshold_hr..'%hr', dz.LOG_INFO)
                                     message = 'L\'humidité mesurée par '.. device.name .. ' est supérieure au seuil défini ('..settings.high_threshold_hr..'%hr).' -- Valeur : '..tostring(device.humidity)..'%hr'
                                     if settings.duration_exceeded_hr ~= nil then
                                         dz.data.managedValue.add(settings.high_threshold_hr)
@@ -644,9 +691,9 @@ return {
 
                         elseif device.state == 'On' or device.state == 'Open' then
                         -- Alarme dispositif actif
-                            dz.log(device.name .. ' est à l\'état ' .. device.state, dz.LOG_INFO)
+                            logWrite(device.name .. ' est à l\'état ' .. device.state, dz.LOG_INFO)
                             if settings.time_active_notification ~= nil and device.lastUpdate.minutesAgo >= settings.time_active_notification then
-                                dz.log(device.name .. ' est actif depuis ' .. device.lastUpdate.minutesAgo .. ' minutes. Le délai est fixé à '.. settings.time_active_notification.. ' minutes.', dz.LOG_INFO)
+                                logWrite(device.name .. ' est actif depuis ' .. device.lastUpdate.minutesAgo .. ' minutes. Le délai est fixé à '.. settings.time_active_notification.. ' minutes.', dz.LOG_INFO)
                                 message = 'Le délai fixé à '.. settings.time_active_notification .. ' minutes pour '.. device.name .. ' est dépassé'
                                 dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
@@ -654,7 +701,7 @@ return {
                         -- auto on
                             if settings.auto_on_minutes ~= nil and device.lastUpdate.minutesAgo >= settings.auto_on_minutes then
                                 if settings.state == 'Off' then
-                                    dz.log('Allumage de '..device.name .. ' car inactif depuis ' .. settings.auto_on_minutes .. ' minutes.', dz.LOG_INFO)
+                                    logWrite('Allumage de '..device.name .. ' car inactif depuis ' .. settings.auto_on_minutes .. ' minutes.', dz.LOG_INFO)
                                     device.switchOn()
                                 end
                             end
@@ -662,18 +709,18 @@ return {
 
                             if settings.auto_off_minutes ~= nil and device.lastUpdate.minutesAgo >= settings.auto_off_minutes then
                                 if settings.auto_off_motion_device == nil then
-                                    dz.log('Extinction de '..device.name .. ' car actif depuis ' .. settings.auto_off_minutes .. ' minutes.', dz.LOG_INFO)
+                                    logWrite('Extinction de '..device.name .. ' car actif depuis ' .. settings.auto_off_minutes .. ' minutes.', dz.LOG_INFO)
                                     device.switchOff()
                                 elseif type(settings.auto_off_motion_device) == "string" then
                                     local motion_device = dz.devices(settings.auto_off_motion_device)
                                     if motion_device.state == 'Off' then
-                                        dz.log('Extinction de '.. device.name .. ' car aucune détection de mouvement dans la piece depuis ' .. settings.auto_off_minutes .. ' minutes.', dz.LOG_INFO)
+                                        logWrite('Extinction de '.. device.name .. ' car aucune détection de mouvement dans la piece depuis ' .. settings.auto_off_minutes .. ' minutes.', dz.LOG_INFO)
                                         device.switchOff()
                                     end
                                 elseif type(settings.auto_off_motion_device) == "table" then
                                     local off = true
                                     for i,v in pairs(settings.auto_off_motion_device) do
-                                        --dz.log("l'état de " .. dz.devices(v) .. ' est à : ' .. dz.devices(v).state, dz.LOG_DEBUG)
+                                        --logWrite("l'état de " .. dz.devices(v) .. ' est à : ' .. dz.devices(v).state)
                                         if dz.devices(v).state ~= 'Off' and i == "restartTimer" and dz.devices(v).lastUpdate.minutesAgo >= settings.auto_off_minutes then
                                             off = false
                                         elseif dz.devices(v).state ~= 'Off' and i ~= "restartTimer" then
@@ -681,7 +728,7 @@ return {
                                         end
                                     end
                                     if off then
-                                        dz.log('Extinction de '.. device.name .. ' car aucune détection de mouvement dans la piece depuis  ' .. settings.auto_off_minutes .. ' minutes.', dz.LOG_INFO)
+                                        logWrite('Extinction de '.. device.name .. ' car aucune détection de mouvement dans la piece depuis  ' .. settings.auto_off_minutes .. ' minutes.', dz.LOG_INFO)
                                         device.switchOff()
                                     end
                                 end
@@ -689,14 +736,14 @@ return {
 
                        elseif device.sensorType ~= nil and (settings.high_threshold_custom ~= nil or settings.low_threshold_custom ~= nil)  then
                         --alarme custom sensor
-                            dz.log('La valeur mesurée par '.. device.name .. ' est de  ' .. tostring(dz.utils.round(device.state, 1)) .. device.sensorUnit, dz.LOG_INFO)
+                            logWrite('La valeur mesurée par '.. device.name .. ' est de  ' .. tostring(dz.utils.round(device.state, 1)) .. device.sensorUnit, dz.LOG_INFO)
                             if settings.low_threshold_custom ~= nil and tonumber(device.state) < settings.low_threshold_custom then -- seuil bas %
-                                dz.log(device.name .. ' a un seuil bas défini à  ' .. settings.low_threshold_custom..device.sensorUnit, dz.LOG_INFO)
+                                logWrite(device.name .. ' a un seuil bas défini à  ' .. settings.low_threshold_custom..device.sensorUnit, dz.LOG_INFO)
                                 message = 'La valeur mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_custom..device.sensorUnit..').' -- Valeur : '..tostring(dz.utils.round(device.state, 1))..device.sensorUnit
                                 dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                             if settings.high_threshold_custom ~= nil and tonumber(device.state) > settings.high_threshold_custom then -- seuil haut %
-                                dz.log(device.name .. ' a un seuil haut défini à  ' .. settings.high_threshold_custom..device.sensorUnit, dz.LOG_INFO)
+                                logWrite(device.name .. ' a un seuil haut défini à  ' .. settings.high_threshold_custom..device.sensorUnit, dz.LOG_INFO)
                                 message = 'La valeur mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_custom..device.sensorUnit..').' -- Valeur : '..tostring(dz.utils.round(device.state, 1))..device.sensorUnit
                                 dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
@@ -714,9 +761,9 @@ return {
                                 test_high_threshold, test_low_threshold = managed(dz, device.id, settings.duration_exceeded_percent, high_threshold_percent, low_threshold_percent)
                             end
                             -- alarme pourcentage
-                            dz.log('La valeur mesurée par '.. device.name .. ' est de  ' .. tostring(dz.utils.round(device.percentage, 1)) ..'%', dz.LOG_INFO)
+                            logWrite('La valeur mesurée par '.. device.name .. ' est de  ' .. tostring(dz.utils.round(device.percentage, 1)) ..'%', dz.LOG_INFO)
                             if settings.low_threshold_percent ~= nil and device.percentage < settings.low_threshold_percent and test_low_threshold == true then  -- seuil bas %
-                                dz.log(device.name .. ' a un seuil % bas défini à  ' .. settings.low_threshold_percent..'%', dz.LOG_INFO)
+                                logWrite(device.name .. ' a un seuil % bas défini à  ' .. settings.low_threshold_percent..'%', dz.LOG_INFO)
                                 message = 'La valeur mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_percent..'%).' -- Valeur : '.. tostring(dz.utils.round(device.percentage, 1)) ..'%'
                                 if settings.duration_exceeded_percent ~= nil then
                                     dz.data.managedValue.add(settings.low_threshold_percent)
@@ -725,7 +772,7 @@ return {
                                 dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                             if settings.high_threshold_percent ~= nil and device.percentage > settings.high_threshold_percent and test_high_threshold == true then  -- seuil haut %
-                                dz.log(device.name .. ' a un seuil % haut défini à  ' .. settings.high_threshold_percent..'%', dz.LOG_INFO)
+                                logWrite(device.name .. ' a un seuil % haut défini à  ' .. settings.high_threshold_percent..'%', dz.LOG_INFO)
                                 message = 'La valeur mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_percent..'%).' -- Valeur : '.. tostring(dz.utils.round(device.percentage, 1)) ..'%'
 
                                 if settings.duration_exceeded_percent ~= nil then
@@ -737,18 +784,18 @@ return {
 
                         elseif device.color ~= nil and settings.high_threshold_color ~= nil and device.color > settings.high_threshold_color then
                             -- notification alerte
-                            dz.log('Le seuil d\'alerte de '.. device.name .. ' est de  ' .. tostring(device.color), dz.LOG_INFO)
+                            logWrite('Le seuil d\'alerte de '.. device.name .. ' est de  ' .. tostring(device.color), dz.LOG_INFO)
                             message = 'Le seuil d\'alerte de  '.. device.name ..' est supérieur au seuil défini ('..settings.high_threshold_color..'). Valeur : '.. tostring(device.color) ..' alerte : '.. tostring(device.text)
                             dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
             end
                         else
-                            dz.log( 'la description de '.. device.name ..' n\'est pas au format json. Ignorer cet appareil.', dz.LOG_ERROR)
+                            logWrite( 'la description de '.. device.name ..' n\'est pas au format json. Ignorer cet appareil.', dz.LOG_ERROR)
                         end
-                            dz.log('--------------------------------------------------------------------------------------------------', dz.LOG_INFO)
+                            logWrite('--------------------------------------------------------------------------------------------------', dz.LOG_INFO)
                     end
                 end
             )
 
-        dz.log(tostring(cnt) .. ' devices scannés.', dz.LOG_INFO)
+        logWrite(tostring(cnt) .. ' devices scannés.', dz.LOG_INFO)
     end
 }
