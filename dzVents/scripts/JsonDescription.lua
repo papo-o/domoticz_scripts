@@ -2,7 +2,7 @@
 --[[
 original script by rrozema Generic auto-off : https://www.domoticz.com/forum/viewtopic.php?f=72&t=23717&p=205159&hilit=auto+off#p201976
 author = papoo
-maj : 27/12/2019
+maj : 28/12/2019
 this version need a waaren script, Universal function notification :
 https://www.domoticz.com/forum/viewtopic.php?f=59&t=26542#p204958
 https://pon.fr/dzvents-fonction-de-notification-universelle/
@@ -267,13 +267,13 @@ Fonctionnalité proposée par Anthony72
   syntaxe
   "levelNumber" : "iconNumber",
   
-{"selectorIcons":{"0":"128","10":"129","20":"130","30":"131","40":"132","50":"133","60":"134","70":"135","80":"136","90":"137"}}
+{"selectorIcons":{"10":"129","20":"130","30":"131","40":"132","50":"133","60":"134","70":"135","80":"136"}}
 
 	
 --]]
 
 local scriptName = 'Json Description'
-local scriptVersion = '1.10'
+local scriptVersion = '1.11'
 
 return {
     active = true,
@@ -286,13 +286,13 @@ return {
     },
 
     -- custom logging level for this script
-    logging = {
-                -- level    =   domoticz.LOG_DEBUG,
-                level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
-                -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others
-                -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
-                marker = scriptName..' v'..scriptVersion
-   },
+    -- logging = {
+                -- -- level    =   domoticz.LOG_DEBUG,
+                -- level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
+                -- -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others
+                -- -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
+                -- marker = scriptName..' v'..scriptVersion
+   -- },
     -- permet de stocker les valeurs des périphériques avec "duration_exceeded_" sous /home/pi/domoticz/scripts/dzVents/data/__data_JsonDescription.lua
    data = {
         managedValue = { history = true, maxItems = 3600, maxHours = 6 },
@@ -568,15 +568,15 @@ return {
 						    logWrite(device.name .. ' : deviceSubType => ' .. tostring(device.deviceSubType))
 							logWrite(device.name .. ' : Level => ' .. tostring(device.rawData[1]))
 							--logWrite(device.name .. '  a pour description ' .. tostring(settings.selectorIcons), dz.LOG_INFO)
-							for i, v in pairs(settings.selectorIcons) do
+							--for i, v in pairs(settings.selectorIcons) do
 								--logWrite('le seuil ' .. i .. '  a pour icone ' .. tostring(v), dz.LOG_INFO)
-								if device.rawData[1] == i and device.lastUpdate.secondsAgo < 70 then 
-									logWrite('le seuil ' .. i .. '  a pour icone ' .. tostring(v), dz.LOG_INFO)
-									device.setIcon(v)
+								--if device.rawData[1] == i and device.lastUpdate.secondsAgo < 70 then 
+								if device.lastUpdate.secondsAgo < 70 then								
+									device.setIcon(settings.selectorIcons[device.rawData[1]])
 									logWrite('mise à jour icone ', dz.LOG_INFO)	
 								end
 							
-							end
+							--end
 						end
 
                         --dimTo
