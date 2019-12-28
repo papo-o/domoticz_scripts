@@ -267,7 +267,7 @@ Fonctionnalité proposée par Anthony72
   syntaxe
   "levelNumber" : "iconNumber",
   
-{"selectorIcons":{"10":"129","20":"130","30":"131","40":"132","50":"133","60":"134","70":"135","80":"136"}}
+{"selectorIcons":{"0":"128","10":"129","20":"130","30":"131","40":"132","50":"133","60":"134","70":"135","80":"136","90":"137"}}
 
 	
 --]]
@@ -286,13 +286,13 @@ return {
     },
 
     -- custom logging level for this script
-    -- logging = {
-                -- -- level    =   domoticz.LOG_DEBUG,
-                -- level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
-                -- -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others
-                -- -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
-                -- marker = scriptName..' v'..scriptVersion
-   -- },
+    logging = {
+                -- level    =   domoticz.LOG_DEBUG,
+                level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
+                -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others
+                -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
+                marker = scriptName..' v'..scriptVersion
+   },
     -- permet de stocker les valeurs des périphériques avec "duration_exceeded_" sous /home/pi/domoticz/scripts/dzVents/data/__data_JsonDescription.lua
    data = {
         managedValue = { history = true, maxItems = 3600, maxHours = 6 },
