@@ -1,7 +1,7 @@
 --[[
 /home/pi/domoticz/scripts/dzVents/scripts/vacancesScolaires.lua
 author/auteur = papoo
-update/mise à jour = 10/11/2019
+update/mise à jour = 01/01/2020
 création = 05/08/2017
 https://pon.fr/dzvents-vacances-scolaires-par-zone-et-academie/
 https://github.com/papo-o/dz_scripts/blob/master/dzVents/scripts/vacancesScolaires.lua
@@ -27,13 +27,13 @@ local holidayTomorrow 	= 'Vacances Scolaires Demain'   -- Indiquer ici le nom du
 --------------------------------------------
 
 local scriptName        = 'Vacances Scolaires'
-local scriptVersion     = '2.01'
+local scriptVersion     = '2.02'
 local response 			= 'dataEducation_response'
 
 return {
     active = true,
-    on =        {       timer           =   { 'at 00:11' },
-						--timer           =   { "every minute" },
+    on =        {       --timer           =   { 'at 00:11' },
+						timer           =   { "every minute" },
                         httpResponses   =   {  response } },
 
     logging =   {   level    =   domoticz.LOG_DEBUG,
@@ -54,9 +54,21 @@ return {
 			a, b, Y, M, D = string.find(now, "(%d+)-(%d+)-(%d+)")
 			return os.time{year=Y, month=M, day=D, hour=00, minute=00}
 		end
-        
+		
+		local function schoolYear(dayOfYear)
+			if tonumber(dayOfYear) > 182 then
+				schoolYear = dz.time.year .. "-" ..(tonumber(dz.time.year) + 1)
+			else
+				schoolYear = (tonumber(dz.time.year) - 1) .. "-" ..dz.time.year		
+			end
+			return schoolYear
+		end
+		
 		local Timestamp = dz.time.dDate
-		--local Timestamp = date2timestamp("2019-12-20") -- pour test (uniquement sur l'année en cours)
+		--local Timestamp = date2timestamp("2019-12-20") -- pour test (uniquement sur l'année en cours)		
+		local dayOfYear = tonumber(os.date("%j"))
+		--logWrite('vacances scolaires '.. schoolYear(dayOfYear))	
+
 		
         if (item.isHTTPResponse and item.trigger == response) then
             if (not item.isJSON) then
@@ -115,8 +127,9 @@ return {
             end
 
         else
-			local url = "https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-calendrier-scolaire&facet=start_date&facet=end_date&refine.zones=Zone+".. zone .."&rows=40&refine.start_date=".. dz.time.year .."&refine.location=".. location
-
+			local schoolYear = schoolYear(dayOfYear)
+			logWrite('vacances scolaires '.. schoolYear)	
+			local url = "https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-calendrier-scolaire&facet=start_date&facet=end_date&refine.zones=Zone+".. zone .."&rows=40&refine.annee_scolaire=".. schoolYear .."&refine.location=".. location
             dz.openURL({
                   url = url,
                         method = "GET",
