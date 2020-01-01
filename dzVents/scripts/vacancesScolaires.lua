@@ -32,8 +32,8 @@ local response 			= 'dataEducation_response'
 
 return {
     active = true,
-    on =        {       --timer           =   { 'at 00:11' },
-						timer           =   { "every minute" },
+    on =        {       timer           =   { 'at 00:11' },
+			--timer           =   { "every minute" },
                         httpResponses   =   {  response } },
 
     logging =   {   level    =   domoticz.LOG_DEBUG,
