@@ -18,8 +18,6 @@ local quiet_hours 				= "23:00-07:15"
 local subSystems				= "TELEGRAM,PUSHBULLET" --NSS_GOOGLE_CLOUD_MESSAGING, NSS_HTTP, NSS_KODI, NSS_LOGITECH_MEDIASERVER, NSS_NMA,NSS_PROWL, NSS_PUSHALOT, NSS_PUSHBULLET, NSS_PUSHOVER, NSS_PUSHSAFER, NSS_TELEGRAM
 local temp_ext 					= 'Temperature exterieure' 	                    -- nom de la sonde extérieure
 local les_temperatures 			= {
-								'Chambre Maud',
-								'Chambre Audrey',
 								'Temperature Entree',
 								'Temperature Salon',
 								'Temperature Parents',
