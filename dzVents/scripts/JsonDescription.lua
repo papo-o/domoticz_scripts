@@ -1,8 +1,8 @@
-
---[[
+--[[ 
+/home/pi/domoticz/scripts/dzVents/scripts/JsonDescription.lua
 original script by rrozema Generic auto-off : https://www.domoticz.com/forum/viewtopic.php?f=72&t=23717&p=205159&hilit=auto+off#p201976
 author = papoo
-maj : 28/12/2019
+maj : 03/01/2020
 this version need a waaren script, Universal function notification :
 https://www.domoticz.com/forum/viewtopic.php?f=59&t=26542#p204958
 https://pon.fr/dzvents-fonction-de-notification-universelle/
@@ -51,7 +51,7 @@ exemple 3: éteindre l'appareil lorsqu'il est allumé depuis 2 minutes et qu'auc
 
 {
 "auto_off_minutes": 2,
-"auto_off_motion_device": {"Device1": "Motion1", "Device2": "Motion2"}
+"auto_off_motion_device": ["Motion1", "Motion2"]
 }
 
 With this new version you can :
@@ -66,11 +66,25 @@ Avec cette nouvelle version vous pouvez :
     vous pouvez mélanger les notifications souhaitées, telles que uniquement le dépassement de température maxi,
     ou  l'hygrométrie mini et maxi, ou ne pas définir d'heures calmes, ou température mini et timeout
     si vous souhaitez utiliser les fonctions de notification,  la fréquence de notifications est nécessaire
+	
+
+Example 4: turn off the device when it has been on for x minutes and no motion has been detected by
+   restartTimer device and the notTimed device is turned off
+exemple 4 : éteindre l'appareil lorsqu'il est allumé depuis x minutes et qu'aucun mouvement n'a été détecté par
+    le  dispositif restartTimer et que le dispositif notTimed est eteint
+
+{	
+        "auto_off_minutes": 15,
+	"auto_off_motion_device": {
+		"restartTimer": "pir salon",
+		"notTimed": "TV Salon"
+	}
+}
 
 
-Example 4 : be notified if temperature or hygrometry exceed min or max threshold for a number of minutes
+Example 5: be notified if temperature or hygrometry exceed min or max threshold for a number of minutes
     with notifications frequency in minutes and quiet hours notification
-Exemple 4 : être averti si la température ou l'hygrométrie dépasse les seuils minimal ou maximal pendant un certain nombre de minutes
+Exemple 45: être averti si la température ou l'hygrométrie dépasse les seuils minimal ou maximal pendant un certain nombre de minutes
     avec fréquence de notifications en minutes et notification des heures calmes
 
 {
@@ -84,9 +98,9 @@ Exemple 4 : être averti si la température ou l'hygrométrie dépasse les seuil
  "quiet_hours":"23:00-07:15"
   }
 
-Example 5 : be notified if device is on since x minutes
+Example 6: be notified if device is on since x minutes
     with notifications frequency in minutes and quiet hours notification
-Exemple 5 : être averti si le périphérique est allumé depuis x minutes
+Exemple 6 : être averti si le périphérique est allumé depuis x minutes
     avec fréquence de notifications en minutes et notification des heures calmes
 
   {
@@ -95,9 +109,9 @@ Exemple 5 : être averti si le périphérique est allumé depuis x minutes
  "quiet_hours":"23:00-07:15"
   }
 
-Example 6 : be notified if device is off since x minutes
+Example 7: be notified if device is off since x minutes
     with notifications frequency in minutes and quiet hours notification
-Exemple 6 : être averti si le périphérique est éteint depuis x minutes
+Exemple 7 : être averti si le périphérique est éteint depuis x minutes
     avec fréquence de notifications en minutes et notification des heures calmes
 
   {
@@ -106,9 +120,9 @@ Exemple 6 : être averti si le périphérique est éteint depuis x minutes
  "quiet_hours":"23:00-07:15"
   }
 
-Example 7 : be notified if device is out since x minutes
+Example 8: be notified if device is out since x minutes
     with notifications frequency in minutes and quiet hours notification
-Exemple 7 : être averti si le périphérique est hors service depuis x minutes
+Exemple 8 : être averti si le périphérique est hors service depuis x minutes
     avec fréquence de notifications en minutes et notification des heures calmes
 
  {
@@ -117,9 +131,9 @@ Exemple 7 : être averti si le périphérique est hors service depuis x minutes
 "quiet_hours":"23:00-07:15"
   }
 
-Example 8 : be notified if a device% exceeds the minimum or maximum thresholds
+Example 9: be notified if a device% exceeds the minimum or maximum thresholds
     with frequency of notifications in minutes and notification of quiet hours
-Exemple 8 : être averti si un périphérique % dépasse les seuils minimal ou maximal
+Exemple 9 : être averti si un périphérique % dépasse les seuils minimal ou maximal
     avec fréquence de notifications en minutes et notification des heures calmes
 
   {
@@ -130,9 +144,9 @@ Exemple 8 : être averti si un périphérique % dépasse les seuils minimal ou m
  "quiet_hours":"23:00-07:15"
   }
 
-Example 9 : be notified if a Custom Sensor device exceeds the minimum or maximum thresholds
+Example 10: be notified if a Custom Sensor device exceeds the minimum or maximum thresholds
     with frequency of notifications in minutes and notification of quiet hours
-Exemple 9 :être averti si un périphérique Custom Sensor dépasse les seuils minimal ou maximal
+Exemple 10 :être averti si un périphérique Custom Sensor dépasse les seuils minimal ou maximal
     avec fréquence de notifications en minutes et notification des heures calmes
 
   {
@@ -143,9 +157,9 @@ Exemple 9 :être averti si un périphérique Custom Sensor dépasse les seuils m
   }
 
 
-Example 10: Be notified if an Alert device exceeds a predefined threshold (1,2,3 or 4)
+Example 11: Be notified if an Alert device exceeds a predefined threshold (1,2,3 or 4)
     with frequency of notifications in minutes and notification of quiet hours
-Exemple 10 : être averti si un périphérique Alert dépasse un seuil prédéfini (1,2,3 ou 4)
+Exemple 11 : être averti si un périphérique Alert dépasse un seuil prédéfini (1,2,3 ou 4)
     avec fréquence de notifications en minutes et notification des heures calmes
 
   {
@@ -156,9 +170,9 @@ Exemple 10 : être averti si un périphérique Alert dépasse un seuil prédéfi
 ========================================================
 Fonctionnalités proposées par denis_brasseur
 
-Example 11: Be notified if a device's battery is below a low threshold
+Example 12: Be notified if a device's battery is below a low threshold
     with frequency of notifications in minutes and notification of quiet hour
-Exemple 11 : être averti si la batterie d'un périphérique est inférieure un seuil bas
+Exemple 12 : être averti si la batterie d'un périphérique est inférieure un seuil bas
     avec fréquence de notifications en minutes et notification des heures calmes
 
   {
@@ -169,9 +183,9 @@ Exemple 11 : être averti si la batterie d'un périphérique est inférieure un 
   }
 
 
-Example 12: Be notified if the signal level (zwave, rfxcom) of a device is below a low threshold
+Example 13: Be notified if the signal level (zwave, rfxcom) of a device is below a low threshold
     with frequency of notifications in minutes and notification of quiet hour
-Exemple 12 : être averti si le niveau de signal (zwave, rfxcom) d'un périphérique est inférieure un seuil bas
+Exemple 13 : être averti si le niveau de signal (zwave, rfxcom) d'un périphérique est inférieure un seuil bas
     avec fréquence de notifications en minutes et notification des heures calmes
 
   {
@@ -181,8 +195,8 @@ Exemple 12 : être averti si le niveau de signal (zwave, rfxcom) d'un périphér
   }
 
 
-Example 13: Be notified if a power device exceeds a high threshold or a low threshold set
-Exemple 13 : être averti si un périphérique puissance dépasse un seuil haut ou un seuil bas défini
+Example 14: Be notified if a power device exceeds a high threshold or a low threshold set
+Exemple 14 : être averti si un périphérique puissance dépasse un seuil haut ou un seuil bas défini
 
   {
  "low_watt_usage": 0,
@@ -191,8 +205,8 @@ Exemple 13 : être averti si un périphérique puissance dépasse un seuil haut 
  "quiet_hours":"23:00-07:15"
   }
 
- Example 14: Be notified if an intensity device exceeds a high threshold or a low threshold set
- Exemple 14 : être averti si un périphérique intensité dépasse un seuil haut ou un seuil bas défini
+ Example 15: Be notified if an intensity device exceeds a high threshold or a low threshold set
+ Exemple 15 : être averti si un périphérique intensité dépasse un seuil haut ou un seuil bas défini
 
   {
  "low_current_usage": 0,
@@ -201,19 +215,19 @@ Exemple 13 : être averti si un périphérique puissance dépasse un seuil haut 
  "quiet_hours":"23:00-07:15"
   }
 
-  Example 15 : turn on the device after x minutes:
-  Exemple 15 : allumer l'appareil après x minutes:
+  Example 16 : turn on the device after x minutes:
+  Exemple 16 : allumer l'appareil après x minutes:
 
 {
 "auto_on_minutes": 1
 }
 ========================================================
 
-Example 16 : be notified if device is off since x minutes
+Example 17 : be notified if device is off since x minutes
     with notifications frequency in minutes and quiet hours notification only on telegram notifications
     Notification systems available:
     GOOGLE_CLOUD_MESSAGING, HTTP, KODI, LOGITECH_MEDIASERVER, NMA, PROWL, PUSHALOT, PUSHBULLET,PUSHOVER, PUSHSAFER, TELEGRAM
-Exemple 16 : être averti si le périphérique est éteint depuis x minutes
+Exemple 17 : être averti si le périphérique est éteint depuis x minutes
     avec fréquence de notifications en minutes et notification des heures calmes seulement via les notifications TELEGRAM
     Systèmes de notification disponibles :
     GOOGLE_CLOUD_MESSAGING, HTTP, KODI, LOGITECH_MEDIASERVER, NMA, PROWL, PUSHALOT, PUSHBULLET,PUSHOVER, PUSHSAFER, TELEGRAM
@@ -225,12 +239,12 @@ Exemple 16 : être averti si le périphérique est éteint depuis x minutes
  "quiet_hours":"23:00-07:15"
   }
 
-Example 17 : be notified if device is off since x minutes
+Example 18 : be notified if device is off since x minutes
     with notifications frequency in minutes and quiet hours notification only on TELEGRAM and PUSHBULLET notifications
     Notification systems available:
     GOOGLE_CLOUD_MESSAGING, HTTP, KODI, LOGITECH_MEDIASERVER, NMA, PROWL, PUSHALOT, PUSHBULLET,PUSHOVER, PUSHSAFER, TELEGRAM
     For multi-system notification, separate the systems with a comma.
-Exemple 17 : être averti si le périphérique est éteint depuis x minutes
+Exemple 18 : être averti si le périphérique est éteint depuis x minutes
     avec fréquence de notifications en minutes et notification des heures calmes seulement via les notifications TELEGRAM et PUSHBULLET
     Systèmes de notification disponibles :
     GOOGLE_CLOUD_MESSAGING, HTTP, KODI, LOGITECH_MEDIASERVER, NMA, PROWL, PUSHALOT, PUSHBULLET,PUSHOVER, PUSHSAFER, TELEGRAM
@@ -243,9 +257,9 @@ Exemple 17 : être averti si le périphérique est éteint depuis x minutes
  "quiet_hours":"23:00-07:15"
   }
 
-  Example 18 : dim a light at define level(s), day(s) and time(s) 
+  Example 19 : dim a light at define level(s), day(s) and time(s) 
     if "silent" : true allows to update the level of a device without action
-  exemple 18  : moduler une lumière à niveau(x), jour(s) et heure(s) définis
+  exemple 19  : moduler une lumière à niveau(x), jour(s) et heure(s) définis
     si "silent" : true permet de mettre à jour le niveau d'un device sans action
 {
 	"dimTo" : 
@@ -256,24 +270,43 @@ Exemple 17 : être averti si le périphérique est éteint depuis x minutes
 			"4":{"level" : 100,  "day" : "mon-tue-wed-thu-fri-sat", "hour" : "08:00", "silent" : true}
 		}
 }
- 
+======================================================== 
 Fonctionnalité proposée par Anthony72
 
-  Example 19 : automatically change the custom icon of a selector switch
+  Example 20: automatically change the custom icon of a selector switch
   syntax 
   "levelNumber" : "iconNumber",
   
-  Exemple 19 : changer automatiquement l'icone personnalisé d'un switch selecteur
+  Exemple 20 : changer automatiquement l'icone personnalisé d'un switch selecteur
   syntaxe
   "levelNumber" : "iconNumber",
   
 {"selectorIcons":{"0":"128","10":"129","20":"130","30":"131","40":"132","50":"133","60":"134","70":"135","80":"136","90":"137"}}
-
-	
+======================================================== 
+  Example 21: 
+  declare a temperature threshold via the external probe as well as a frequency notifications and a quiet period as well as the system (s) of notification (s)
+  in case you declare more than one external probe, only one frequency notifications and one quiet period is necessary
+  a single decration of the notification system(s) is sufficient
+  an average of outside temperatures will be calculated every minute
+  
+  Exemple 21 : 
+  déclarez un seuil de température via la sonde extérieure ainsi qu'une frequence de notifications et une période sans notifications éventuelle ainsi que le(s) systeme(s) de notification(s)
+  dans le cas ou vous déclarez plus d'une sonde exterieure, une seule frequence de notifications et une seule période sans notification sont nécessaire
+  une seule décalration de(s) systeme(s) de notification(s) suffit
+  une moyenne des temperatures extérieures sera calculée chaque minute
+  {
+  "outdoor_temp" : 24,
+  "frequency_notifications": 1440,
+  "quiet_hours":"23:00-07:15",
+  "subsystems" : "TELEGRAM"
+  }
+  déclarer ensuite un delta T entre T° extieure et T° interieure via les sondes interieures que vous souhaitez associer à cette notification.
+  une moyenne des temperatures interieures et une moyenne des seuils seront calculées chaque minutes
+  {"indoor_temp" : 2}
 --]]
 
 local scriptName = 'Json Description'
-local scriptVersion = '1.11'
+local scriptVersion = '1.12'
 
 return {
     active = true,
@@ -287,25 +320,36 @@ return {
 
     -- custom logging level for this script
     logging = {
-                -- level    =   domoticz.LOG_DEBUG,
-                level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
-                -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others
-                -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
-                marker = scriptName..' v'..scriptVersion
+                -- level   = domoticz.LOG_DEBUG,
+                level   = domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
+                -- level   = domoticz.LOG_ERROR,            -- Only one level can be active; comment others
+                -- level   = domoticz.LOG_MODULE_EXEC_INFO,
+                marker	= scriptName..' v'..scriptVersion
    },
     -- permet de stocker les valeurs des périphériques avec "duration_exceeded_" sous /home/pi/domoticz/scripts/dzVents/data/__data_JsonDescription.lua
    data = {
-        managedValue = { history = true, maxItems = 3600, maxHours = 6 },
-        managedId = { history = true, maxItems = 3600, maxHours = 6 },
+        managedValue 	= { history = true, maxItems = 3600, maxHours = 6 },
+        managedId 		= { history = true, maxItems = 3600, maxHours = 6 },
+		indoorsValue	= { history = true, maxMinutes = 5 },
+		outdoorValue	= { history = true, maxMinutes = 5 },
+		deltaTValue		= { history = true, maxMinutes = 5 },		
+		thresholdValue  = { history = true, maxMinutes = 5 },
     },
     execute = function(dz, triggeredItem, info)
-        local cnt = 0
-        local now = dz.time
+        local cnt 		= 0
+        local now 		= dz.time
         local minute
         if string.len(now.min) == 1 then minute = '0'..now.min else minute = now.min end
-        local Time = now.hour..":"..minute
-        local dayWeek = dz.time.dayAbbrOfWeek
-
+        local Time 		= now.hour..":"..minute
+        local dayWeek 	= dz.time.dayAbbrOfWeek
+		local round 	= dz.utils.round
+		local avgOutdoor
+		local avgIndoor
+		local AvgDeltaT
+		local avgThreshold
+		local nightCoolingNotifications = nil
+		local nightCoolingQuietHours = nil
+		local nightCoolingSubSystems = nil
 		
         local function logWrite(str,level)
             dz.log(tostring(str),level or dz.LOG_DEBUG)
@@ -440,7 +484,15 @@ return {
                         if device.temperature ~= nil and settings.low_threshold_temp ~= nil then  -- seuil bas température
                             logWrite(device.name .. ' a un seuil temperature basse défini à  ' .. settings.low_threshold_temp..'°C')
                         end
-
+						
+                        if device.temperature ~= nil and settings.outdoor_temp ~= nil then  -- seuil bas température
+                            logWrite(device.name .. ' est définie comme température extérieure avec un seuil fixé à '.. settings.outdoor_temp..'°C')
+                        end
+						
+                        if device.temperature ~= nil and settings.indoor_temp ~= nil then  -- seuil bas température
+                            logWrite(device.name .. ' est définie comme température interieure avec un delta T par rapport à l\'exterieur de '.. settings.indoor_temp..'°C')
+                        end						
+						
                         if device.percentage ~= nil and settings.high_threshold_percent ~= nil then  -- seuil haut %
                             logWrite(device.name .. ' a un seuil % haut défini à  ' .. settings.high_threshold_percent..'%')
                         end
@@ -502,7 +554,7 @@ return {
                             logWrite('Le niveau de batterie de '.. device.name .. ' est de  ' .. device.batteryLevel .. '%', dz.LOG_INFO)
                             if settings.low_battery_level ~= nil and device.batteryLevel < settings.low_battery_level then  -- seuil bas batterie
                                 logWrite(device.name .. ' a un niveau de batterie de ' .. device.batteryLevel..'%', dz.LOG_INFO)
-                                message = 'Le niveau de batterie '.. device.name .. ' est inférieur au seuil défini ('..settings.low_battery_level..'%). Valeur : '..tostring(dz.utils.round(device.batteryLevel, 1)) ..'%'
+                                message = 'Le niveau de batterie '.. device.name .. ' est inférieur au seuil défini ('..settings.low_battery_level..'%). Valeur : '..tostring(round(device.batteryLevel, 1)) ..'%'
                                 --logWrite(message, dz.LOG_INFO)
                                 dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
@@ -542,10 +594,10 @@ return {
 
                         --low_current_usage
                         if device.current ~= nil and settings.low_current_usage ~= nil then
-                            logWrite('Le niveau de '.. device.name .. ' est de  ' .. tostring(dz.utils.round(device.current, 0))..' A', dz.LOG_INFO)
+                            logWrite('Le niveau de '.. device.name .. ' est de  ' .. tostring(round(device.current, 0))..' A', dz.LOG_INFO)
                             if settings.low_current_usage ~= nil and device.current < settings.low_current_usage then  -- seuil bas intensite
-                                logWrite(device.name .. ' a un niveau de ' .. tostring(dz.utils.round(device.current, 0)), dz.LOG_INFO)
-                                message = 'Le niveau de '.. device.name .. ' est inférieur au seuil défini ('..settings.low_current_usage..'). Valeur : '..tostring(dz.utils.round(device.current, 0))..' A'
+                                logWrite(device.name .. ' a un niveau de ' .. tostring(round(device.current, 0)), dz.LOG_INFO)
+                                message = 'Le niveau de '.. device.name .. ' est inférieur au seuil défini ('..settings.low_current_usage..'). Valeur : '..tostring(round(device.current, 0))..' A'
                                 --logWrite(message, dz.LOG_INFO)
                                 dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
@@ -555,8 +607,8 @@ return {
                         if device.current ~= nil and settings.high_current_usage ~= nil then
                             
                             if settings.high_current_usage ~= nil and device.current > settings.high_current_usage then  -- seuil haut intensite
-                                logWrite(device.name .. ' a un niveau de ' .. tostring(dz.utils.round(device.current, 0)), dz.LOG_INFO)
-                                message = 'Le niveau '.. device.name .. ' est superieur au seuil défini ('..settings.high_current_usage..'). Valeur : '..tostring(dz.utils.round(device.current, 0))..' A'
+                                logWrite(device.name .. ' a un niveau de ' .. tostring(round(device.current, 0)), dz.LOG_INFO)
+                                message = 'Le niveau '.. device.name .. ' est superieur au seuil défini ('..settings.high_current_usage..'). Valeur : '..tostring(round(device.current, 0))..' A'
                                 --logWrite(message, dz.LOG_INFO)
                                 dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
@@ -629,16 +681,16 @@ return {
                                 test_high_threshold = true
                                 test_low_threshold = true
                                 if settings.duration_exceeded_temp ~= nil then
-                                    dz.data.managedValue.add(dz.utils.round(device.temperature, 2))
+                                    dz.data.managedValue.add(round(device.temperature, 2))
                                     dz.data.managedId.add(device.id)
                                     if settings.high_threshold_temp ~= nil then high_threshold_temp = settings.high_threshold_temp else high_threshold_temp = nil end
                                     if settings.low_threshold_temp ~= nil then low_threshold_temp = settings.low_threshold_temp else low_threshold_temp = nil end
                                     test_high_threshold, test_low_threshold = managed(dz, device.id, settings.duration_exceeded_temp, high_threshold_temp, low_threshold_temp)
                                 end
-                                logWrite('La température mesurée par '.. device.name .. ' est de  ' .. tostring(dz.utils.round(device.temperature, 1)) ..'°C', dz.LOG_INFO)
+                                logWrite('La température mesurée par '.. device.name .. ' est de  ' .. tostring(round(device.temperature, 1)) ..'°C', dz.LOG_INFO)
                                 if settings.low_threshold_temp ~= nil and device.temperature < settings.low_threshold_temp and test_low_threshold == true then  -- seuil bas température
                                     logWrite(device.name .. ' a un seuil temperature basse défini à  ' .. settings.low_threshold_temp..'°C', dz.LOG_INFO)
-                                    message = 'La température mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_temp..'°C)' --. Valeur : '..tostring(dz.utils.round(device.temperature, 1)) ..'°C'
+                                    message = 'La température mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_temp..'°C)' --. Valeur : '..tostring(round(device.temperature, 1)) ..'°C'
                                     if settings.duration_exceeded_temp ~= nil then
                                         dz.data.managedValue.add(settings.low_threshold_temp)
                                         dz.data.managedId.add(device.id)
@@ -647,7 +699,7 @@ return {
                                 end
                                 if settings.high_threshold_temp ~= nil and device.temperature > settings.high_threshold_temp and test_high_threshold == true then  -- seuil haut température
                                     logWrite(device.name .. ' a un seuil temperature haute défini à  ' .. settings.high_threshold_temp..'°C', dz.LOG_INFO)
-                                    message = 'La température mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_temp..'°C)' --. Valeur : '..tostring(dz.utils.round(device.temperature, 1)) ..'°C'
+                                    message = 'La température mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_temp..'°C)' --. Valeur : '..tostring(round(device.temperature, 1)) ..'°C'
                                     if settings.duration_exceeded_temp ~= nil then
                                         dz.data.managedValue.add(settings.high_threshold_temp)
                                         dz.data.managedId.add(device.id)
@@ -656,6 +708,22 @@ return {
                                 end
                             end
 
+                            if device.temperature ~= nil and (settings.outdoor_temp ~= nil or settings.indoor_temp ~= nil)  then
+								if settings.outdoor_temp ~= nil then  -- seuil bas température
+									logWrite(device.name .. ' est définie comme température extérieure avec un seuil fixé à '.. settings.outdoor_temp..'°C', dz.LOG_INFO)
+									dz.data.outdoorValue.add(round(device.temperature, 2))
+									dz.data.thresholdValue.add(settings.outdoor_temp)
+									nightCoolingNotifications = settings.frequency_notifications
+									nightCoolingQuietHours    = settings.quiet_hours
+									nightCoolingSubSystems    = settings.subSystems
+								end
+								
+								if settings.indoor_temp ~= nil then  -- seuil bas température
+									logWrite(device.name .. ' est définie comme température interieure avec un delta T par rapport à l\'exterieur de '.. settings.indoor_temp..'°C', dz.LOG_INFO)
+									dz.data.indoorsValue.add(round(device.temperature, 2))
+									dz.data.deltaTValue.add(settings.indoor_temp)
+								end								
+							end
                         -- alarme hygrométrie
                             if device.humidity ~= nil and (settings.low_threshold_hr ~= nil or settings.high_threshold_hr ~= nil)  then
                                 --test settings.duration_exceeded_hr
@@ -736,15 +804,15 @@ return {
 
                        elseif device.sensorType ~= nil and (settings.high_threshold_custom ~= nil or settings.low_threshold_custom ~= nil)  then
                         --alarme custom sensor
-                            logWrite('La valeur mesurée par '.. device.name .. ' est de  ' .. tostring(dz.utils.round(device.state, 1)) .. device.sensorUnit, dz.LOG_INFO)
+                            logWrite('La valeur mesurée par '.. device.name .. ' est de  ' .. tostring(round(device.state, 1)) .. device.sensorUnit, dz.LOG_INFO)
                             if settings.low_threshold_custom ~= nil and tonumber(device.state) < settings.low_threshold_custom then -- seuil bas %
                                 logWrite(device.name .. ' a un seuil bas défini à  ' .. settings.low_threshold_custom..device.sensorUnit, dz.LOG_INFO)
-                                message = 'La valeur mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_custom..device.sensorUnit..').' -- Valeur : '..tostring(dz.utils.round(device.state, 1))..device.sensorUnit
+                                message = 'La valeur mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_custom..device.sensorUnit..').' -- Valeur : '..tostring(round(device.state, 1))..device.sensorUnit
                                 dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
                             if settings.high_threshold_custom ~= nil and tonumber(device.state) > settings.high_threshold_custom then -- seuil haut %
                                 logWrite(device.name .. ' a un seuil haut défini à  ' .. settings.high_threshold_custom..device.sensorUnit, dz.LOG_INFO)
-                                message = 'La valeur mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_custom..device.sensorUnit..').' -- Valeur : '..tostring(dz.utils.round(device.state, 1))..device.sensorUnit
+                                message = 'La valeur mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_custom..device.sensorUnit..').' -- Valeur : '..tostring(round(device.state, 1))..device.sensorUnit
                                 dz.helpers.managedNotify(dz, subject, message, notificationTable(subSystems), frequency_notifications , quiet_hours)
                             end
 
@@ -761,10 +829,10 @@ return {
                                 test_high_threshold, test_low_threshold = managed(dz, device.id, settings.duration_exceeded_percent, high_threshold_percent, low_threshold_percent)
                             end
                             -- alarme pourcentage
-                            logWrite('La valeur mesurée par '.. device.name .. ' est de  ' .. tostring(dz.utils.round(device.percentage, 1)) ..'%', dz.LOG_INFO)
+                            logWrite('La valeur mesurée par '.. device.name .. ' est de  ' .. tostring(round(device.percentage, 1)) ..'%', dz.LOG_INFO)
                             if settings.low_threshold_percent ~= nil and device.percentage < settings.low_threshold_percent and test_low_threshold == true then  -- seuil bas %
                                 logWrite(device.name .. ' a un seuil % bas défini à  ' .. settings.low_threshold_percent..'%', dz.LOG_INFO)
-                                message = 'La valeur mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_percent..'%).' -- Valeur : '.. tostring(dz.utils.round(device.percentage, 1)) ..'%'
+                                message = 'La valeur mesurée par '.. device.name .. ' est inférieure au seuil défini ('..settings.low_threshold_percent..'%).' -- Valeur : '.. tostring(round(device.percentage, 1)) ..'%'
                                 if settings.duration_exceeded_percent ~= nil then
                                     dz.data.managedValue.add(settings.low_threshold_percent)
                                     dz.data.managedId.add(device.id)
@@ -773,7 +841,7 @@ return {
                             end
                             if settings.high_threshold_percent ~= nil and device.percentage > settings.high_threshold_percent and test_high_threshold == true then  -- seuil haut %
                                 logWrite(device.name .. ' a un seuil % haut défini à  ' .. settings.high_threshold_percent..'%', dz.LOG_INFO)
-                                message = 'La valeur mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_percent..'%).' -- Valeur : '.. tostring(dz.utils.round(device.percentage, 1)) ..'%'
+                                message = 'La valeur mesurée par '.. device.name ..' est supérieure au seuil défini ('..settings.high_threshold_percent..'%).' -- Valeur : '.. tostring(round(device.percentage, 1)) ..'%'
 
                                 if settings.duration_exceeded_percent ~= nil then
                                     dz.data.managedValue.add(settings.high_threshold_percent)
@@ -795,7 +863,31 @@ return {
                     end
                 end
             )
-
+		if  dz.data.outdoorValue.avg() then
+			avgOutdoor		= round(dz.data.outdoorValue.avg(),2)
+			logWrite('la moyenne des temperatures exterieures est de '..tostring(avgOutdoor).."°C", dz.LOG_INFO) 
+		end
+		if  dz.data.indoorsValue.avg() then
+			avgIndoor		= round(dz.data.indoorsValue.avg(),2)
+			logWrite('la moyenne des temperatures intérieures est de '..tostring(avgIndoor).."°C", dz.LOG_INFO) 
+		end		
+		if  dz.data.deltaTValue.avg() then
+			AvgDeltaT		= round(dz.data.deltaTValue.avg(),2)
+			logWrite('la moyenne des delta T est de '..tostring(AvgDeltaT).."°C", dz.LOG_INFO) 
+		end		
+		if  dz.data.thresholdValue.avg() then
+			avgThreshold	= round(dz.data.thresholdValue.avg(),2)
+			logWrite('la moyenne des seuils est de '..tostring(avgThreshold).."°C", dz.LOG_INFO) 
+		end		
+		if  avgOutdoor ~= nil and avgIndoor ~= nil and AvgDeltaT ~= nil and avgThreshold ~= nil then
+			 
+			if avgIndoor > (avgOutdoor + AvgDeltaT) and avgOutdoor > avgThreshold then
+				local nightCoolingSubject = "\xE2\x9A\xA0 /!\\ Ouverture des fenetres recommandee /!\\ \xE2\x9A\xA0"				
+				local nightCoolingMessage = 'Ouverture des fenêtres recommandée, la température moyenne ambiante intérieure est supérieure de '..AvgDeltaT..'°C à la temperature extérieure'		
+				dz.helpers.managedNotify(dz, nightCoolingSubject, nightCoolingMessage, notificationTable(nightCoolingSubSystems), nightCoolingNotifications, nightCoolingQuietHours)
+			end				
+		end
+		
         logWrite(tostring(cnt) .. ' devices scannés.', dz.LOG_INFO)
     end
 }
