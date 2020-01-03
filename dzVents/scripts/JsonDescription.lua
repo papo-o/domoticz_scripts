@@ -271,7 +271,7 @@ Exemple 18 : être averti si le périphérique est éteint depuis x minutes
 		}
 }
 ======================================================== 
-Fonctionnalité proposée par Anthony72
+Fonctionnalité suggérée par Anthony72
 
   Example 20: automatically change the custom icon of a selector switch
   syntax 
