@@ -1,18 +1,24 @@
 --[[
 /home/pi/domoticz/scripts/dzVents/scripts/beaufort.lua
 author/auteur = papoo
-update/mise à jour = 12/01/2020
+update/mise à jour = 23/02/2020
 creation = 12/01/2020
 https://pon.fr/
 https://easydomoticz.com/forum/
 https://github.com/papo-o/domoticz_scripts/tree/master/dzVents/scripts/beaufort.lua
 
+to do  : selection automatique du type de device (custom ou vent)
+
+L'échelle de Beaufort est une échelle de mesure empirique, comportant 13 degrés (de 0 à 12), de la vitesse moyenne du vent
+ sur une durée de dix minutes utilisée dans les milieux maritimes. Initialement, le degré Beaufort correspond à un état de la mer
+ associé à une « fourchette » de la vitesse moyenne du vent. Même si, de nos jours, cette vitesse peut être mesurée avec une bonne précision
+ à l'aide d'un anémomètre, il reste commode, en mer, d'estimer cette vitesse par la seule observation des effets du vent sur la surface de la mer.
 
 --]]
 
 local scriptName        = 'Beaufort'
-local scriptVersion     = '1.00'
-local beaufortSelector  = nil
+local scriptVersion     = '1.01'
+local beaufortSelector  = 'Echelle de Beaufort'
 local windDevice        = 'Anémomètre'
 local msWind            = true -- false if wind device is in km/h
 local windAlert         = nil  -- Wind Alert Device name or nil
@@ -53,36 +59,36 @@ local BeaufortLevel02   = "Légère brise"         -- level 20 Beaufort Selector
 local BeaufortLevel01   = "Très légère brise"    -- level 10 Beaufort Selector switch
 local BeaufortLevel00   = "Calme"                -- level 0 Beaufort Selector switch
 
-    if     vent >  118  then beaufortText, alertLevel, level = BeaufortLevel12, dz.ALERTLEVEL_RED, 120
-    elseif vent >= 103  then beaufortText, alertLevel, level = BeaufortLevel11, dz.ALERTLEVEL_RED, 110
-    elseif vent >= 89   then beaufortText, alertLevel, level = BeaufortLevel10, dz.ALERTLEVEL_RED, 100
-    elseif vent >= 75   then beaufortText, alertLevel, level = BeaufortLevel09, dz.ALERTLEVEL_RED, 90
-    elseif vent >= 62   then beaufortText, alertLevel, level = BeaufortLevel08, dz.ALERTLEVEL_ORANGE, 80
-    elseif vent >= 50   then beaufortText, alertLevel, level = BeaufortLevel07, dz.ALERTLEVEL_ORANGE, 70
-    elseif vent >= 39   then beaufortText, alertLevel, level = BeaufortLevel06, dz.ALERTLEVEL_YELLOW, 60
-    elseif vent >= 29   then beaufortText, alertLevel, level = BeaufortLevel05, dz.ALERTLEVEL_YELLOW, 50
-    elseif vent >= 20   then beaufortText, alertLevel, level = BeaufortLevel04, dz.ALERTLEVEL_YELLOW, 40
-    elseif vent >= 12   then beaufortText, alertLevel, level = BeaufortLevel03, dz.ALERTLEVEL_GREEN, 30
-    elseif vent >= 6    then beaufortText, alertLevel, level = BeaufortLevel02, dz.ALERTLEVEL_GREEN, 20
-    elseif vent >= 1    then beaufortText, alertLevel, level = BeaufortLevel01, dz.ALERTLEVEL_GREEN, 10
-    else                     beaufortText, alertLevel, level = BeaufortLevel00, dz.ALERTLEVEL_GREEN, 00
+    if     vent >  118  then beaufortText, alertLevel, level = BeaufortLevel12, dz.ALERTLEVEL_RED, 130
+    elseif vent >= 103  then beaufortText, alertLevel, level = BeaufortLevel11, dz.ALERTLEVEL_RED, 120
+    elseif vent >= 89   then beaufortText, alertLevel, level = BeaufortLevel10, dz.ALERTLEVEL_RED, 110
+    elseif vent >= 75   then beaufortText, alertLevel, level = BeaufortLevel09, dz.ALERTLEVEL_RED, 100
+    elseif vent >= 62   then beaufortText, alertLevel, level = BeaufortLevel08, dz.ALERTLEVEL_ORANGE, 90
+    elseif vent >= 50   then beaufortText, alertLevel, level = BeaufortLevel07, dz.ALERTLEVEL_ORANGE, 80
+    elseif vent >= 39   then beaufortText, alertLevel, level = BeaufortLevel06, dz.ALERTLEVEL_YELLOW, 70
+    elseif vent >= 29   then beaufortText, alertLevel, level = BeaufortLevel05, dz.ALERTLEVEL_YELLOW, 60
+    elseif vent >= 20   then beaufortText, alertLevel, level = BeaufortLevel04, dz.ALERTLEVEL_YELLOW, 50
+    elseif vent >= 12   then beaufortText, alertLevel, level = BeaufortLevel03, dz.ALERTLEVEL_GREEN, 40
+    elseif vent >= 6    then beaufortText, alertLevel, level = BeaufortLevel02, dz.ALERTLEVEL_GREEN, 30
+    elseif vent >= 1    then beaufortText, alertLevel, level = BeaufortLevel01, dz.ALERTLEVEL_GREEN, 20
+    else                     beaufortText, alertLevel, level = BeaufortLevel00, dz.ALERTLEVEL_GREEN, 10
     end
 
     logWrite("beaufort text : "..tostring(beaufortText))
     logWrite("level : "..tostring(level))
 
-    if (BeaufortSelector) then
-        logWrite("switch selector name : "..dz.devices(BeaufortSelector).name)
-        logWrite("switch selector id : "..dz.devices(BeaufortSelector).id)
-        logWrite("last level switch selector : "..dz.devices(BeaufortSelector).lastLevel)
-        if (dz.devices(BeaufortSelector).lastLevel ~= level) then
-            dz.devices(BeaufortSelector).switchSelector(level)
+    if (beaufortSelector) then
+        logWrite("switch selector name : "..dz.devices(beaufortSelector).name)
+        logWrite("switch selector id : "..dz.devices(beaufortSelector).id)
+        logWrite("last level switch selector : "..dz.devices(beaufortSelector).lastLevel)
+        if (dz.devices(beaufortSelector).lastLevel ~= level) then
+            dz.devices(beaufortSelector).switchSelector(level)
             logWrite("update selector device")
         else
             logWrite("no update needed")
         end
-        logWrite("level switch selector : "..dz.devices(BeaufortSelector).level)
-        logWrite("level name switch selector : "..dz.devices(BeaufortSelector).levelName)
+        logWrite("level switch selector : "..dz.devices(beaufortSelector).level)
+        logWrite("level name switch selector : "..dz.devices(beaufortSelector).levelName)
     end
 
     if windAlert ~= nil then
