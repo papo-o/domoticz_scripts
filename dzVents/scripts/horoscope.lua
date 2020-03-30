@@ -4,7 +4,7 @@ name : script_time_horoscope.lua
 auteur : papoo
 Mise à jour : 30/03/2020
 Création : 26/06/2016 =>V1.x https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_horoscope.lua
-https://pon.fr/
+https://pon.fr/dzvents-horoscope-v2
 https://easydomoticz.com/forum/
 github : https://github.com/papo-o/domoticz_scripts/horoscope.lua
 Principe :
@@ -19,9 +19,7 @@ local les_horoscopes = {
             { device = 'Horoscope 3',  signe = 'vierge'},
             { device = 'Horoscope 4',    signe = 'balance'},
                         }
-local horoscope = ''
-local device = ''
-local signe = ''
+
 local site_url  = 'https://astro.rtl.fr/horoscope-jour-gratuit'  -- url
 --------------------------------------------
 ----------- Fin variables à éditer ---------
@@ -32,7 +30,7 @@ local scriptVersion     = '2.0'
 return {
     active = true,
     on  =   {
-        timer           =   { 'every minute' },--https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#timer_trigger_rules
+        timer           =   { 'every 6 hours' },--https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#timer_trigger_rules
         httpResponses   =   { 'belier','taureau','gemeaux','cancer','lion','vierge','balance','scorpion','sagittaire','capricorne','verseau','poissons' }    -- Trigger
         --httpResponses   =   { 'cancer','capricorne' }    -- Trigger
     },
