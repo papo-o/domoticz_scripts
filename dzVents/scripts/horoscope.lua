@@ -1,17 +1,17 @@
 
 --[[
-name : script_time_horoscope.lua
+name : horoscope.lua
 auteur : papoo
-Mise à jour : 30/03/2020
+Mise à jour : 10/05/2018
 Création : 26/06/2016 =>V1.x https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_horoscope.lua
 https://pon.fr/dzvents-horoscope-v2
 https://easydomoticz.com/forum/viewtopic.php?f=17&t=9786
-github : https://github.com/papo-o/domoticz_scripts/horoscope.lua
+github : https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/horoscope.lua
 Principe :
- Ce script a pour but de remonter les informations du site https://astro.rtl.fr/horoscope-jour-gratuit/ dans un device texte
- sur domoticz pour un signe donné et de nous alerter le cas échéant selon le niveau de notification choisi
- Fil de discussion : https://easydomoticz.com/forum/viewtopic.php?f=17&t=2176&p=34662#p34662
- https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_horoscope.lua
+Le script vérifie toutes les x heures les horoscopes du site  https://astro.rtl.fr/horoscope-jour-gratuit/ 
+signe par signe et mets à jour les éventuels devices texte associés sur domoticz
+Le texte est tronqué à ~ 240 caractères pour ne pas surcharger l'affichage. Les caractères html sont convertis
+
 ]]--
 local les_horoscopes = {
             { device = 'Horoscope 1',  signe = 'belier'},
