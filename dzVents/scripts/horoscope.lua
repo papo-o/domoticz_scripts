@@ -2,7 +2,7 @@
 --[[
 name : horoscope.lua
 auteur : papoo
-Mise à jour : 10/05/2018
+Mise à jour : 31/03/2020
 Création : 26/06/2016 =>V1.x https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_horoscope.lua
 https://pon.fr/dzvents-horoscope-v2
 https://easydomoticz.com/forum/viewtopic.php?f=17&t=9786
