@@ -5,7 +5,7 @@ auteur : papoo
 Mise à jour : 30/03/2020
 Création : 26/06/2016 =>V1.x https://github.com/papo-o/domoticz_scripts/blob/master/Lua/script_time_horoscope.lua
 https://pon.fr/dzvents-horoscope-v2
-https://easydomoticz.com/forum/
+https://easydomoticz.com/forum/viewtopic.php?f=17&t=9786
 github : https://github.com/papo-o/domoticz_scripts/horoscope.lua
 Principe :
  Ce script a pour but de remonter les informations du site https://astro.rtl.fr/horoscope-jour-gratuit/ dans un device texte
