@@ -1,11 +1,12 @@
 --[[
 previsionMeteo.lua
 author/auteur = papoo
-update/mise à jour = 04/10/2019
+update/mise à jour = 31/03/2020
 création = 18/08/2019
 https://pon.fr/dzvents-mise-en-cache-des-donnees-de-lapi-prevision_meteo-ch
 https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scripts/previsionMeteo.lua
 https://easydomoticz.com/forum/viewtopic.php?f=17&t=8865
+encodage UTF8 sans BOM
 
 Principe : Le site prevision-meteo.ch subit de nombreux ralentissements, rendant aléatoire l'affichage des prévisions météo sur monitor
 https://pon.fr/prevision-meteo-a-3-jours/
@@ -58,12 +59,12 @@ https://www.prevision-meteo.ch/style/images/icon/pluie-et-neige-melee-forte.png
 
 local jsonFile      = '/home/pi/domoticz/www/monitor/prevision-meteo.json' -- nom du fichier (et son chemin complet) contenant les données de l'API
 local iconsPath     = 'http://192.168.1.24:8080/monitor/icons/prevision-meteo/' -- adresse local où sont stockés les icones
-
+local city          = 'limoges'  -- nil si vous souhaitez utiliser les coordonnées de latitude/longitude 
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local scriptName        = 'Extraction prévisions météo'
-local scriptVersion     = '1.01'
+local scriptVersion     = '1.02'
 local response = "prevision-meteo_response"
 return {
     active = true,
@@ -132,13 +133,17 @@ return {
             end
 
         else
-            local latitude  = domoticz.settings.location.latitude
-                -- local latitude  = '45.85860'
+            if city ~= nil then 
+                url = "https://www.prevision-meteo.ch/services/json/"..city
+            else
+                local latitude  = domoticz.settings.location.latitude
+                -- local latitude  = '45.8'
                 logWrite('latitude : '..latitude)
                 local longitude = domoticz.settings.location.longitude
-                -- local longitude = '1.23190'
+                -- local longitude = '1.2'
                 logWrite('longitude : '..longitude)
-            local url = "https://www.prevision-meteo.ch/services/json/lat="..latitude.."lng="..longitude
+                url = "https://www.prevision-meteo.ch/services/json/lat="..latitude.."lng="..longitude
+            end
 
             domoticz.openURL({
                   url = url,
