@@ -1,6 +1,6 @@
 --[[xiaomiMP3.lua
 source = https://www.domoticz.com/wiki/Xiaomi_Gateway_(Aqara)
-https://pon.fr/
+https://pon.fr/dzvents-jouer-un-son-sur-la-passerelle-xiaomi
 https://easydomoticz.com/forum/
 github : https://github.com/papo-o/domoticz_scripts/xiaomiMP3.lua
 update/mise à jour = 06/04/2020
