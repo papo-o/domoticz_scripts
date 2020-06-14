@@ -1,7 +1,7 @@
 --[[
 vigilanceMeteoFrance.lua
 author/auteur = papoo
-update/mise à jour = 13/06/2020
+update/mise à jour = 14/06/2020
 création = 28/04/2018
 Principe : Ce script a pour but de remonter les informations de vigilance de météoFrance
 Les informations disponibles sont :
@@ -20,12 +20,15 @@ URL github : https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scri
 --------------------------------------------
 local departement              = 26                   -- renseigner votre numéro de département sur 2 chiffres exemples : 01 ou 07 ou 87 
 local alert_device             = 'Vigilance Météo'    -- renseigner le nom de l'éventuel device alert vigilance météo associé (dummy - alert)
-
+local conseil_meteo            = 'Conseil Météo'      -- renseigner le nom de l'éventuel device alert Conseils Météo associé si souhaité, sinon nil 
+local commentaire_meteo        = 'Commentaire Météo'  -- renseigner le nom de l'éventuel device alert Commentaire Météo associé si souhaité, sinon nil
+local display_conseils         = true                 -- true pour voir les conseils sans condition, false seulement en cas de vigilance dans le département sélectionné
+local display_commentaire      = true                 -- true pour voir les commentaires sans condition, false seulement en cas de vigilance dans le département sélectionné
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local scriptName        = 'Vigilance météo France'
-local scriptVersion     = '2.01'
+local scriptVersion     = '2.02'
 local response = "vigilance_meteoFrance"
 return {
     active = true,
@@ -33,7 +36,7 @@ return {
                         httpResponses   =   {  response } },
 
     logging =   {   -- level    =   domoticz.LOG_DEBUG,
-                       level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
+                    -- level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
                     -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others
                     -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
                     marker  =   scriptName..' v'..scriptVersion },
@@ -80,12 +83,28 @@ return {
             local dv = abr.CV.DV
             local textAlert = ""
             local vigilanceColor = ""
+            local conseil = ""
+            local commentaire = ""
 
-            for i, departements in ipairs(dv) do
-                for _, result in pairs(departements) do
-                    -- logWrite(result.dep)
-                    -- logWrite(result.coul)
-                    if tonumber(result.dep) == departement then 
+    local vconseil = abr.CV.EV.VCONSEIL 
+    for i, result in pairs(vconseil) do
+        if vconseil[i].texte then
+            conseil = vconseil[i].texte
+        end
+    end
+
+    local vcommentaire = abr.CV.EV.VCOMMENTAIRE 
+        for i, result in pairs(vcommentaire) do
+            if vcommentaire[i].texte then
+                commentaire = vcommentaire[i].texte
+            end
+        end
+
+    for i, departements in ipairs(dv) do
+        for _, result in pairs(departements) do
+                    --logWrite(result.dep)
+                    --logWrite(result.coul)
+            if tonumber(result.dep) == departement then 
                         logWrite("departement : "..result.dep)
                         logWrite("Couleur vigilance : "..result.coul)
                         vigilanceColor = tonumber(result.coul)
@@ -93,7 +112,7 @@ return {
                             risques = dv[i].risque
                             for _, risque in pairs(risques) do 
                                 for _, risqueDep in pairs(risque) do
-                                -- print_table(risqueDep)
+                                --print_r(risqueDep)
                                     if risqueDep.val and (type(risqueDep) == "table") then 
                                         logWrite(risqueDep.val)
                                         logWrite(risqueTxt(tonumber(risqueDep.val)))
@@ -108,8 +127,9 @@ return {
                     end
                 end
             end
+
             text = EnumClear(textAlert)
-            logWrite("vigilance ".. vigilanceColor .. " " .. text .. " pour le département " .. departement,dz.LOG_INFO)
+            logWrite("------ vigilance ".. vigilanceColor .. " " .. text .. " pour le département " .. departement,dz.LOG_INFO)
 
             if alert_device ~= nil then
                 if devAlert.color ~= vigilanceColor or devAlert.lastUpdate.minutesAgo > 1440 then
@@ -119,6 +139,30 @@ return {
                 end
             end
 
+        -- ====================================================================================================================   
+        -- Conseil météo (merci denis_brasseur )
+        -- ====================================================================================================================         
+
+            if conseil_meteo ~= nil then
+                if (conseil ~= nil and vigilanceColor > 1) or (conseil ~= nil and display_conseils == true) then -- Mise à our du devise texte conseil météo si il existe
+                    if dz.devices(conseil_meteo).text ~= conseil then dz.devices(conseil_meteo).updateAlertSensor(seuilAlerte(vigilanceColor), conseil) end
+                elseif (conseil == nil) or (conseil ~= nil and display_conseils == false) then -- Mise à  jour du devise texte conseil météo si il existe même s'il n'y a pas de conseil disponible
+                    if dz.devices(conseil_meteo).text ~= 'Aucun conseil disponible' then dz.devices(conseil_meteo).updateAlertSensor(seuilAlerte(vigilanceColor), 'Aucun conseil disponible') end
+                end
+            end
+        -- ====================================================================================================================   
+        -- Commentaire météo (merci denis_brasseur )
+        -- ====================================================================================================================        
+            if commentaire_meteo ~= nil then
+                if (commentaire ~= nil and vigilanceColor > 1) or (commentaire ~= nil and display_commentaire == true) then -- Mise à jour du devise texte commentaire météo si il existe
+                    if dz.devices(commentaire_meteo).text ~= commentaire then dz.devices(commentaire_meteo).updateAlertSensor(seuilAlerte(vigilanceColor), commentaire) end
+                elseif (commentaire == nil) or (commentaire ~= nil and display_commentaire == false) then -- Mise à  jour du devise texte commentaire météo si il existe même s'il n'y a pas de commentaire disponible
+                    if dz.devices(commentaire_meteo).text ~= 'Aucun commentaire disponible' then dz.devices(commentaire_meteo).updateAlertSensor(seuilAlerte(vigilanceColor), 'Aucun commentaire disponible') end
+                end
+            end
+        -- ====================================================================================================================   
+
+        -- ====================================================================================================================
         else
             local url = "http://vigilance2019.meteofrance.com/data/NXFR33_LFPW_.xml"
             dz.openURL({
