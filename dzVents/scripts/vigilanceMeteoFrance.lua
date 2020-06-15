@@ -1,7 +1,7 @@
 --[[
 vigilanceMeteoFrance.lua
 author/auteur = papoo
-update/mise à jour = 14/06/2020
+update/mise à jour = 15/06/2020
 création = 28/04/2018
 Principe : Ce script a pour but de remonter les informations de vigilance de météoFrance
 Les informations disponibles sont :
@@ -18,17 +18,17 @@ URL github : https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scri
 --------------------------------------------
 ------------ Variables à éditer ------------
 --------------------------------------------
-local departement              = 26                   -- renseigner votre numéro de département sur 2 chiffres exemples : 01 ou 07 ou 87 
+local departement              = 38                   -- renseigner votre numéro de département sur 2 chiffres exemples : 01 ou 07 ou 87 
 local alert_device             = 'Vigilance Météo'    -- renseigner le nom de l'éventuel device alert vigilance météo associé (dummy - alert)
-local conseil_meteo            = 'Conseil Météo'      -- renseigner le nom de l'éventuel device alert Conseils Météo associé si souhaité, sinon nil 
-local commentaire_meteo        = 'Commentaire Météo'  -- renseigner le nom de l'éventuel device alert Commentaire Météo associé si souhaité, sinon nil
+local conseil_meteo            = nil --'Conseil Météo'      -- renseigner le nom de l'éventuel device alert Conseils Météo associé si souhaité, sinon nil 
+local commentaire_meteo        = nil --'Commentaire Météo'  -- renseigner le nom de l'éventuel device alert Commentaire Météo associé si souhaité, sinon nil
 local display_conseils         = true                 -- true pour voir les conseils sans condition, false seulement en cas de vigilance dans le département sélectionné
 local display_commentaire      = true                 -- true pour voir les commentaires sans condition, false seulement en cas de vigilance dans le département sélectionné
 --------------------------------------------
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local scriptName        = 'Vigilance météo France'
-local scriptVersion     = '2.02'
+local scriptVersion     = '2.03'
 local response = "vigilance_meteoFrance"
 return {
     active = true,
@@ -36,19 +36,18 @@ return {
                         httpResponses   =   {  response } },
 
     logging =   {   -- level    =   domoticz.LOG_DEBUG,
-                    -- level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
+                    level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
                     -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others
                     -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
                     marker  =   scriptName..' v'..scriptVersion },
 
     execute = function(dz, item)
 
-        local devAlert, _ , round = dz.devices(alert_device), dz.utils._, dz.utils.round
+        local devAlert = dz.devices(alert_device)
 
         local function logWrite(str,level)
             dz.log(tostring(str),level or dz.LOG_DEBUG)
         end
-
         local function seuilAlerte(level)
             if level == 0 or level == nil then return dz.ALERTLEVEL_GREY end
             if level == 1 then return dz.ALERTLEVEL_GREEN end
@@ -85,20 +84,6 @@ return {
             local vigilanceColor = ""
             local conseil = ""
             local commentaire = ""
-
-    local vconseil = abr.CV.EV.VCONSEIL 
-    for i, result in pairs(vconseil) do
-        if vconseil[i].texte then
-            conseil = vconseil[i].texte
-        end
-    end
-
-    local vcommentaire = abr.CV.EV.VCOMMENTAIRE 
-        for i, result in pairs(vcommentaire) do
-            if vcommentaire[i].texte then
-                commentaire = vcommentaire[i].texte
-            end
-        end
 
     for i, departements in ipairs(dv) do
         for _, result in pairs(departements) do
@@ -142,8 +127,15 @@ return {
         -- ====================================================================================================================   
         -- Conseil météo (merci denis_brasseur )
         -- ====================================================================================================================         
-
             if conseil_meteo ~= nil then
+                local vconseil = abr.CV.EV.VCONSEIL 
+                if vconseil and (type(vconseil) == "table") then 
+                    for i, result in pairs(vconseil) do
+                        if vconseil[i].texte then
+                            conseil = vconseil[i].texte
+                        end
+                    end
+                end
                 if (conseil ~= nil and vigilanceColor > 1) or (conseil ~= nil and display_conseils == true) then -- Mise à our du devise texte conseil météo si il existe
                     if dz.devices(conseil_meteo).text ~= conseil then dz.devices(conseil_meteo).updateAlertSensor(seuilAlerte(vigilanceColor), conseil) end
                 elseif (conseil == nil) or (conseil ~= nil and display_conseils == false) then -- Mise à  jour du devise texte conseil météo si il existe même s'il n'y a pas de conseil disponible
@@ -154,6 +146,14 @@ return {
         -- Commentaire météo (merci denis_brasseur )
         -- ====================================================================================================================        
             if commentaire_meteo ~= nil then
+                local vcommentaire = abr.CV.EV.VCOMMENTAIRE
+                if vcommentaire and (type(vcommentaire) == "table") then 
+                    for i, result in pairs(vcommentaire) do
+                        if vcommentaire[i].texte then
+                            commentaire = vcommentaire[i].texte
+                        end
+                    end
+                end
                 if (commentaire ~= nil and vigilanceColor > 1) or (commentaire ~= nil and display_commentaire == true) then -- Mise à jour du devise texte commentaire météo si il existe
                     if dz.devices(commentaire_meteo).text ~= commentaire then dz.devices(commentaire_meteo).updateAlertSensor(seuilAlerte(vigilanceColor), commentaire) end
                 elseif (commentaire == nil) or (commentaire ~= nil and display_commentaire == false) then -- Mise à  jour du devise texte commentaire météo si il existe même s'il n'y a pas de commentaire disponible
