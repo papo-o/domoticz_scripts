@@ -1,7 +1,7 @@
 --[[
 vigilanceMeteoFrance.lua
 author/auteur = papoo
-update/mise à jour = 15/06/2020
+update/mise à jour = 16/06/2020
 création = 28/04/2018
 Principe : Ce script a pour but de remonter les informations de vigilance de météoFrance
 Les informations disponibles sont :
@@ -18,7 +18,7 @@ URL github : https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scri
 --------------------------------------------
 ------------ Variables à éditer ------------
 --------------------------------------------
-local departement              = 38                   -- renseigner votre numéro de département sur 2 chiffres exemples : 01 ou 07 ou 87 
+local departement              = 87                   -- renseigner votre numéro de département sur 2 chiffres exemples : 01 ou 07 ou 87 
 local alert_device             = 'Vigilance Météo'    -- renseigner le nom de l'éventuel device alert vigilance météo associé (dummy - alert)
 local conseil_meteo            = nil --'Conseil Météo'      -- renseigner le nom de l'éventuel device alert Conseils Météo associé si souhaité, sinon nil 
 local commentaire_meteo        = nil --'Commentaire Météo'  -- renseigner le nom de l'éventuel device alert Commentaire Météo associé si souhaité, sinon nil
@@ -28,15 +28,15 @@ local display_commentaire      = true                 -- true pour voir les comm
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local scriptName        = 'Vigilance météo France'
-local scriptVersion     = '2.03'
+local scriptVersion     = '2.04'
 local response = "vigilance_meteoFrance"
 return {
     active = true,
     on =        {       timer           =   { "every minute"},
                         httpResponses   =   {  response } },
 
-    logging =   {   -- level    =   domoticz.LOG_DEBUG,
-                    level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
+    logging =   {    level    =   domoticz.LOG_DEBUG,
+                   -- level    =   domoticz.LOG_INFO,             -- Seulement un niveau peut être actif; commenter les autres
                     -- level    =   domoticz.LOG_ERROR,            -- Only one level can be active; comment others
                     -- level    =   domoticz.LOG_MODULE_EXEC_INFO,
                     marker  =   scriptName..' v'..scriptVersion },
@@ -44,6 +44,8 @@ return {
     execute = function(dz, item)
 
         local devAlert = dz.devices(alert_device)
+        local conseil = 'Aucun conseil disponible'
+        local commentaire = 'Aucun commentaire disponible'
 
         local function logWrite(str,level)
             dz.log(tostring(str),level or dz.LOG_DEBUG)
@@ -65,7 +67,7 @@ return {
           elseif nombre == 7 then return "grand-froid" 
           elseif nombre == 8 then return "avalanche"
           elseif nombre == 9 then return "vagues-submersion"
-            else return "Vigilance Météo" end
+          else return "Vigilance Météo" end
         end
         local function EnumClear(Text)   -- replace the last character
             a=string.len(Text)
@@ -114,6 +116,7 @@ return {
             end
 
             text = EnumClear(textAlert)
+            if text == '' then text = 'Aucune vigilance' end
             logWrite("------ vigilance ".. vigilanceColor .. " " .. text .. " pour le département " .. departement,dz.LOG_INFO)
 
             if alert_device ~= nil then
