@@ -1,7 +1,7 @@
 --[[
 vigilanceMeteoFrance.lua
 author/auteur = papoo
-update/mise à jour = 17/06/2020
+update/mise à jour = 09/08/2020
 création = 28/04/2018
 Principe : Ce script a pour but de remonter les informations de vigilance de météoFrance
 Les informations disponibles sont :
@@ -18,7 +18,7 @@ URL github : https://github.com/papo-o/domoticz_scripts/blob/master/dzVents/scri
 --------------------------------------------
 ------------ Variables à éditer ------------
 --------------------------------------------
-local departement              = 39                   -- renseigner votre numéro de département sur 2 chiffres exemples : 01 ou 07 ou 87 
+local departement              = 63                   -- renseigner votre numéro de département sur 2 chiffres exemples : 01 ou 07 ou 87 
 local alert_device             = 'Vigilance Météo'    -- renseigner le nom de l'éventuel device alert vigilance météo associé (dummy - alert)
 local conseil_meteo            = "Conseil Météo" --'Conseil Météo'      -- renseigner le nom de l'éventuel device alert Conseils Météo associé si souhaité, sinon nil 
 local commentaire_meteo        = "Commentaire Météo" --'Commentaire Météo'  -- renseigner le nom de l'éventuel device alert Commentaire Météo associé si souhaité, sinon nil
@@ -28,7 +28,7 @@ local display_commentaire      = true                 -- true pour voir les comm
 ----------- Fin variables à éditer ---------
 --------------------------------------------
 local scriptName        = 'Vigilance météo France'
-local scriptVersion     = '2.05'
+local scriptVersion     = '2.06'
 local response = "vigilance_meteoFrance"
 return {
     active = true,
@@ -97,14 +97,14 @@ return {
                             risques = dv[i].risque
                             for _, risque in pairs(risques) do 
                                 for _, risqueDep in pairs(risque) do
-                                --print_r(risqueDep)
                                     if risqueDep.val and (type(risqueDep) == "table") then 
                                         logWrite(risqueDep.val)
                                         logWrite(risqueTxt(tonumber(risqueDep.val)))
                                         textAlert = textAlert .. risqueTxt(tonumber(risqueDep.val)) .. ", "
                                     else
                                         logWrite(risqueDep)
-                                        textAlert = risqueTxt(tonumber(risqueDep))
+                                        textAlert = textAlert .. risqueTxt(tonumber(risqueDep)) .. ", "
+                                        logWrite(textAlert)
                                     end
                                 end
                             end
